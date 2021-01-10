@@ -15,6 +15,10 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
+	"github.com/mackerelio/go-osstat/cpu"
+	"github.com/mackerelio/go-osstat/loadavg"
+	"github.com/mackerelio/go-osstat/memory"
+	"github.com/mackerelio/go-osstat/uptime"
 )
 
 const (
@@ -224,17 +228,15 @@ func readFileLines(f string) ([]string, error) {
 }
 
 func getUptimeMetrics() ([]metric, error) {
-	data, err := readFile("/proc/uptime")
+	u, err := uptime.Get()
 	if err != nil {
 		return nil, err
 	}
 
-	value, err := strconv.ParseFloat(strings.SplitN(data, " ", 2)[0], 64)
-
 	return []metric{
 		{
 			name:       "node_time_seconds",
-			value:      value,
+			value:      u.Seconds(),
 			help:       "System uptime measured in seconds",
 			metricType: "counter",
 		},
@@ -242,143 +244,82 @@ func getUptimeMetrics() ([]metric, error) {
 }
 
 func getLoadAvgMetrics() ([]metric, error) {
-	data, err := readFile("/proc/loadavg")
+	s, err := loadavg.Get()
 	if err != nil {
 		return nil, err
 	}
 
 	metrics := []metric{
-		{name: "node_load1"},
-		{name: "node_load5"},
-		{name: "node_load15"},
-	}
-	values := strings.SplitN(data, " ", len(metrics)+1)[0:len(metrics)]
-	for idx, value := range values {
-		metrics[idx].value, err = strconv.ParseFloat(value, 64)
-		if err != nil {
-			return nil, err
-		}
+		{name: "node_load1", value: s.Loadavg1},
+		{name: "node_load5", value: s.Loadavg5},
+		{name: "node_load15", value: s.Loadavg15},
 	}
 	return metrics, nil
 }
 
 func getMemInfoMetrics() ([]metric, error) {
-	lines, err := readFileLines("/proc/meminfo")
+	s, err := memory.Get()
 	if err != nil {
 		return nil, err
 	}
 
-	namesMap := map[string]string{
-		"MemTotal":     "",
-		"MemFree":      "",
-		"MemAvailable": "",
-		"Buffers":      "",
-		"Cached":       "",
-		"SwapCached":   "",
-		"Active":       "",
-		"Inactive":     "",
-		"Unevictable":  "",
-		"Mlocked":      "",
-		"SwapTotal":    "",
-		"SwapFree":     "",
-		"Dirty":        "",
-		"Writeback":    "",
+	metrics := []metric{
+		{name: "node_memory_MemTotal_bytes", value: float64(s.Total)},
+		{name: "node_memory_MemFree_bytes", value: float64(s.Free)},
+		{name: "node_memory_Cached_bytes", value: float64(s.Cached)},
+		{name: "node_memory_Active_bytes", value: float64(s.Active)},
+		{name: "node_memory_Inactive_bytes", value: float64(s.Inactive)},
+		{name: "node_memory_SwapTotal_bytes", value: float64(s.SwapTotal)},
+		{name: "node_memory_SwapFree_bytes", value: float64(s.SwapFree)},
 	}
-	for _, line := range lines {
-		tokens := strings.SplitN(line, ":", 2)
-		name := tokens[0]
-		if _, ok := namesMap[name]; ok {
-			namesMap[name] = strings.TrimSpace(strings.TrimSuffix(tokens[1], " kB"))
-		}
-	}
-
-	idx := 0
-	metrics := make([]metric, len(namesMap))
-	for name, value := range namesMap {
-		metrics[idx].name = fmt.Sprintf("node_memory_%s_kbytes", name)
-		metrics[idx].value, err = strconv.ParseFloat(value, 64)
-		if err != nil {
-			return nil, err
-		}
-		idx = idx + 1
+	if s.MemAvailableEnabled {
+		metrics = append(metrics, metric{name: "node_memory_MemAvailable_bytes", value: float64(s.Available)})
 	}
 
 	return metrics, nil
 }
 
 func getCpuRatioMetrics() ([]metric, error) {
-	data, err := readFile("/proc/stat")
+	s, err := cpu.Get()
 	if err != nil {
 		return nil, err
 	}
 
-	lines := strings.SplitN(data, "\n", 2)
-	fields := strings.Fields(lines[0])
-	user, err := strconv.Atoi(fields[1])
-	if err != nil {
-		return nil, err
-	}
-	nice, err := strconv.Atoi(fields[2])
-	if err != nil {
-		return nil, err
-	}
-	system, err := strconv.Atoi(fields[3])
-	if err != nil {
-		return nil, err
-	}
-	idle, err := strconv.Atoi(fields[4])
-	if err != nil {
-		return nil, err
-	}
-	iowait, err := strconv.Atoi(fields[5])
-	if err != nil {
-		return nil, err
-	}
-	irq, err := strconv.Atoi(fields[6])
-	if err != nil {
-		return nil, err
-	}
-	softirq, err := strconv.Atoi(fields[7])
-	if err != nil {
-		return nil, err
-	}
-
-	total := user + nice + system + idle + iowait + irq + softirq
 	metrics := []metric{
 		{
 			name:  "node_cpu_ratio",
 			attr:  `mode="user"`,
-			value: float64(user) / float64(total),
+			value: float64(s.User) / float64(s.Total),
 		},
 		{
 			name:  "node_cpu_ratio",
 			attr:  `mode="nice"`,
-			value: float64(nice) / float64(total),
+			value: float64(s.Nice) / float64(s.Total),
 		},
 		{
 			name:  "node_cpu_ratio",
 			attr:  `mode="system"`,
-			value: float64(system) / float64(total),
+			value: float64(s.System) / float64(s.Total),
 		},
 		{
 			name:  "node_cpu_ratio",
 			attr:  `mode="idle"`,
-			value: float64(idle) / float64(total),
+			value: float64(s.Idle) / float64(s.Total),
 		},
 		{
 			name:  "node_cpu_ratio",
 			attr:  `mode="iowait"`,
-			value: float64(iowait) / float64(total),
+			value: float64(s.Iowait) / float64(s.Total),
 		},
 		{
 			name:  "node_cpu_ratio",
 			attr:  `mode="irq"`,
-			value: float64(irq) / float64(total),
+			value: float64(s.Irq) / float64(s.Total),
 		},
 		{
 			name:  "node_cpu_ratio",
 			attr:  `mode="softirq"`,
-			value: float64(softirq) / float64(total),
+			value: float64(s.Softirq) / float64(s.Total),
 		},
 	}
 

@@ -13,17 +13,19 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/go-ping/ping"
 )
 
 const (
 	mountsRoot = "/share/"
 	metricsDir = "/share/CACHEDEV1_DATA/Container/data/grafana/qnapnodeexporter"
 	ifacesPath = "/sys/class/net/"
+	pingTarget = "1.1.1.1"
 )
 
 var (
 	hostname    string
-	ping        string
 	upsc        string
 	upsName     string
 	getsysinfo  string
@@ -118,7 +120,6 @@ func readEnvironment() {
 	if upsc != "" {
 		upsName, _ = execCommand(upsc, "-l")
 	}
-	ping, _ = exec.LookPath("ping")
 	iostat, _ = exec.LookPath("iostat")
 	getsysinfo, _ = exec.LookPath("getsysinfo")
 	if getsysinfo != "" {
@@ -677,26 +678,23 @@ func getVolumeStats() ([]metric, error) {
 }
 
 func getPingStats() ([]metric, error) {
-	if ping == "" {
-		return nil, nil
-	}
-
-	lines, err := execCommandGetLines(ping, "-c", "1", "1.1.1.1")
+	pinger, err := ping.NewPinger(pingTarget)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
-	line := lines[len(lines)-1]
-	fields := strings.Split(line, "=")
-	fields = strings.Split(fields[1], "/")
-	value, err := strconv.ParseFloat(fields[1], 64)
+	pinger.SetPrivileged(true)
+	pinger.Timeout = 2 * time.Second
+	pinger.Count = 1
+	err = pinger.Run() // Blocks until finished.
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
+	stats := pinger.Statistics() // get send/receive/rtt stats
 	m := metric{
 		name:  "node_network_external_roundtrip_time_ms",
-		value: value,
+		value: float64(stats.AvgRtt.Seconds()) * 1000.0,
 	}
 
 	return []metric{m}, nil

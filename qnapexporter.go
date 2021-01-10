@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -634,10 +635,14 @@ func getPingMetrics() ([]metric, error) {
 	}
 
 	stats := pinger.Statistics() // get send/receive/rtt stats
+	value := float64(stats.AvgRtt.Seconds()) * 1000.0
+	if stats.PacketLoss > 0 {
+		value = math.NaN()
+	}
 	m := metric{
 		name:  "node_network_external_roundtrip_time_ms",
 		attr:  fmt.Sprintf("target=%q", pinger.IPAddr().String()),
-		value: float64(stats.AvgRtt.Seconds()) * 1000.0,
+		value: value,
 	}
 
 	return []metric{m}, nil

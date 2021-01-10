@@ -20,6 +20,7 @@ import (
 	"github.com/mackerelio/go-osstat/loadavg"
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/mackerelio/go-osstat/uptime"
+	nut "github.com/robbiet480/go.nut"
 )
 
 const (
@@ -32,8 +33,7 @@ const (
 
 var (
 	hostname    string
-	upsc        string
-	upsName     string
+	upsClient   *nut.Client
 	getsysinfo  string
 	syshdnum    int
 	sysfannum   int
@@ -69,6 +69,14 @@ func main() {
 	// Setup our Ctrl+C handler
 	exitCh := make(chan os.Signal, 1)
 	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+
+	c, connectErr := nut.Connect("127.0.0.1")
+	if connectErr != nil {
+		fmt.Fprintln(os.Stderr, connectErr)
+	} else {
+		defer c.Disconnect()
+		upsClient = &c
+	}
 
 	readEnvironment()
 
@@ -122,10 +130,6 @@ func writeMetrics() {
 
 func readEnvironment() {
 	hostname = os.Getenv("HOSTNAME")
-	upsc, _ = exec.LookPath("upsc")
-	if upsc != "" {
-		upsName, _ = execCommand(upsc, "-l")
-	}
 	iostat, _ = exec.LookPath("iostat")
 	getsysinfo, _ = exec.LookPath("getsysinfo")
 	if getsysinfo != "" {
@@ -352,42 +356,70 @@ func execCommandGetLines(cmd string, args ...string) ([]string, error) {
 }
 
 func getUpsStatsMetrics() ([]metric, error) {
-	if upsName == "" {
+	if upsClient == nil {
 		return nil, nil
 	}
 
-	lines, err := execCommandGetLines(upsc, upsName)
+	upsList, err := upsClient.GetUPSList()
 	if err != nil {
 		return nil, err
 	}
 
-	metrics := make([]metric, 0, len(lines))
-	var status, firmware string
-	for _, line := range lines {
-		tokens := strings.SplitN(line, ":", 2)
-		valueStr := strings.TrimSpace(tokens[1])
-		switch tokens[0] {
-		case "ups.status":
-			status = valueStr
-			continue
-		case "ups.firmware":
-			firmware = valueStr
-			continue
+	if len(upsList) == 0 {
+		return nil, nil
+	}
+
+	var metrics []metric
+	for _, ups := range upsList {
+		vars, err := ups.GetVariables()
+		if err != nil {
+			return nil, err
 		}
 
-		value, err := strconv.ParseFloat(valueStr, 64)
-		if err == nil {
+		if metrics == nil {
+			metrics = make([]metric, 0, len(vars)*len(upsList))
+		}
+
+		attr := fmt.Sprintf("ups=%q", ups.Name)
+
+		var status, statusHelp, firmware string
+		for _, v := range vars {
+			switch v.Name {
+			case "ups.status":
+				status = v.Value.(string)
+				statusHelp = v.Description
+				continue
+			case "ups.firmware":
+				firmware = v.Value.(string)
+				continue
+			}
+
+			var value float64
+			switch v.Type {
+			case "INTEGER":
+				value = float64(v.Value.(int64))
+				break
+			case "FLOAT_64":
+				value = v.Value.(float64)
+				break
+			default:
+				continue
+			}
+
 			metrics = append(metrics, metric{
-				name:  "ups_" + strings.ReplaceAll(tokens[0], ".", "_"),
+				name:  "ups_" + strings.ReplaceAll(v.Name, ".", "_"),
+				attr:  attr,
 				value: value,
+				help:  v.Description,
 			})
 		}
+		metrics = append(metrics, metric{
+			name:  "ups_ups_status",
+			attr:  fmt.Sprintf(`status=%q,firmware=%q,%s`, status, firmware, attr),
+			value: getUpsStatus(status),
+			help:  statusHelp,
+		})
 	}
-	metrics = append(metrics, metric{
-		name:  "ups_ups_status",
-		attr:  fmt.Sprintf(`status=%q,firmware=%q`, status, firmware),
-		value: getUpsStatus(status),
-	})
 
 	return metrics, nil
 }

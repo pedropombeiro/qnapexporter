@@ -22,9 +22,10 @@ import (
 )
 
 const (
-	mountsRoot = "/share/"
+	mountsRoot = "/share"
 	metricsDir = "/share/CACHEDEV1_DATA/Container/data/grafana/qnapnodeexporter"
-	ifacesPath = "/sys/class/net/"
+	devDir     = "/dev"
+	netDir     = "/sys/class/net"
 	pingTarget = "1.1.1.1"
 )
 
@@ -142,7 +143,7 @@ func readEnvironment() {
 		}
 	}
 
-	info, _ := ioutil.ReadDir(ifacesPath)
+	info, _ := ioutil.ReadDir(netDir)
 	for _, d := range info {
 		iface := d.Name()
 		if !strings.HasPrefix(iface, "eth") {
@@ -152,7 +153,7 @@ func readEnvironment() {
 		ifaces = append(ifaces, iface)
 	}
 
-	info, _ = ioutil.ReadDir("/dev/")
+	info, _ = ioutil.ReadDir(devDir)
 	for _, d := range info {
 		dev := d.Name()
 		if d.IsDir() || !strings.HasPrefix(dev, "nvme") && !strings.HasPrefix(dev, "sd") {
@@ -521,7 +522,7 @@ func getNetworkStatsMetrics() ([]metric, error) {
 }
 
 func getNetworkStatMetric(name string, help string, iface string, direction string) (metric, error) {
-	str, err := readFile("/sys/class/net/" + iface + "/statistics/" + direction + "_bytes")
+	str, err := readFile(path.Join(netDir, iface, "statistics", direction+"_bytes"))
 	if err != nil {
 		return metric{}, err
 	}

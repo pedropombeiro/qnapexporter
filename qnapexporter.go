@@ -46,17 +46,17 @@ type metric struct {
 }
 
 var fns = []func() ([]metric, error){
-	uptime,
-	getLoadAvg,
-	getMemInfo,
-	getCpuRatio,
-	getUpsStats,
-	getSysInfo,
-	getFlashCacheStats,
-	getNetworkStats,
-	getDiskStats,
-	getVolumeStats,
-	getPingStats,
+	getUptimeMetrics,
+	getLoadAvgMetrics,
+	getMemInfoMetrics,
+	getCpuRatioMetrics,
+	getUpsStatsMetrics,
+	getSysInfoMetrics,
+	getFlashCacheStatsMetrics,
+	getNetworkStatsMetrics,
+	getDiskStatsMetrics,
+	getVolumeStatsMetrics,
+	getPingMetrics,
 }
 
 func main() {
@@ -223,7 +223,7 @@ func readFileLines(f string) ([]string, error) {
 	return strings.Split(contents, "\n"), nil
 }
 
-func uptime() ([]metric, error) {
+func getUptimeMetrics() ([]metric, error) {
 	data, err := readFile("/proc/uptime")
 	if err != nil {
 		return nil, err
@@ -241,7 +241,7 @@ func uptime() ([]metric, error) {
 	}, err
 }
 
-func getLoadAvg() ([]metric, error) {
+func getLoadAvgMetrics() ([]metric, error) {
 	data, err := readFile("/proc/loadavg")
 	if err != nil {
 		return nil, err
@@ -262,7 +262,7 @@ func getLoadAvg() ([]metric, error) {
 	return metrics, nil
 }
 
-func getMemInfo() ([]metric, error) {
+func getMemInfoMetrics() ([]metric, error) {
 	lines, err := readFileLines("/proc/meminfo")
 	if err != nil {
 		return nil, err
@@ -306,7 +306,7 @@ func getMemInfo() ([]metric, error) {
 	return metrics, nil
 }
 
-func getCpuRatio() ([]metric, error) {
+func getCpuRatioMetrics() ([]metric, error) {
 	data, err := readFile("/proc/stat")
 	if err != nil {
 		return nil, err
@@ -408,7 +408,7 @@ func execCommandGetLines(cmd string, args ...string) ([]string, error) {
 	return strings.Split(output, "\n"), nil
 }
 
-func getUpsStats() ([]metric, error) {
+func getUpsStatsMetrics() ([]metric, error) {
 	if upsName == "" {
 		return nil, nil
 	}
@@ -466,7 +466,7 @@ func getUpsStatus(status string) float64 {
 	}
 }
 
-func getSysInfo() ([]metric, error) {
+func getSysInfoMetrics() ([]metric, error) {
 	if getsysinfo == "" {
 		return nil, nil
 	}
@@ -536,7 +536,7 @@ func getSysInfo() ([]metric, error) {
 	return metrics, nil
 }
 
-func getFlashCacheStats() ([]metric, error) {
+func getFlashCacheStatsMetrics() ([]metric, error) {
 	lines, err := readFileLines("/proc/flashcache/CG0/flashcache_stats")
 	if err != nil {
 		return nil, err
@@ -560,7 +560,7 @@ func getFlashCacheStats() ([]metric, error) {
 	return metrics, nil
 }
 
-func getNetworkStats() ([]metric, error) {
+func getNetworkStatsMetrics() ([]metric, error) {
 	metrics := make([]metric, 0, len(ifaces)*2)
 	for _, iface := range ifaces {
 		rxMetric, err := getNetworkStatMetric("node_network_receive_bytes_total", "Total number of bytes received", iface, "rx")
@@ -599,7 +599,7 @@ func getNetworkStatMetric(name string, help string, iface string, direction stri
 	}, nil
 }
 
-func getDiskStats() ([]metric, error) {
+func getDiskStatsMetrics() ([]metric, error) {
 	if iostat == "" {
 		return nil, nil
 	}
@@ -648,7 +648,7 @@ func getDiskStatMetric(name string, help string, dev string, field int) (metric,
 	}, nil
 }
 
-func getVolumeStats() ([]metric, error) {
+func getVolumeStatsMetrics() ([]metric, error) {
 	metrics := make([]metric, 0, len(mountpoints)*2)
 
 	for _, mountpoint := range mountpoints {
@@ -677,7 +677,7 @@ func getVolumeStats() ([]metric, error) {
 	return metrics, nil
 }
 
-func getPingStats() ([]metric, error) {
+func getPingMetrics() ([]metric, error) {
 	pinger, err := ping.NewPinger(pingTarget)
 	if err != nil {
 		return nil, err

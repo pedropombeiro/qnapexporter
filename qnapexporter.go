@@ -635,6 +635,7 @@ func getPingMetrics() ([]metric, error) {
 	stats := pinger.Statistics() // get send/receive/rtt stats
 	m := metric{
 		name:  "node_network_external_roundtrip_time_ms",
+		attr:  fmt.Sprintf("target=%q", pinger.IPAddr().String()),
 		value: float64(stats.AvgRtt.Seconds()) * 1000.0,
 	}
 

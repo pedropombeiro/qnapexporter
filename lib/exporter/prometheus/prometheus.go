@@ -1,14 +1,12 @@
-package main
+package prometheus
 
 import (
-	"bufio"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
 	"os"
 	"os/exec"
-	"os/signal"
 	"path"
 	"strconv"
 	"strings"
@@ -21,17 +19,20 @@ import (
 	"github.com/mackerelio/go-osstat/memory"
 	"github.com/mackerelio/go-osstat/uptime"
 	nut "github.com/robbiet480/go.nut"
+
+	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
+	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 const (
-	mountsRoot = "/share"
-	metricsDir = "/share/CACHEDEV1_DATA/Container/data/grafana/qnapnodeexporter"
-	devDir     = "/dev"
-	netDir     = "/sys/class/net"
-	pingTarget = "1.1.1.1"
+	mountsRoot          = "/share"
+	devDir              = "/dev"
+	netDir              = "/sys/class/net"
+	flashcacheStatsPath = "/proc/flashcache/CG0/flashcache_stats"
+	pingTarget          = "1.1.1.1"
 )
 
-var (
+type promExporter struct {
 	hostname    string
 	upsClient   *nut.Client
 	getsysinfo  string
@@ -41,110 +42,59 @@ var (
 	iostat      string
 	devices     []string
 	mountpoints []string
-)
 
-type metric struct {
-	name       string
-	attr       string
-	value      float64
-	help       string
-	metricType string
+	fns []func() ([]metric, error)
 }
 
-var fns = []func() ([]metric, error){
-	getUptimeMetrics,
-	getLoadAvgMetrics,
-	getMemInfoMetrics,
-	getCpuRatioMetrics,
-	getUpsStatsMetrics,
-	getSysInfoMetrics,
-	getFlashCacheStatsMetrics,
-	getNetworkStatsMetrics,
-	getDiskStatsMetrics,
-	getVolumeStatsMetrics,
-	getPingMetrics,
-}
-
-func main() {
-	// Setup our Ctrl+C handler
-	exitCh := make(chan os.Signal, 1)
-	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-
-	c, connectErr := nut.Connect("127.0.0.1")
-	if connectErr != nil {
-		fmt.Fprintln(os.Stderr, connectErr)
-	} else {
-		defer c.Disconnect()
-		upsClient = &c
+func NewExporter() exporter.Exporter {
+	e := &promExporter{}
+	e.fns = []func() ([]metric, error){
+		getUptimeMetrics,
+		getLoadAvgMetrics,
+		getMemInfoMetrics,
+		getCpuRatioMetrics,
+		e.getUpsStatsMetrics,
+		e.getSysInfoMetrics,
+		getFlashCacheStatsMetrics,
+		e.getNetworkStatsMetrics,
+		e.getDiskStatsMetrics,
+		e.getVolumeStatsMetrics,
+		getPingMetrics,
 	}
 
-	readEnvironment()
+	e.readEnvironment()
 
-	for {
-		writeMetrics()
+	return e
+}
 
-		select {
-		case <-exitCh:
-			fmt.Fprintln(os.Stderr, "Program aborted, exiting")
-			os.Exit(1)
-		case <-time.After(5 * time.Second):
-			break
+func (e *promExporter) WriteMetrics(w io.Writer) error {
+	for _, fn := range e.fns {
+		err := e.writeNodeMetrics(w, fn)
+		if err != nil {
+			return err
 		}
 	}
+
+	return nil
 }
 
-func writeMetrics() {
-	var err error
-	var tmpFile *os.File
-
-	tmpFile, err = ioutil.TempFile(metricsDir, "qnapexporter-")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating temporary file: %s\n", err.Error())
-		return
-	}
-	defer os.Remove(tmpFile.Name())
-
-	w := bufio.NewWriter(tmpFile)
-
-	for _, fn := range fns {
-		writeNodeMetrics(w, fn)
-	}
-
-	// Close the file
-	w.Flush()
-	if err := tmpFile.Chmod(0644); err != nil {
-		fmt.Fprintf(os.Stderr, "Error changing permissions of temporary file: %s\n", err.Error())
-		return
-	}
-	if err := tmpFile.Close(); err != nil {
-		fmt.Fprintf(os.Stderr, "Error closing temporary file: %s\n", err.Error())
-		return
-	}
-
-	err = os.Rename(tmpFile.Name(), path.Join(metricsDir, "metrics"))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error moving temporary file: %s\n", err.Error())
-		return
-	}
-}
-
-func readEnvironment() {
-	hostname = os.Getenv("HOSTNAME")
-	iostat, _ = exec.LookPath("iostat")
-	getsysinfo, _ = exec.LookPath("getsysinfo")
-	if getsysinfo != "" {
-		hdnumOutput, err := execCommand(getsysinfo, "hdnum")
+func (e *promExporter) readEnvironment() {
+	e.hostname = os.Getenv("HOSTNAME")
+	e.iostat, _ = exec.LookPath("iostat")
+	e.getsysinfo, _ = exec.LookPath("getsysinfo")
+	if e.getsysinfo != "" {
+		hdnumOutput, err := utils.ExecCommand(e.getsysinfo, "hdnum")
 		if err == nil {
-			syshdnum, _ = strconv.Atoi(hdnumOutput)
+			e.syshdnum, _ = strconv.Atoi(hdnumOutput)
 		} else {
-			syshdnum = -1
+			e.syshdnum = -1
 		}
 
-		sysfannumOutput, err := execCommand(getsysinfo, "sysfannum")
+		sysfannumOutput, err := utils.ExecCommand(e.getsysinfo, "sysfannum")
 		if err == nil {
-			sysfannum, _ = strconv.Atoi(sysfannumOutput)
+			e.sysfannum, _ = strconv.Atoi(sysfannumOutput)
 		} else {
-			sysfannum = -1
+			e.sysfannum = -1
 		}
 	}
 
@@ -155,7 +105,7 @@ func readEnvironment() {
 			continue
 		}
 
-		ifaces = append(ifaces, iface)
+		e.ifaces = append(e.ifaces, iface)
 	}
 
 	info, _ = ioutil.ReadDir(devDir)
@@ -171,7 +121,7 @@ func readEnvironment() {
 			continue
 		}
 
-		devices = append(devices, dev)
+		e.devices = append(e.devices, dev)
 	}
 
 	info, _ = ioutil.ReadDir(mountsRoot)
@@ -181,16 +131,16 @@ func readEnvironment() {
 			continue
 		}
 
-		mountpoints = append(mountpoints, mount)
+		e.mountpoints = append(e.mountpoints, mount)
 	}
 }
 
-func getMetricFullName(m metric) string {
+func (e *promExporter) getMetricFullName(m metric) string {
 	if m.attr != "" {
-		return fmt.Sprintf(`%s{node=%q,%s}`, m.name, hostname, m.attr)
+		return fmt.Sprintf(`%s{node=%q,%s}`, m.name, e.hostname, m.attr)
 	}
 
-	return fmt.Sprintf(`%s{node=%q}`, m.name, hostname)
+	return fmt.Sprintf(`%s{node=%q}`, m.name, e.hostname)
 }
 
 func writeMetricMetadata(w io.Writer, m metric) {
@@ -202,35 +152,18 @@ func writeMetricMetadata(w io.Writer, m metric) {
 	}
 }
 
-func writeNodeMetrics(w io.Writer, getMetricFn func() ([]metric, error)) {
+func (e *promExporter) writeNodeMetrics(w io.Writer, getMetricFn func() ([]metric, error)) error {
 	metrics, err := getMetricFn()
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "Failed to retrieve metric: %s", err.Error())
-		return
+		return fmt.Errorf("retrieve metric: %w", err)
 	}
 
 	for _, metric := range metrics {
 		writeMetricMetadata(w, metric)
-		_, _ = fmt.Fprintf(w, "%s %f\n", getMetricFullName(metric), metric.value)
-	}
-}
-
-func readFile(f string) (string, error) {
-	contents, err := ioutil.ReadFile(f)
-	if err != nil {
-		return "", err
+		_, _ = fmt.Fprintf(w, "%s %f\n", e.getMetricFullName(metric), metric.value)
 	}
 
-	return strings.TrimSpace(string(contents)), nil
-}
-
-func readFileLines(f string) ([]string, error) {
-	contents, err := readFile(f)
-	if err != nil {
-		return nil, err
-	}
-
-	return strings.Split(contents, "\n"), nil
+	return nil
 }
 
 func getUptimeMetrics() ([]metric, error) {
@@ -332,35 +265,12 @@ func getCpuRatioMetrics() ([]metric, error) {
 	return metrics, nil
 }
 
-func execCommand(cmd string, args ...string) (string, error) {
-	var (
-		err    error
-		output []byte
-	)
-
-	c := exec.Command(cmd, args...)
-	if output, err = c.Output(); err != nil {
-		return "", err
-	}
-
-	return strings.TrimSpace(string(output)), nil
-}
-
-func execCommandGetLines(cmd string, args ...string) ([]string, error) {
-	output, err := execCommand(cmd, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	return strings.Split(output, "\n"), nil
-}
-
-func getUpsStatsMetrics() ([]metric, error) {
-	if upsClient == nil {
+func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
+	if e.upsClient == nil {
 		return nil, nil
 	}
 
-	upsList, err := upsClient.GetUPSList()
+	upsList, err := e.upsClient.GetUPSList()
 	if err != nil {
 		return nil, err
 	}
@@ -441,15 +351,15 @@ func getUpsStatus(status string) float64 {
 	}
 }
 
-func getSysInfoMetrics() ([]metric, error) {
-	if getsysinfo == "" {
+func (e *promExporter) getSysInfoMetrics() ([]metric, error) {
+	if e.getsysinfo == "" {
 		return nil, nil
 	}
 
 	metrics := make([]metric, 0, 8)
 
 	for _, dev := range []string{"cputmp", "systmp"} {
-		output, err := execCommand(getsysinfo, dev)
+		output, err := utils.ExecCommand(e.getsysinfo, dev)
 		if err != nil {
 			return nil, err
 		}
@@ -463,9 +373,9 @@ func getSysInfoMetrics() ([]metric, error) {
 		}
 	}
 
-	for hdnum := 1; hdnum <= syshdnum; hdnum++ {
+	for hdnum := 1; hdnum <= e.syshdnum; hdnum++ {
 		hdnumStr := strconv.Itoa(hdnum)
-		smart, err := execCommand(getsysinfo, "hdsmart", hdnumStr)
+		smart, err := utils.ExecCommand(e.getsysinfo, "hdsmart", hdnumStr)
 		if err != nil {
 			return nil, err
 		}
@@ -473,7 +383,7 @@ func getSysInfoMetrics() ([]metric, error) {
 			continue
 		}
 
-		tempStr, err := execCommand(getsysinfo, "hdtmp", hdnumStr)
+		tempStr, err := utils.ExecCommand(e.getsysinfo, "hdtmp", hdnumStr)
 		if err != nil {
 			return nil, err
 		}
@@ -489,10 +399,10 @@ func getSysInfoMetrics() ([]metric, error) {
 		})
 	}
 
-	for fannum := 1; fannum <= sysfannum; fannum++ {
+	for fannum := 1; fannum <= e.sysfannum; fannum++ {
 		fannumStr := strconv.Itoa(fannum)
 
-		fanStr, err := execCommand(getsysinfo, "sysfan", fannumStr)
+		fanStr, err := utils.ExecCommand(e.getsysinfo, "sysfan", fannumStr)
 		if err != nil {
 			return nil, err
 		}
@@ -512,7 +422,7 @@ func getSysInfoMetrics() ([]metric, error) {
 }
 
 func getFlashCacheStatsMetrics() ([]metric, error) {
-	lines, err := readFileLines("/proc/flashcache/CG0/flashcache_stats")
+	lines, err := utils.ReadFileLines(flashcacheStatsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -535,9 +445,9 @@ func getFlashCacheStatsMetrics() ([]metric, error) {
 	return metrics, nil
 }
 
-func getNetworkStatsMetrics() ([]metric, error) {
-	metrics := make([]metric, 0, len(ifaces)*2)
-	for _, iface := range ifaces {
+func (e *promExporter) getNetworkStatsMetrics() ([]metric, error) {
+	metrics := make([]metric, 0, len(e.ifaces)*2)
+	for _, iface := range e.ifaces {
 		rxMetric, err := getNetworkStatMetric("node_network_receive_bytes_total", "Total number of bytes received", iface, "rx")
 		if err != nil {
 			return nil, err
@@ -555,7 +465,7 @@ func getNetworkStatsMetrics() ([]metric, error) {
 }
 
 func getNetworkStatMetric(name string, help string, iface string, direction string) (metric, error) {
-	str, err := readFile(path.Join(netDir, iface, "statistics", direction+"_bytes"))
+	str, err := utils.ReadFile(path.Join(netDir, iface, "statistics", direction+"_bytes"))
 	if err != nil {
 		return metric{}, err
 	}
@@ -574,20 +484,20 @@ func getNetworkStatMetric(name string, help string, iface string, direction stri
 	}, nil
 }
 
-func getDiskStatsMetrics() ([]metric, error) {
-	if iostat == "" {
+func (e *promExporter) getDiskStatsMetrics() ([]metric, error) {
+	if e.iostat == "" {
 		return nil, nil
 	}
 
-	metrics := make([]metric, 0, len(devices)*2)
-	for _, dev := range devices {
-		readMetric, err := getDiskStatMetric("node_disk_read_kbytes_total", "Total number of kilobytes read", dev, 5)
+	metrics := make([]metric, 0, len(e.devices)*2)
+	for _, dev := range e.devices {
+		readMetric, err := e.getDiskStatMetric("node_disk_read_kbytes_total", "Total number of kilobytes read", dev, 5)
 		if err != nil {
 			return nil, err
 		}
 		metrics = append(metrics, readMetric)
 
-		writeMetric, err := getDiskStatMetric("node_disk_written_kbytes_total", "Total number of kilobytes written", dev, 6)
+		writeMetric, err := e.getDiskStatMetric("node_disk_written_kbytes_total", "Total number of kilobytes written", dev, 6)
 		if err != nil {
 			return nil, err
 		}
@@ -597,12 +507,12 @@ func getDiskStatsMetrics() ([]metric, error) {
 	return metrics, nil
 }
 
-func getDiskStatMetric(name string, help string, dev string, field int) (metric, error) {
-	if iostat == "" {
+func (e *promExporter) getDiskStatMetric(name string, help string, dev string, field int) (metric, error) {
+	if e.iostat == "" {
 		return metric{}, nil
 	}
 
-	lines, err := execCommandGetLines(iostat, "-d", dev, "-k")
+	lines, err := utils.ExecCommandGetLines(e.iostat, "-d", dev, "-k")
 	if err != nil {
 		return metric{}, err
 	}
@@ -623,10 +533,10 @@ func getDiskStatMetric(name string, help string, dev string, field int) (metric,
 	}, nil
 }
 
-func getVolumeStatsMetrics() ([]metric, error) {
-	metrics := make([]metric, 0, len(mountpoints)*2)
+func (e *promExporter) getVolumeStatsMetrics() ([]metric, error) {
+	metrics := make([]metric, 0, len(e.mountpoints)*2)
 
-	for _, mountpoint := range mountpoints {
+	for _, mountpoint := range e.mountpoints {
 		var stat syscall.Statfs_t
 
 		dir := path.Join(mountsRoot, mountpoint)

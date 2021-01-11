@@ -64,6 +64,13 @@ func NewExporter(pingTarget string) exporter.Exporter {
 		e.getPingMetrics,
 	}
 
+	c, connectErr := nut.Connect("127.0.0.1")
+	if connectErr != nil {
+		fmt.Fprintln(os.Stderr, connectErr)
+	} else {
+		e.upsClient = &c
+	}
+
 	e.readEnvironment()
 
 	return e
@@ -78,6 +85,12 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	}
 
 	return nil
+}
+
+func (e *promExporter) Close() {
+	if e.upsClient != nil {
+		e.upsClient.Disconnect()
+	}
 }
 
 func (e *promExporter) readEnvironment() {

@@ -33,6 +33,8 @@ func main() {
 }
 
 func serveHTTP(e exporter.Exporter, port string, exitCh chan os.Signal) error {
+	defer e.Close()
+
 	// handle route using handler function
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain")

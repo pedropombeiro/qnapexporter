@@ -1,20 +1,16 @@
 package main
 
 import (
-	"bufio"
+	"context"
 	"fmt"
-	"io/ioutil"
+	"net/http"
 	"os"
 	"os/signal"
-	"path"
 	"syscall"
 	"time"
 
-	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 )
-
-const metricsDir = "/share/CACHEDEV1_DATA/Container/data/grafana/qnapnodeexporter"
 
 func main() {
 	// Setup our Ctrl+C handler
@@ -23,49 +19,40 @@ func main() {
 
 	e := prometheus.NewExporter()
 
-	for {
-		err := writeMetrics(e)
+	// handle route using handler function
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "text/plain")
+
+		err := e.WriteMetrics(w)
 		if err != nil {
 			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+			w.WriteHeader(http.StatusInternalServerError)
 		}
+	})
 
-		select {
-		case <-exitCh:
-			fmt.Fprintln(os.Stderr, "Program aborted, exiting")
-			os.Exit(1)
-		case <-time.After(5 * time.Second):
-			break
+	// listen to port
+	server := &http.Server{Addr: ":9094"}
+	go func() {
+		for {
+			select {
+			case <-exitCh:
+				fmt.Fprintln(os.Stderr, "Program aborted, exiting...")
+				ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+				err := server.Shutdown(ctx)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err.Error())
+				}
+				cancel()
+				return
+			case <-time.After(1 * time.Second):
+				break
+			}
 		}
-	}
-}
+	}()
 
-func writeMetrics(e exporter.Exporter) error {
-	var err error
-	var tmpFile *os.File
-
-	tmpFile, err = ioutil.TempFile(metricsDir, "qnapexporter-")
+	err := server.ListenAndServe()
 	if err != nil {
-		return fmt.Errorf("create temporary file: %w", err)
+		fmt.Fprintln(os.Stderr, err.Error())
 	}
-	defer os.Remove(tmpFile.Name())
-
-	w := bufio.NewWriter(tmpFile)
-
-	_ = e.WriteMetrics(w)
-
-	// Close the file
-	w.Flush()
-	if err := tmpFile.Chmod(0644); err != nil {
-		return fmt.Errorf("change temporary file permissions: %w", err)
-	}
-	if err := tmpFile.Close(); err != nil {
-		return fmt.Errorf("close temporary file: %w", err)
-	}
-
-	err = os.Rename(tmpFile.Name(), path.Join(metricsDir, "metrics"))
-	if err != nil {
-		return fmt.Errorf("move temporary file: %w", err)
-	}
-
-	return nil
+	os.Exit(1)
 }

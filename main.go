@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,16 +10,29 @@ import (
 	"syscall"
 	"time"
 
+	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 )
 
 func main() {
+	port := flag.String("port", ":9094", "Port to serve at (e.g. :9094).")
+	pingTarget := flag.String("ping-target", "1.1.1.1", "Host to periodically ping (e.g. 1.1.1.1).")
+	flag.Parse()
+
 	// Setup our Ctrl+C handler
 	exitCh := make(chan os.Signal, 1)
 	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
-	e := prometheus.NewExporter()
+	e := prometheus.NewExporter(*pingTarget)
 
+	err := serveHTTP(e, *port, exitCh)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+	}
+	os.Exit(1)
+}
+
+func serveHTTP(e exporter.Exporter, port string, exitCh chan os.Signal) error {
 	// handle route using handler function
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain")
@@ -31,7 +45,7 @@ func main() {
 	})
 
 	// listen to port
-	server := &http.Server{Addr: ":9094"}
+	server := &http.Server{Addr: port}
 	go func() {
 		for {
 			select {
@@ -50,9 +64,5 @@ func main() {
 		}
 	}()
 
-	err := server.ListenAndServe()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-	}
-	os.Exit(1)
+	return server.ListenAndServe()
 }

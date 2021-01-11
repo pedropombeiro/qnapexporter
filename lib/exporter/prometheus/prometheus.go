@@ -29,11 +29,11 @@ const (
 	devDir              = "/dev"
 	netDir              = "/sys/class/net"
 	flashcacheStatsPath = "/proc/flashcache/CG0/flashcache_stats"
-	pingTarget          = "1.1.1.1"
 )
 
 type promExporter struct {
 	hostname    string
+	pingTarget  string
 	upsClient   *nut.Client
 	getsysinfo  string
 	syshdnum    int
@@ -46,8 +46,10 @@ type promExporter struct {
 	fns []func() ([]metric, error)
 }
 
-func NewExporter() exporter.Exporter {
-	e := &promExporter{}
+func NewExporter(pingTarget string) exporter.Exporter {
+	e := &promExporter{
+		pingTarget: pingTarget,
+	}
 	e.fns = []func() ([]metric, error){
 		getUptimeMetrics,
 		getLoadAvgMetrics,
@@ -59,7 +61,7 @@ func NewExporter() exporter.Exporter {
 		e.getNetworkStatsMetrics,
 		e.getDiskStatsMetrics,
 		e.getVolumeStatsMetrics,
-		getPingMetrics,
+		e.getPingMetrics,
 	}
 
 	e.readEnvironment()
@@ -68,8 +70,8 @@ func NewExporter() exporter.Exporter {
 }
 
 func (e *promExporter) WriteMetrics(w io.Writer) error {
-	for _, fn := range e.fns {
-		err := e.writeNodeMetrics(w, fn)
+	for idx, fn := range e.fns {
+		err := e.writeNodeMetrics(w, fn, idx)
 		if err != nil {
 			return err
 		}
@@ -152,10 +154,10 @@ func writeMetricMetadata(w io.Writer, m metric) {
 	}
 }
 
-func (e *promExporter) writeNodeMetrics(w io.Writer, getMetricFn func() ([]metric, error)) error {
+func (e *promExporter) writeNodeMetrics(w io.Writer, getMetricFn func() ([]metric, error), index int) error {
 	metrics, err := getMetricFn()
 	if err != nil {
-		return fmt.Errorf("retrieve metric: %w", err)
+		return fmt.Errorf("retrieve metric #%d: %w", 1+index, err)
 	}
 
 	for _, metric := range metrics {
@@ -562,8 +564,8 @@ func (e *promExporter) getVolumeStatsMetrics() ([]metric, error) {
 	return metrics, nil
 }
 
-func getPingMetrics() ([]metric, error) {
-	pinger, err := ping.NewPinger(pingTarget)
+func (e *promExporter) getPingMetrics() ([]metric, error) {
+	pinger, err := ping.NewPinger(e.pingTarget)
 	if err != nil {
 		return nil, err
 	}

@@ -428,7 +428,7 @@ func getUpsStatus(status string) float64 {
 	switch status {
 	case "OL":
 		return 0
-	case "CHRG":
+	case "OL CHRG":
 		return 1
 	case "OB", "LB", "HB", "DISCHRG":
 		return 2

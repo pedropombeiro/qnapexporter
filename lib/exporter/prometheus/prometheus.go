@@ -75,6 +75,8 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	for idx, fn := range e.fns {
 		err := e.writeNodeMetrics(w, fn, idx)
 		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+
 			_, _ = fmt.Fprintf(w, "## %v\n", err)
 		}
 	}
@@ -89,6 +91,8 @@ func (e *promExporter) Close() {
 }
 
 func (e *promExporter) readEnvironment() {
+	fmt.Fprintln(os.Stderr, "Reading environment values")
+
 	e.hostname = os.Getenv("HOSTNAME")
 	e.iostat, _ = exec.LookPath("iostat")
 	e.getsysinfo, _ = exec.LookPath("getsysinfo")

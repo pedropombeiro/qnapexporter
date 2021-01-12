@@ -39,6 +39,8 @@ func serveHTTP(e exporter.Exporter, port string, exitCh chan os.Signal) error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain")
 
+		fmt.Fprintln(os.Stdout, "Writing metrics")
+
 		err := e.WriteMetrics(w)
 		if err != nil {
 			_, _ = fmt.Fprintln(os.Stderr, err.Error())
@@ -49,6 +51,8 @@ func serveHTTP(e exporter.Exporter, port string, exitCh chan os.Signal) error {
 	// listen to port
 	server := &http.Server{Addr: port}
 	go func() {
+		fmt.Fprintf(os.Stdout, "Listening to HTTP requests at %s\n", port)
+
 		for {
 			select {
 			case <-exitCh:

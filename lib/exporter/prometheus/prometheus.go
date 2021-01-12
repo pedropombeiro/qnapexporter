@@ -195,7 +195,7 @@ func (e *promExporter) writeNodeMetrics(w io.Writer, getMetricFn func() ([]metri
 
 	for _, metric := range metrics {
 		writeMetricMetadata(w, metric)
-		_, _ = fmt.Fprintf(w, "%s %f\n", e.getMetricFullName(metric), metric.value)
+		_, _ = fmt.Fprintf(w, "%s %g\n", e.getMetricFullName(metric), metric.value)
 	}
 
 	return nil

@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,7 +27,7 @@ func main() {
 
 	err := serveHTTP(e, *port, exitCh)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		log.Println(err.Error())
 	}
 	os.Exit(1)
 }
@@ -39,11 +39,11 @@ func serveHTTP(e exporter.Exporter, port string, exitCh chan os.Signal) error {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain")
 
-		fmt.Fprintln(os.Stdout, "Writing metrics")
+		log.Println("Writing metrics")
 
 		err := e.WriteMetrics(w)
 		if err != nil {
-			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+			log.Println(err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	})
@@ -51,16 +51,16 @@ func serveHTTP(e exporter.Exporter, port string, exitCh chan os.Signal) error {
 	// listen to port
 	server := &http.Server{Addr: port}
 	go func() {
-		fmt.Fprintf(os.Stdout, "Listening to HTTP requests at %s\n", port)
+		log.Printf("Listening to HTTP requests at %s\n", port)
 
 		for {
 			select {
 			case <-exitCh:
-				fmt.Fprintln(os.Stderr, "Program aborted, exiting...")
+				log.Println("Program aborted, exiting...")
 				ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
 				err := server.Shutdown(ctx)
 				if err != nil {
-					fmt.Fprintln(os.Stderr, err.Error())
+					log.Println(err.Error())
 				}
 				cancel()
 				return

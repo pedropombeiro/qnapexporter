@@ -53,8 +53,6 @@ func serveHTTP(e exporter.Exporter, port string, logger *log.Logger, exitCh chan
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "text/plain")
 
-		logger.Println("Writing metrics")
-
 		err := e.WriteMetrics(w)
 		if err != nil {
 			logger.Println(err.Error())

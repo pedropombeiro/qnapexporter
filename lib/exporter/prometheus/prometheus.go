@@ -10,6 +10,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -37,6 +38,7 @@ type promExporter struct {
 	upsClient       nut.Client
 	upsConnErr      error
 	upsConnAttempts int
+	upsLock         sync.Mutex
 	getsysinfo      string
 	syshdnum        int
 	sysfannum       int
@@ -75,7 +77,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	for idx, fn := range e.fns {
 		err := e.writeNodeMetrics(w, fn, idx)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err.Error())
+			_, _ = fmt.Fprintln(os.Stderr, err.Error())
 
 			_, _ = fmt.Fprintf(w, "## %v\n", err)
 		}
@@ -86,7 +88,9 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 
 func (e *promExporter) Close() {
 	if e.upsClient.ProtocolVersion != "" {
+		e.upsLock.Lock()
 		e.upsClient.Disconnect()
+		e.upsLock.Unlock()
 	}
 }
 
@@ -280,6 +284,9 @@ func getCpuRatioMetrics() ([]metric, error) {
 }
 
 func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
+	e.upsLock.Lock()
+	defer e.upsLock.Unlock()
+
 	if e.upsClient.ProtocolVersion == "" {
 		if e.upsConnAttempts < 10 {
 			e.upsConnAttempts++

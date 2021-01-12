@@ -34,6 +34,8 @@ const (
 )
 
 type promExporter struct {
+	logger *log.Logger
+
 	hostname        string
 	pingTarget      string
 	upsClient       nut.Client
@@ -51,8 +53,9 @@ type promExporter struct {
 	fns []func() ([]metric, error)
 }
 
-func NewExporter(pingTarget string) exporter.Exporter {
+func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 	e := &promExporter{
+		logger:     logger,
 		pingTarget: pingTarget,
 	}
 	e.fns = []func() ([]metric, error){
@@ -96,11 +99,23 @@ func (e *promExporter) Close() {
 }
 
 func (e *promExporter) readEnvironment() {
-	log.Println("Reading environment values")
+	e.logger.Println("Reading environment...")
 
+	var err error
 	e.hostname = os.Getenv("HOSTNAME")
-	e.iostat, _ = exec.LookPath("iostat")
+	if e.hostname == "" {
+		e.hostname, err = utils.ExecCommand("hostname")
+	}
+	e.logger.Printf("Hostname: %s, err=%v\n", e.hostname, err)
+
+	e.iostat, err = exec.LookPath("iostat")
+	if err != nil {
+		e.logger.Printf("Failed to find iostat: %v\n", err)
+	}
 	e.getsysinfo, _ = exec.LookPath("getsysinfo")
+	if err != nil {
+		e.logger.Printf("Failed to find getsysinfo: %v\n", err)
+	}
 	if e.getsysinfo != "" {
 		hdnumOutput, err := utils.ExecCommand(e.getsysinfo, "hdnum")
 		if err == nil {
@@ -142,6 +157,7 @@ func (e *promExporter) readEnvironment() {
 
 		e.devices = append(e.devices, dev)
 	}
+	e.logger.Printf("Found devices: %v", e.devices)
 
 	info, _ = ioutil.ReadDir(mountsRoot)
 	for _, d := range info {
@@ -152,6 +168,7 @@ func (e *promExporter) readEnvironment() {
 
 		e.mountpoints = append(e.mountpoints, mount)
 	}
+	e.logger.Printf("Found mountpoints: %v", e.mountpoints)
 }
 
 func (e *promExporter) getMetricFullName(m metric) string {
@@ -546,6 +563,9 @@ func (e *promExporter) getDiskStatMetric(name string, help string, dev string, f
 	}
 	line := lines[len(lines)-1]
 	fields := strings.Fields(line)
+	if field >= len(fields) {
+		return metric{}, fmt.Errorf("disk stat metric %q: field %d missing in %d total fields", name, field, len(fields))
+	}
 
 	value, err := strconv.ParseFloat(fields[field], 64)
 	if err != nil {

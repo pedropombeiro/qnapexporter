@@ -80,7 +80,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	for idx, fn := range e.fns {
 		err := e.writeNodeMetrics(w, fn, idx)
 		if err != nil {
-			return err
+			_, _ = fmt.Fprintf(w, "## Failed to scrape metrics #%d: %v", 1+idx, err)
 		}
 	}
 

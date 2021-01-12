@@ -32,16 +32,18 @@ const (
 )
 
 type promExporter struct {
-	hostname    string
-	pingTarget  string
-	upsClient   *nut.Client
-	getsysinfo  string
-	syshdnum    int
-	sysfannum   int
-	ifaces      []string
-	iostat      string
-	devices     []string
-	mountpoints []string
+	hostname        string
+	pingTarget      string
+	upsClient       nut.Client
+	upsConnErr      error
+	upsConnAttempts int
+	getsysinfo      string
+	syshdnum        int
+	sysfannum       int
+	ifaces          []string
+	iostat          string
+	devices         []string
+	mountpoints     []string
 
 	fns []func() ([]metric, error)
 }
@@ -64,13 +66,6 @@ func NewExporter(pingTarget string) exporter.Exporter {
 		e.getPingMetrics,
 	}
 
-	c, connectErr := nut.Connect("127.0.0.1")
-	if connectErr != nil {
-		fmt.Fprintln(os.Stderr, connectErr)
-	} else {
-		e.upsClient = &c
-	}
-
 	e.readEnvironment()
 
 	return e
@@ -80,7 +75,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	for idx, fn := range e.fns {
 		err := e.writeNodeMetrics(w, fn, idx)
 		if err != nil {
-			_, _ = fmt.Fprintf(w, "## Failed to scrape metrics #%d: %v", 1+idx, err)
+			_, _ = fmt.Fprintf(w, "## %v\n", err)
 		}
 	}
 
@@ -88,7 +83,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 }
 
 func (e *promExporter) Close() {
-	if e.upsClient != nil {
+	if e.upsClient.ProtocolVersion != "" {
 		e.upsClient.Disconnect()
 	}
 }
@@ -281,8 +276,14 @@ func getCpuRatioMetrics() ([]metric, error) {
 }
 
 func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
-	if e.upsClient == nil {
-		return nil, nil
+	if e.upsClient.ProtocolVersion == "" {
+		if e.upsConnAttempts < 10 {
+			e.upsConnAttempts++
+			e.upsClient, e.upsConnErr = nut.Connect("127.0.0.1")
+		}
+		if e.upsConnErr != nil {
+			return nil, e.upsConnErr
+		}
 	}
 
 	upsList, err := e.upsClient.GetUPSList()

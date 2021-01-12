@@ -1,6 +1,7 @@
 package prometheus
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -246,6 +247,10 @@ func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
 
 	upsList, err := e.upsClient.GetUPSList()
 	if err != nil {
+		var syscallErr *os.SyscallError
+		if errors.As(err, &syscallErr) && syscallErr.Err == syscall.ECONNRESET {
+			_, _ = e.upsClient.Disconnect()
+		}
 		return nil, err
 	}
 

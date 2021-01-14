@@ -231,9 +231,18 @@ func getLoadAvgMetrics() ([]metric, error) {
 	return metrics, nil
 }
 
-func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
+func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 	e.upsLock.Lock()
 	defer e.upsLock.Unlock()
+
+	defer func() {
+		if err != nil {
+			var syscallErr *os.SyscallError
+			if errors.As(err, &syscallErr) && syscallErr.Err == syscall.ECONNRESET {
+				_, _ = e.upsClient.Disconnect()
+			}
+		}
+	}()
 
 	if e.upsClient.ProtocolVersion == "" {
 		if e.upsConnAttempts < 10 {
@@ -241,16 +250,12 @@ func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
 			e.upsClient, e.upsConnErr = nut.Connect("127.0.0.1")
 		}
 		if e.upsConnErr != nil {
-			return nil, e.upsConnErr
+			return nil, fmt.Errorf("%w (attempt %d)", e.upsConnErr, e.upsConnAttempts)
 		}
 	}
 
 	upsList, err := e.upsClient.GetUPSList()
 	if err != nil {
-		var syscallErr *os.SyscallError
-		if errors.As(err, &syscallErr) && syscallErr.Err == syscall.ECONNRESET {
-			_, _ = e.upsClient.Disconnect()
-		}
 		return nil, err
 	}
 
@@ -258,7 +263,6 @@ func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
 		return nil, nil
 	}
 
-	var metrics []metric
 	for _, ups := range upsList {
 		vars, err := ups.GetVariables()
 		if err != nil {
@@ -287,10 +291,8 @@ func (e *promExporter) getUpsStatsMetrics() ([]metric, error) {
 			switch v.Type {
 			case "INTEGER":
 				value = float64(v.Value.(int64))
-				break
 			case "FLOAT_64":
 				value = v.Value.(float64)
-				break
 			default:
 				continue
 			}

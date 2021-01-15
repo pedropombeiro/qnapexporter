@@ -30,6 +30,8 @@ const (
 	devDir              = "/dev"
 	netDir              = "/sys/class/net"
 	flashcacheStatsPath = "/proc/flashcache/CG0/flashcache_stats"
+
+	envValidity = time.Duration(5 * time.Minute)
 )
 
 type promExporter struct {
@@ -50,12 +52,15 @@ type promExporter struct {
 	mountpoints     []string
 
 	fns []func() ([]metric, error)
+
+	envExpiry time.Time
 }
 
 func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 	e := &promExporter{
 		logger:     logger,
 		pingTarget: pingTarget,
+		envExpiry:  time.Now(),
 	}
 	e.fns = []func() ([]metric, error){
 		getUptimeMetrics,
@@ -71,12 +76,14 @@ func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 		e.getPingMetrics,
 	}
 
-	e.readEnvironment()
-
 	return e
 }
 
 func (e *promExporter) WriteMetrics(w io.Writer) error {
+	if time.Now().After(e.envExpiry) {
+		e.readEnvironment()
+	}
+
 	for idx, fn := range e.fns {
 		err := e.writeNodeMetrics(w, fn, idx)
 		if err != nil {
@@ -132,6 +139,7 @@ func (e *promExporter) readEnvironment() {
 	}
 
 	info, _ := ioutil.ReadDir(netDir)
+	e.ifaces = make([]string, 0, len(info))
 	for _, d := range info {
 		iface := d.Name()
 		if !strings.HasPrefix(iface, "eth") {
@@ -142,6 +150,7 @@ func (e *promExporter) readEnvironment() {
 	}
 
 	info, _ = ioutil.ReadDir(devDir)
+	e.devices = make([]string, 0, len(info))
 	for _, d := range info {
 		dev := d.Name()
 		if d.IsDir() || !strings.HasPrefix(dev, "nvme") && !strings.HasPrefix(dev, "sd") {
@@ -159,6 +168,7 @@ func (e *promExporter) readEnvironment() {
 	e.logger.Printf("Found devices: %v", e.devices)
 
 	info, _ = ioutil.ReadDir(mountsRoot)
+	e.mountpoints = make([]string, 0, len(info))
 	for _, d := range info {
 		mount := d.Name()
 		if !strings.HasPrefix(mount, "C") || !strings.HasSuffix(mount, "_DATA") {
@@ -168,6 +178,8 @@ func (e *promExporter) readEnvironment() {
 		e.mountpoints = append(e.mountpoints, mount)
 	}
 	e.logger.Printf("Found mountpoints: %v", e.mountpoints)
+
+	e.envExpiry = time.Now().Add(envValidity)
 }
 
 func (e *promExporter) getMetricFullName(m metric) string {

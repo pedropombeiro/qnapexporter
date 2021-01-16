@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -20,6 +21,8 @@ import (
 var healthCheckExpiry time.Time
 
 func main() {
+	runtime.GOMAXPROCS(0)
+
 	port := flag.String("port", ":9094", "Port to serve at (e.g. :9094).")
 	pingTarget := flag.String("ping-target", "1.1.1.1", "Host to periodically ping (e.g. 1.1.1.1).")
 	healthcheck := flag.String("healthcheck", "", "Healthcheck service to ping every 5 minutes (currently supported: healthchecks.io:<check-id>).")

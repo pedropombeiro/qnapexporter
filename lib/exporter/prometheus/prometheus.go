@@ -84,16 +84,48 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 		e.readEnvironment()
 	}
 
+	var wg sync.WaitGroup
+	metricsCh := make(chan interface{}, 4)
 	for idx, fn := range e.fns {
-		err := e.writeNodeMetrics(w, fn, idx)
-		if err != nil {
-			e.logger.Println(err.Error())
+		wg.Add(1)
 
-			_, _ = fmt.Fprintf(w, "## %v\n", err)
+		go fetchMetricsWorker(&wg, metricsCh, idx, fn)
+	}
+
+	go func() {
+		// Close channel once all workers are done
+		wg.Wait()
+		close(metricsCh)
+	}()
+
+	// Retrieve metrics from channel and write them to response
+	for m := range metricsCh {
+		switch v := m.(type) {
+		case []metric:
+			for _, m := range v {
+				writeMetricMetadata(w, m)
+				_, _ = fmt.Fprintf(w, "%s %g\n", e.getMetricFullName(m), m.value)
+			}
+		case error:
+			e.logger.Println(v.Error())
+
+			_, _ = fmt.Fprintf(w, "## %v\n", v)
 		}
 	}
 
 	return nil
+}
+
+func fetchMetricsWorker(wg *sync.WaitGroup, metricsCh chan<- interface{}, idx int, fetchMetricsFn func() ([]metric, error)) {
+	defer wg.Done()
+
+	metrics, err := fetchMetricsFn()
+	if err != nil {
+		metricsCh <- fmt.Errorf("retrieve metric #%d: %w", 1+idx, err)
+		return
+	}
+
+	metricsCh <- metrics
 }
 
 func (e *promExporter) Close() {
@@ -201,20 +233,6 @@ func writeMetricMetadata(w io.Writer, m metric) {
 	if m.metricType != "" {
 		fmt.Fprintln(w, "# TYPE "+m.name+" "+m.metricType)
 	}
-}
-
-func (e *promExporter) writeNodeMetrics(w io.Writer, getMetricFn func() ([]metric, error), index int) error {
-	metrics, err := getMetricFn()
-	if err != nil {
-		return fmt.Errorf("retrieve metric #%d: %w", 1+index, err)
-	}
-
-	for _, metric := range metrics {
-		writeMetricMetadata(w, metric)
-		_, _ = fmt.Fprintf(w, "%s %g\n", e.getMetricFullName(metric), metric.value)
-	}
-
-	return nil
 }
 
 func getUptimeMetrics() ([]metric, error) {

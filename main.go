@@ -74,26 +74,21 @@ func serveHTTP(e exporter.Exporter, port string, healthcheck string, logger *log
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, e, healthcheck, logger) })
 
 	// listen to port
-	server := &http.Server{Addr: port}
+	server := http.Server{Addr: port}
 	server.ErrorLog = logger
 	go func() {
 		log.Printf("Listening to HTTP requests at %s\n", port)
 
-		for {
-			select {
-			case <-exitCh:
-				log.Println("Program aborted, exiting...")
-				ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
-				err := server.Shutdown(ctx)
-				if err != nil {
-					log.Println(err.Error())
-				}
-				cancel()
-				return
-			case <-time.After(1 * time.Second):
-				break
-			}
+		// Wait for program exit
+		<-exitCh
+
+		log.Println("Program aborted, exiting...")
+		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+		err := server.Shutdown(ctx)
+		if err != nil {
+			log.Println(err.Error())
 		}
+		cancel()
 	}()
 
 	return server.ListenAndServe()

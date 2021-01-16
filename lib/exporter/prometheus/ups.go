@@ -5,56 +5,66 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 	"syscall"
 
 	nut "github.com/robbiet480/go.nut"
 )
 
+type upsState struct {
+	upsLock   sync.Mutex
+	upsClient nut.Client
+
+	upsConnErr      error
+	upsConnAttempts int
+	upsList         *[]nut.UPS
+}
+
 func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
-	e.upsLock.Lock()
-	defer e.upsLock.Unlock()
+	e.upsState.upsLock.Lock()
+	defer e.upsState.upsLock.Unlock()
 
 	defer func() {
 		if err != nil {
 			var syscallErr *os.SyscallError
 			if errors.As(err, &syscallErr) && syscallErr.Err == syscall.ECONNRESET {
-				_, _ = e.upsClient.Disconnect()
+				_, _ = e.upsState.upsClient.Disconnect()
 			}
 		}
 	}()
 
-	if e.upsClient.ProtocolVersion == "" {
-		if e.upsConnAttempts < 10 {
+	if e.upsState.upsClient.ProtocolVersion == "" {
+		if e.upsState.upsConnAttempts < 10 {
 			e.logger.Println("Connecting to UPS daemon")
 
-			e.upsConnAttempts++
-			e.upsClient, e.upsConnErr = nut.Connect("127.0.0.1")
+			e.upsState.upsConnAttempts++
+			e.upsState.upsClient, e.upsState.upsConnErr = nut.Connect("127.0.0.1")
 		}
-		if e.upsConnErr != nil {
-			return nil, fmt.Errorf("%w (attempt %d)", e.upsConnErr, e.upsConnAttempts)
+		if e.upsState.upsConnErr != nil {
+			return nil, fmt.Errorf("%w (attempt %d)", e.upsState.upsConnErr, e.upsState.upsConnAttempts)
 		}
 	}
 
-	if e.upsList == nil {
-		upsList, err := e.upsClient.GetUPSList()
+	if e.upsState.upsList == nil {
+		upsList, err := e.upsState.upsClient.GetUPSList()
 		if err != nil {
 			return nil, err
 		}
-		e.upsList = &upsList
+		e.upsState.upsList = &upsList
 	}
 
-	if len(*e.upsList) == 0 {
+	if len(*e.upsState.upsList) == 0 {
 		return nil, nil
 	}
 
-	for _, ups := range *e.upsList {
+	for _, ups := range *e.upsState.upsList {
 		vars, err := ups.GetVariables()
 		if err != nil {
 			return nil, err
 		}
 
 		if metrics == nil {
-			metrics = make([]metric, 0, len(vars)*len(*e.upsList)+1)
+			metrics = make([]metric, 0, len(vars)*len(*e.upsState.upsList)+1)
 		}
 
 		attr := fmt.Sprintf("ups=%q", ups.Name)

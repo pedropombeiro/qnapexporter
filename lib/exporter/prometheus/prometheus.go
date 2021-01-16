@@ -114,13 +114,17 @@ func (e *promExporter) readEnvironment() {
 	}
 	e.logger.Printf("Hostname: %s, err=%v\n", e.hostname, err)
 
-	e.iostat, err = exec.LookPath("iostat")
-	if err != nil {
-		e.logger.Printf("Failed to find iostat: %v\n", err)
+	if e.iostat == "" {
+		e.iostat, err = exec.LookPath("iostat")
+		if err != nil {
+			e.logger.Printf("Failed to find iostat: %v\n", err)
+		}
 	}
-	e.getsysinfo, _ = exec.LookPath("getsysinfo")
-	if err != nil {
-		e.logger.Printf("Failed to find getsysinfo: %v\n", err)
+	if e.getsysinfo == "" {
+		e.getsysinfo, _ = exec.LookPath("getsysinfo")
+		if err != nil {
+			e.logger.Printf("Failed to find getsysinfo: %v\n", err)
+		}
 	}
 	if e.getsysinfo != "" {
 		hdnumOutput, err := utils.ExecCommand(e.getsysinfo, "hdnum")

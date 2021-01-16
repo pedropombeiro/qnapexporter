@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -15,11 +17,16 @@ import (
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 )
 
+var healthCheckExpiry time.Time
+
 func main() {
 	port := flag.String("port", ":9094", "Port to serve at (e.g. :9094).")
 	pingTarget := flag.String("ping-target", "1.1.1.1", "Host to periodically ping (e.g. 1.1.1.1).")
+	healthcheck := flag.String("healthcheck", "", "Healthcheck service to ping every 5 minutes (currently supported: healthchecks.io:<check-id>).")
 	logFile := flag.String("log", "", "Log file path (defaults to empty, i.e. STDOUT).")
 	flag.Parse()
+
+	healthCheckExpiry = time.Now()
 
 	var logWriter io.Writer = os.Stderr
 	if *logFile != "" {
@@ -39,26 +46,32 @@ func main() {
 
 	e := prometheus.NewExporter(*pingTarget, logger)
 
-	err := serveHTTP(e, *port, logger, exitCh)
+	err := serveHTTP(e, *port, *healthcheck, logger, exitCh)
 	if err != nil {
 		log.Println(err.Error())
 	}
 	os.Exit(1)
 }
 
-func serveHTTP(e exporter.Exporter, port string, logger *log.Logger, exitCh chan os.Signal) error {
+func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, e exporter.Exporter, healthcheck string, logger *log.Logger) {
+	w.Header().Add("Content-Type", "text/plain")
+
+	handleHealthcheckStart(healthcheck)
+
+	err := e.WriteMetrics(w)
+	if err != nil {
+		logger.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	handleHealthcheckEnd(healthcheck, err)
+}
+
+func serveHTTP(e exporter.Exporter, port string, healthcheck string, logger *log.Logger, exitCh chan os.Signal) error {
 	defer e.Close()
 
 	// handle route using handler function
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "text/plain")
-
-		err := e.WriteMetrics(w)
-		if err != nil {
-			logger.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, e, healthcheck, logger) })
 
 	// listen to port
 	server := &http.Server{Addr: port}
@@ -84,4 +97,51 @@ func serveHTTP(e exporter.Exporter, port string, logger *log.Logger, exitCh chan
 	}()
 
 	return server.ListenAndServe()
+}
+
+func handleHealthcheckStart(healthcheck string) {
+	handleHealthcheck(healthcheck, true, nil)
+}
+
+func handleHealthcheckEnd(healthcheck string, err error) {
+	handleHealthcheck(healthcheck, false, err)
+}
+
+func handleHealthcheck(healthcheck string, start bool, err error) {
+	if healthcheck == "" {
+		return
+	}
+
+	if !time.Now().After(healthCheckExpiry) {
+		return
+	}
+
+	parts := strings.SplitN(healthcheck, ":", 2)
+	if len(parts) < 2 {
+		log.Printf("Configuration error in healthcheck: %s\n", healthcheck)
+		return
+	}
+
+	switch parts[0] {
+	case "healthchecks.io":
+		client := http.Client{Timeout: 5 * time.Second}
+		endpoint := ""
+		switch {
+		case start:
+			endpoint = "start"
+		case err != nil:
+			endpoint = "fail"
+		}
+
+		url := fmt.Sprintf("https://hc-ping.com/%s", parts[1])
+		if endpoint != "" {
+			url += "/" + endpoint
+		}
+		_, err := client.Head(url)
+		log.Printf("Sent %s healthcheck ping to %s: %v\n", endpoint, url, err)
+	}
+
+	if !start {
+		healthCheckExpiry = time.Now().Add(5 * time.Minute)
+	}
 }

@@ -294,18 +294,19 @@ func (e *promExporter) getSysInfoHdMetrics() ([]metric, error) {
 	}
 
 	metrics := make([]metric, 0, e.syshdnum)
+	highestAvailable := 0
 
 	for hdnum := 1; hdnum <= e.syshdnum; hdnum++ {
 		hdnumStr := strconv.Itoa(hdnum)
-		smart, err := utils.ExecCommand(e.getsysinfo, "hdsmart", hdnumStr)
+		tempStr, err := utils.ExecCommand(e.getsysinfo, "hdtmp", hdnumStr)
 		if err != nil {
 			return nil, err
 		}
-		if smart == "--" {
+		if tempStr == "--" {
 			continue
 		}
 
-		tempStr, err := utils.ExecCommand(e.getsysinfo, "hdtmp", hdnumStr)
+		smart, err := utils.ExecCommand(e.getsysinfo, "hdsmart", hdnumStr)
 		if err != nil {
 			return nil, err
 		}
@@ -314,12 +315,17 @@ func (e *promExporter) getSysInfoHdMetrics() ([]metric, error) {
 		if err != nil {
 			return metrics, err
 		}
+
 		metrics = append(metrics, metric{
 			name:  "node_hdtmp_C",
 			attr:  fmt.Sprintf(`hd=%q,smart=%q`, hdnumStr, smart),
 			value: temp,
 		})
+		highestAvailable = hdnum
 	}
+
+	// Do not ask for data next time on disks that do not report it
+	e.syshdnum = highestAvailable
 
 	return metrics, nil
 }

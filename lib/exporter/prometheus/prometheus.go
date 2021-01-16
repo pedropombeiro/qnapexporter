@@ -486,15 +486,26 @@ func (e *promExporter) getDiskStatsMetrics() ([]metric, error) {
 		return nil, nil
 	}
 
+	args := []string{"-k", "-d"}
+	args = append(args, e.devices...)
+	lines, err := utils.ExecCommandGetLines(e.iostat, args...)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(lines) < 4 {
+		return nil, fmt.Errorf("iostat output missing expected lines - found %d lines", len(lines))
+	}
+
 	metrics := make([]metric, 0, len(e.devices)*2)
-	for _, dev := range e.devices {
-		readMetric, err := e.getDiskStatMetric("node_disk_read_kbytes_total", "Total number of kilobytes read", dev, 5)
+	for _, line := range lines[3:] {
+		readMetric, err := e.getDiskStatMetric("node_disk_read_kbytes_total", "Total number of kilobytes read", line, 5)
 		if err != nil {
 			return nil, err
 		}
 		metrics = append(metrics, readMetric)
 
-		writeMetric, err := e.getDiskStatMetric("node_disk_written_kbytes_total", "Total number of kilobytes written", dev, 6)
+		writeMetric, err := e.getDiskStatMetric("node_disk_written_kbytes_total", "Total number of kilobytes written", line, 6)
 		if err != nil {
 			return nil, err
 		}
@@ -504,16 +515,7 @@ func (e *promExporter) getDiskStatsMetrics() ([]metric, error) {
 	return metrics, nil
 }
 
-func (e *promExporter) getDiskStatMetric(name string, help string, dev string, field int) (metric, error) {
-	if e.iostat == "" {
-		return metric{}, nil
-	}
-
-	lines, err := utils.ExecCommandGetLines(e.iostat, "-d", dev, "-k")
-	if err != nil {
-		return metric{}, err
-	}
-	line := lines[len(lines)-1]
+func (e *promExporter) getDiskStatMetric(name string, help string, line string, field int) (metric, error) {
 	fields := strings.Fields(line)
 	if field >= len(fields) {
 		return metric{}, fmt.Errorf("disk stat metric %q: field %d missing in %d total fields", name, field, len(fields))
@@ -524,6 +526,7 @@ func (e *promExporter) getDiskStatMetric(name string, help string, dev string, f
 		return metric{}, err
 	}
 
+	dev := fields[0]
 	return metric{
 		name:       name,
 		attr:       fmt.Sprintf(`device=%q`, dev),

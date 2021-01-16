@@ -30,3 +30,13 @@ func TestWriteMetrics(t *testing.T) {
 	assert.Contains(t, output, "dial tcp 127.0.0.1:3493: connect: connection refused")
 	assert.Contains(t, output, "listen ip4:icmp : socket: operation not permitted")
 }
+
+func BenchmarkWriteMetrics(b *testing.B) {
+	e := NewExporter("8.8.8.8", log.New(ioutil.Discard, "", 0))
+	defer e.Close()
+
+	for i := 0; i < b.N; i++ {
+		buf := new(bytes.Buffer)
+		_ = e.WriteMetrics(buf)
+	}
+}

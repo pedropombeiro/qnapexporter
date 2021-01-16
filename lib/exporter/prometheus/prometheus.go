@@ -1,7 +1,6 @@
 package prometheus
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/go-ping/ping"
@@ -26,54 +24,61 @@ import (
 )
 
 const (
-	mountsRoot          = "/share"
 	devDir              = "/dev"
 	netDir              = "/sys/class/net"
 	flashcacheStatsPath = "/proc/flashcache/CG0/flashcache_stats"
 
-	envValidity = time.Duration(5 * time.Minute)
+	envValidity    = time.Duration(5 * time.Minute)
+	volumeValidity = time.Duration(1 * time.Minute)
 )
 
 type promExporter struct {
 	logger *log.Logger
 
-	hostname        string
-	pingTarget      string
+	hostname   string
+	pingTarget string
+
 	upsClient       nut.Client
 	upsConnErr      error
 	upsConnAttempts int
+	upsList         *[]nut.UPS
 	upsLock         sync.Mutex
-	getsysinfo      string
-	syshdnum        int
-	sysfannum       int
-	ifaces          []string
-	iostat          string
-	devices         []string
-	mountpoints     []string
+
+	getsysinfo string
+	syshdnum   int
+	sysfannum  int
+	ifaces     []string
+	iostat     string
+	devices    []string
+	envExpiry  time.Time
+
+	volumes      []volumeInfo
+	volumeExpiry time.Time
 
 	fns []func() ([]metric, error)
-
-	envExpiry time.Time
 }
 
 func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 	e := &promExporter{
-		logger:     logger,
-		pingTarget: pingTarget,
-		envExpiry:  time.Now(),
+		logger:       logger,
+		pingTarget:   pingTarget,
+		volumeExpiry: time.Now(),
+		envExpiry:    time.Now(),
 	}
 	e.fns = []func() ([]metric, error){
-		getUptimeMetrics,
-		getLoadAvgMetrics,
-		getMemInfoMetrics,
-		getCpuRatioMetrics,
-		e.getUpsStatsMetrics,
-		e.getSysInfoMetrics,
-		getFlashCacheStatsMetrics,
-		e.getNetworkStatsMetrics,
-		e.getDiskStatsMetrics,
-		e.getVolumeStatsMetrics,
-		e.getPingMetrics,
+		getUptimeMetrics,          // #1
+		getLoadAvgMetrics,         // #2
+		getCpuRatioMetrics,        // #3
+		getMemInfoMetrics,         // #4
+		e.getUpsStatsMetrics,      // #5
+		e.getSysInfoTempMetrics,   // #6
+		e.getSysInfoFanMetrics,    // #7
+		e.getSysInfoHdMetrics,     // #8
+		e.getSysInfoVolMetrics,    // #9
+		e.getDiskStatsMetrics,     // #10
+		getFlashCacheStatsMetrics, // #11
+		e.getNetworkStatsMetrics,  // #12
+		e.getPingMetrics,          // #13
 	}
 
 	return e
@@ -98,7 +103,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 		close(metricsCh)
 	}()
 
-	// Retrieve metrics from channel and write them to response
+	// Retrieve metrics from channel and write them to the response
 	for m := range metricsCh {
 		switch v := m.(type) {
 		case []metric:
@@ -172,6 +177,8 @@ func (e *promExporter) readEnvironment() {
 		} else {
 			e.sysfannum = -1
 		}
+
+		e.readSysVolInfo()
 	}
 
 	info, _ := ioutil.ReadDir(netDir)
@@ -203,19 +210,7 @@ func (e *promExporter) readEnvironment() {
 	}
 	e.logger.Printf("Found devices: %v", e.devices)
 
-	info, _ = ioutil.ReadDir(mountsRoot)
-	e.mountpoints = make([]string, 0, len(info))
-	for _, d := range info {
-		mount := d.Name()
-		if !strings.HasPrefix(mount, "C") || !strings.HasSuffix(mount, "_DATA") {
-			continue
-		}
-
-		e.mountpoints = append(e.mountpoints, mount)
-	}
-	e.logger.Printf("Found mountpoints: %v", e.mountpoints)
-
-	e.envExpiry = time.Now().Add(envValidity)
+	e.envExpiry = e.envExpiry.Add(envValidity)
 }
 
 func (e *promExporter) getMetricFullName(m metric) string {
@@ -265,113 +260,12 @@ func getLoadAvgMetrics() ([]metric, error) {
 	return metrics, nil
 }
 
-func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
-	e.upsLock.Lock()
-	defer e.upsLock.Unlock()
-
-	defer func() {
-		if err != nil {
-			var syscallErr *os.SyscallError
-			if errors.As(err, &syscallErr) && syscallErr.Err == syscall.ECONNRESET {
-				_, _ = e.upsClient.Disconnect()
-			}
-		}
-	}()
-
-	if e.upsClient.ProtocolVersion == "" {
-		if e.upsConnAttempts < 10 {
-			e.upsConnAttempts++
-			e.upsClient, e.upsConnErr = nut.Connect("127.0.0.1")
-		}
-		if e.upsConnErr != nil {
-			return nil, fmt.Errorf("%w (attempt %d)", e.upsConnErr, e.upsConnAttempts)
-		}
-	}
-
-	upsList, err := e.upsClient.GetUPSList()
-	if err != nil {
-		return nil, err
-	}
-
-	if len(upsList) == 0 {
-		return nil, nil
-	}
-
-	for _, ups := range upsList {
-		vars, err := ups.GetVariables()
-		if err != nil {
-			return nil, err
-		}
-
-		if metrics == nil {
-			metrics = make([]metric, 0, len(vars)*len(upsList))
-		}
-
-		attr := fmt.Sprintf("ups=%q", ups.Name)
-
-		var status, statusHelp, firmware string
-		for _, v := range vars {
-			switch v.Name {
-			case "ups.status":
-				status = v.Value.(string)
-				statusHelp = v.Description
-				continue
-			case "ups.firmware":
-				firmware = v.Value.(string)
-				continue
-			}
-
-			var value float64
-			switch v.Type {
-			case "INTEGER":
-				value = float64(v.Value.(int64))
-			case "FLOAT_64":
-				value = v.Value.(float64)
-			default:
-				continue
-			}
-
-			metrics = append(metrics, metric{
-				name:  "ups_" + strings.ReplaceAll(v.Name, ".", "_"),
-				attr:  attr,
-				value: value,
-				help:  v.Description,
-			})
-		}
-		metrics = append(metrics, metric{
-			name:  "ups_ups_status",
-			attr:  fmt.Sprintf(`status=%q,firmware=%q,%s`, status, firmware, attr),
-			value: getUpsStatus(status),
-			help:  statusHelp,
-		})
-	}
-
-	return metrics, nil
-}
-
-func getUpsStatus(status string) float64 {
-	switch status {
-	case "OL":
-		return 0
-	case "OL CHRG":
-		return 1
-	case "OB", "LB", "HB", "DISCHRG":
-		return 2
-	case "OFF":
-		return 3
-	case "RB":
-		return 999
-	default:
-		return 99
-	}
-}
-
-func (e *promExporter) getSysInfoMetrics() ([]metric, error) {
+func (e *promExporter) getSysInfoTempMetrics() ([]metric, error) {
 	if e.getsysinfo == "" {
 		return nil, nil
 	}
 
-	metrics := make([]metric, 0, 8)
+	metrics := make([]metric, 0, 2)
 
 	for _, dev := range []string{"cputmp", "systmp"} {
 		output, err := utils.ExecCommand(e.getsysinfo, dev)
@@ -390,6 +284,16 @@ func (e *promExporter) getSysInfoMetrics() ([]metric, error) {
 			value: value,
 		})
 	}
+
+	return metrics, nil
+}
+
+func (e *promExporter) getSysInfoHdMetrics() ([]metric, error) {
+	if e.getsysinfo == "" {
+		return nil, nil
+	}
+
+	metrics := make([]metric, 0, e.syshdnum)
 
 	for hdnum := 1; hdnum <= e.syshdnum; hdnum++ {
 		hdnumStr := strconv.Itoa(hdnum)
@@ -416,6 +320,16 @@ func (e *promExporter) getSysInfoMetrics() ([]metric, error) {
 			value: temp,
 		})
 	}
+
+	return metrics, nil
+}
+
+func (e *promExporter) getSysInfoFanMetrics() ([]metric, error) {
+	if e.getsysinfo == "" {
+		return nil, nil
+	}
+
+	metrics := make([]metric, 0, e.sysfannum)
 
 	for fannum := 1; fannum <= e.sysfannum; fannum++ {
 		fannumStr := strconv.Itoa(fannum)
@@ -555,35 +469,6 @@ func (e *promExporter) getDiskStatMetric(name string, help string, line string, 
 		help:       help,
 		metricType: "counter",
 	}, nil
-}
-
-func (e *promExporter) getVolumeStatsMetrics() ([]metric, error) {
-	metrics := make([]metric, 0, len(e.mountpoints)*2)
-
-	for _, mountpoint := range e.mountpoints {
-		var stat syscall.Statfs_t
-
-		dir := path.Join(mountsRoot, mountpoint)
-		attr := fmt.Sprintf(`filesystem=%q`, dir)
-		err := syscall.Statfs(dir, &stat)
-		if err != nil {
-			return nil, err
-		}
-
-		metrics = append(metrics, metric{
-			name:  "node_filesystem_avail_kbytes",
-			attr:  attr,
-			value: float64(stat.Bavail * uint64(stat.Bsize) / 1024),
-		})
-
-		metrics = append(metrics, metric{
-			name:  "node_filesystem_size_kbytes",
-			attr:  attr,
-			value: float64(stat.Blocks * uint64(stat.Bsize) / 1024),
-		})
-	}
-
-	return metrics, nil
 }
 
 func (e *promExporter) getPingMetrics() ([]metric, error) {

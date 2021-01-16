@@ -378,14 +378,17 @@ func (e *promExporter) getSysInfoMetrics() ([]metric, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		tokens := strings.SplitN(output, " ", 2)
 		value, err := strconv.ParseFloat(tokens[0], 64)
-		if err == nil {
-			metrics = append(metrics, metric{
-				name:  fmt.Sprintf("node_%s_C", dev),
-				value: value,
-			})
+		if err != nil {
+			continue
 		}
+
+		metrics = append(metrics, metric{
+			name:  fmt.Sprintf("node_%s_C", dev),
+			value: value,
+		})
 	}
 
 	for hdnum := 1; hdnum <= e.syshdnum; hdnum++ {

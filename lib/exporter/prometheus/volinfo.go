@@ -12,6 +12,7 @@ import (
 type volumeInfo struct {
 	fileSystem                    string
 	description                   string
+	status                        string
 	freeSizeBytes, totalSizeBytes float64
 }
 
@@ -56,11 +57,18 @@ func (e *promExporter) readSysVolInfo() {
 			continue
 		}
 
+		status, err := utils.ExecCommand(e.getsysinfo, "vol_status", volIdx)
+		if err != nil {
+			e.logger.Printf("Error fetching volume %d status: %v", idx, err)
+			continue
+		}
+
 		e.volumes = append(
 			e.volumes,
 			volumeInfo{
 				description:    parseVolDesc(desc),
 				fileSystem:     fileSystem,
+				status:         status,
 				totalSizeBytes: volsizeBytes,
 			},
 		)
@@ -94,7 +102,7 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 			e.volumes[idx] = v
 		}
 
-		attr := fmt.Sprintf("volume=%q,filesystem=%q", v.description, v.fileSystem)
+		attr := fmt.Sprintf("volume=%q,filesystem=%q,status=%q", v.description, v.fileSystem, v.status)
 		newMetrics := []metric{
 			{
 				name:  "node_volume_avail_bytes",

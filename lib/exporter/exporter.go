@@ -13,6 +13,7 @@ type Exporter interface {
 }
 
 type Status struct {
+	Uptime            time.Time
 	LastFetch         time.Time
 	LastFetchDuration time.Duration
 	MetricCount       int

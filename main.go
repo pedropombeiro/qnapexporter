@@ -14,6 +14,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dustin/go-humanize"
+	"github.com/dustin/go-humanize/english"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 )
@@ -44,6 +46,10 @@ const (
 				</tr>
 				<tbody>
 					<tr>
+						<th>Uptime</th>
+						<td>%s</td>
+					</tr>
+					<tr>
 						<th>Last fetch</th>
 						<td>%s</td>
 					</tr>
@@ -53,7 +59,7 @@ const (
 					</tr>
 					<tr>
 						<th>Metrics</th>
-						<td>%d</td>
+						<td>%s</td>
 					</tr>
 					<tr>
 						<th>UPS</th>
@@ -149,23 +155,24 @@ func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndp
 
 	s := args.exporter.Status()
 
-	lf := ""
+	lf := "N/A"
 	if !s.LastFetch.IsZero() {
-		lf = s.LastFetch.Format(time.RFC850)
+		lf = humanize.Time(s.LastFetch)
 	}
 	_, _ = w.Write([]byte(fmt.Sprintf(rootHeadHtml+rootMetricsHtmlFragment,
 		metricsEndpoint, metricsEndpoint,
+		humanize.Time(s.Uptime),
 		lf,
 		s.LastFetchDuration,
-		s.MetricCount,
-		strings.Join(s.Ups, ", "),
-		strings.Join(s.Devices, ", "),
-		strings.Join(s.Volumes, ", "),
-		strings.Join(s.Interfaces, ", "))))
+		humanize.Comma(int64(s.MetricCount)),
+		english.OxfordWordSeries(s.Ups, "and"),
+		english.OxfordWordSeries(s.Devices, "and"),
+		english.OxfordWordSeries(s.Volumes, "and"),
+		english.OxfordWordSeries(s.Interfaces, "and"))))
 	if args.grafanaURL != "" {
-		ln := ""
+		ln := "N/A"
 		if !lastNotification.IsZero() {
-			ln = lastNotification.Format(time.RFC850)
+			ln = humanize.Time(lastNotification)
 		}
 		_, _ = w.Write([]byte(fmt.Sprintf(rootNotificationsHtmlFragment, notificationEndpoint, ln)))
 	}

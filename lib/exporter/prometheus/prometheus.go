@@ -74,6 +74,7 @@ func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 		e.getPingMetrics,          // #13
 	}
 
+	e.status.Uptime = time.Now()
 	e.status.MetricCount = len(e.fns)
 
 	return e

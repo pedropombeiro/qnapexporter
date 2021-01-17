@@ -52,11 +52,12 @@ type promExporter struct {
 }
 
 func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
+	now := time.Now()
 	e := &promExporter{
 		logger:       logger,
 		pingTarget:   pingTarget,
-		volumeExpiry: time.Now(),
-		envExpiry:    time.Now(),
+		volumeExpiry: now,
+		envExpiry:    now,
 	}
 	e.fns = []fetchMetricFn{
 		getUptimeMetrics,          // #1
@@ -74,7 +75,7 @@ func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 		e.getPingMetrics,          // #13
 	}
 
-	e.status.Uptime = time.Now()
+	e.status.Uptime = now
 	e.status.MetricCount = len(e.fns)
 
 	return e

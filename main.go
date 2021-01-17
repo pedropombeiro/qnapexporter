@@ -18,7 +18,15 @@ import (
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 )
 
-var healthCheckExpiry time.Time
+const (
+	metricsEndpoint      = "/metrics"
+	notificationEndpoint = "/notification"
+)
+
+var (
+	healthCheckExpiry time.Time
+	lastNotification  time.Time
+)
 
 func main() {
 	runtime.GOMAXPROCS(0)
@@ -56,6 +64,103 @@ func main() {
 		log.Println(err.Error())
 	}
 	os.Exit(1)
+}
+
+func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, e exporter.Exporter, grafanaURL string, logger *log.Logger) {
+	w.Header().Add("Content-Type", "text/html")
+
+	s := e.Status()
+
+	lf := ""
+	if !s.LastFetch.IsZero() {
+		lf = s.LastFetch.Format(time.RFC850)
+	}
+	_, _ = w.Write([]byte(fmt.Sprintf(`
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<style>
+			body { font-family: helvetica; }
+			th   { background: lightgrey; }
+		</style>
+		<title>Active endpoints</title>
+	</head>
+
+	<body>
+		<p>
+			<a href="%s">%s</a>
+			<table style="margin-left: 2em; margin-top: 1em">
+				<tr>
+					<th>Property</th>
+					<th>Value</th>
+				</tr>
+				<tbody>
+					<tr>
+						<th>Last fetch</th>
+						<td>%s</td>
+					</tr>
+					<tr>
+						<th>Last duration</th>
+						<td>%v</td>
+					</tr>
+					<tr>
+						<th>Metrics</th>
+						<td>%d</td>
+					</tr>
+					<tr>
+						<th>UPS</th>
+						<td>%v</td>
+					</tr>
+					<tr>
+						<th>Devices</th>
+						<td>%v</td>
+					</tr>
+					<tr>
+						<th>Volumes</th>
+						<td>%v</td>
+					</tr>
+					<tr>
+						<th>Interfaces</th>
+						<td>%v</td>
+					</tr>
+				</tbody>
+			</table>
+		</p>
+	`,
+		metricsEndpoint, metricsEndpoint,
+		lf,
+		s.LastFetchDuration,
+		s.MetricCount,
+		strings.Join(s.Ups, ", "),
+		strings.Join(s.Devices, ", "),
+		strings.Join(s.Volumes, ", "),
+		strings.Join(s.Interfaces, ", "))))
+	if grafanaURL != "" {
+		ln := ""
+		if !lastNotification.IsZero() {
+			ln = lastNotification.Format(time.RFC850)
+		}
+		_, _ = w.Write([]byte(fmt.Sprintf(`
+		<p>
+			<div>%s</div>
+			<table style="margin-left: 2em; margin-top: 1em">
+				<tr>
+					<th>Property</th>
+					<th>Value</th>
+				</tr>
+				<tbody>
+					<tr>
+						<th>Last notification</th>
+						<td>%s</td>
+					</tr>
+				</tbody>
+			</table>
+		</p>
+	`,
+			notificationEndpoint, ln)))
+	}
+	_, _ = w.Write([]byte(`
+	<body>
+	`))
 }
 
 func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, e exporter.Exporter, healthcheck string, logger *log.Logger) {
@@ -100,9 +205,10 @@ func serveHTTP(e exporter.Exporter, port string, grafanaURL, grafanaAuthToken, h
 	defer e.Close()
 
 	// handle route using handler function
-	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, e, healthcheck, logger) })
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleRootHTTPRequest(w, r, e, grafanaURL, logger) })
+	http.HandleFunc(metricsEndpoint, func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, e, healthcheck, logger) })
 	if grafanaURL != "" {
-		http.HandleFunc("/notification", func(_ http.ResponseWriter, r *http.Request) {
+		http.HandleFunc(notificationEndpoint, func(_ http.ResponseWriter, r *http.Request) {
 			handleNotificationHTTPRequest(r, grafanaURL, grafanaAuthToken, logger)
 		})
 	}

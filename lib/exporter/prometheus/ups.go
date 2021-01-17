@@ -57,7 +57,10 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 		return nil, nil
 	}
 
+	e.status.Ups = []string{}
 	for _, ups := range *e.upsState.upsList {
+		e.status.Ups = append(e.status.Ups, ups.Name)
+
 		vars, err := ups.GetVariables()
 		if err != nil {
 			return nil, err

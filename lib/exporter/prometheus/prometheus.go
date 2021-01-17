@@ -30,6 +30,8 @@ type fetchMetricFn func() ([]metric, error)
 type promExporter struct {
 	logger *log.Logger
 
+	status exporter.Status
+
 	hostname   string
 	pingTarget string
 
@@ -72,10 +74,17 @@ func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 		e.getPingMetrics,          // #13
 	}
 
+	e.status.MetricCount = len(e.fns)
+
 	return e
 }
 
 func (e *promExporter) WriteMetrics(w io.Writer) error {
+	e.status.LastFetch = time.Now()
+	defer func() {
+		e.status.LastFetchDuration = time.Since(e.status.LastFetch)
+	}()
+
 	if time.Now().After(e.envExpiry) {
 		e.readEnvironment()
 	}
@@ -122,6 +131,10 @@ func fetchMetricsWorker(wg *sync.WaitGroup, metricsCh chan<- interface{}, idx in
 	}
 
 	metricsCh <- metrics
+}
+
+func (e *promExporter) Status() exporter.Status {
+	return e.status
 }
 
 func (e *promExporter) Close() {
@@ -202,6 +215,9 @@ func (e *promExporter) readEnvironment() {
 	e.logger.Printf("Found devices: %v", e.devices)
 
 	e.envExpiry = e.envExpiry.Add(envValidity)
+
+	e.status.Devices = e.devices
+	e.status.Interfaces = e.ifaces
 }
 
 func (e *promExporter) getMetricFullName(m metric) string {

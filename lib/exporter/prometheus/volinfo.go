@@ -84,10 +84,12 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 	}
 
 	metrics := make([]metric, 0, 2*len(e.volumes))
+	e.status.Volumes = []string{}
 
 	expired := time.Now().After(e.volumeExpiry)
 	for idx, v := range e.volumes {
 		volnumStr := strconv.Itoa(idx)
+		e.status.Volumes = append(e.status.Volumes, v.description)
 
 		if expired {
 			freesizeStr, err := utils.ExecCommand(e.getsysinfo, "vol_freesize", volnumStr)

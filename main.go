@@ -88,8 +88,13 @@ func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpE
 	handleHealthcheckEnd(args.healthcheck, err)
 }
 
-func handleNotificationHTTPRequest(r *http.Request, args httpEndpointArgs) {
+func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
 	text := r.URL.Query().Get("text")
+	if len(text) == 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	url := fmt.Sprintf("%s/api/annotations", args.grafanaURL)
 	body := strings.NewReader(fmt.Sprintf(`{"tags":["nas"],"text":%q}`, text))
 
@@ -127,8 +132,8 @@ func serveHTTP(e exporter.Exporter, port string, grafanaURL, grafanaAuthToken, h
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleRootHTTPRequest(w, r, args) })
 	http.HandleFunc(metricsEndpoint, func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, args) })
 	if grafanaURL != "" {
-		http.HandleFunc(notificationEndpoint, func(_ http.ResponseWriter, r *http.Request) {
-			handleNotificationHTTPRequest(r, args)
+		http.HandleFunc(notificationEndpoint, func(w http.ResponseWriter, r *http.Request) {
+			handleNotificationHTTPRequest(w, r, args)
 		})
 	}
 

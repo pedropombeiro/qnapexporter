@@ -1,117 +1,130 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"net/http"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/dustin/go-humanize/english"
 )
 
 const (
-	rootHeadHtml = `
-	<head>
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-		<style>
-			body { font-family: helvetica; }
-			th   { background: lightgrey; }
-		</style>
-		<title>Active endpoints</title>
-	</head>
+	statusHtmlTemplate = `
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<style>
+		body { font-family: helvetica; }
+		th   {
+			background: lightgrey;
+			padding-left: 1em;
+			padding-right: 1em;
+		}
+		td   {
+			padding-left: 1em;
+			padding-right: 1em;
+		}
+	</style>
+	<title>qnapexporter status</title>
+</head>
 
-	<body>
-`
-	rootMetricsHtmlFragment = `
-		<p>
-			<a href="%s">%s</a>
-			<table style="margin-left: 2em; margin-top: 1em">
-				<tr>
-					<th>Property</th>
-					<th>Value</th>
-				</tr>
-				<tbody>
-					<tr>
-						<th>Uptime</th>
-						<td>%s</td>
-					</tr>
-					<tr>
-						<th>Last fetch</th>
-						<td>%s</td>
-					</tr>
-					<tr>
-						<th>Last duration</th>
-						<td>%v</td>
-					</tr>
-					<tr>
-						<th>Metrics</th>
-						<td>%s</td>
-					</tr>
-					<tr>
-						<th>UPS</th>
-						<td>%v</td>
-					</tr>
-					<tr>
-						<th>Devices</th>
-						<td>%v</td>
-					</tr>
-					<tr>
-						<th>Volumes</th>
-						<td>%v</td>
-					</tr>
-					<tr>
-						<th>Interfaces</th>
-						<td>%v</td>
-					</tr>
-				</tbody>
-			</table>
-		</p>
-	`
-	rootNotificationsHtmlFragment = `
-	<p>
-		<div>%s</div>
-		<table style="margin-left: 2em; margin-top: 1em">
+<body>
+	<h1>Active endpoints</h1>
+	<table>
+		<tbody>
+			{{ range . }}
 			<tr>
-				<th>Property</th>
-				<th>Value</th>
+				<td>
+					<hr/>
+					<a href="{{ .Path }}">{{ .Path }}</a>
+				</td>
 			</tr>
-			<tbody>
-				<tr>
-					<th>Last notification</th>
-					<td>%s</td>
-				</tr>
-			</tbody>
-		</table>
-	</p>
+			<tr>
+				<td>
+					<table style="margin-left: 2em; margin-top: 1em">
+						<tbody>
+							{{ range $key, $value := .Properties }}
+							<tr>
+								<th>{{ $key }}</th>
+								<td>{{ $value }}</td>
+							</tr>
+							{{ else }}
+							<tr>
+								<th colspan="2">No properties</th>
+							</tr>
+							{{ end }}
+						</tbody>
+					</table>
+				</td>
+			</tr>
+			{{ end }}
+		</tbody>
+	</table>
+</body>
 `
 )
+
+type EndpointStatus struct {
+	Path       string
+	Properties map[string]string
+}
 
 func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
 	w.Header().Add("Content-Type", "text/html")
 
-	s := args.exporter.Status()
-
-	lf := "N/A"
-	if !s.LastFetch.IsZero() {
-		lf = humanize.Time(s.LastFetch)
-	}
-	_, _ = w.Write([]byte(fmt.Sprintf(rootHeadHtml+rootMetricsHtmlFragment,
-		metricsEndpoint, metricsEndpoint,
-		humanize.Time(s.Uptime),
-		lf,
-		s.LastFetchDuration,
-		humanize.Comma(int64(s.MetricCount)),
-		english.OxfordWordSeries(s.Ups, "and"),
-		english.OxfordWordSeries(s.Devices, "and"),
-		english.OxfordWordSeries(s.Volumes, "and"),
-		english.OxfordWordSeries(s.Interfaces, "and"))))
-	if args.grafanaURL != "" {
-		ln := "N/A"
-		if !lastNotification.IsZero() {
-			ln = humanize.Time(lastNotification)
+	endpoints := getEndpoints(args)
+	tmpl, err := template.New("html").Parse(statusHtmlTemplate)
+	if err == nil {
+		err = tmpl.Execute(w, endpoints)
+		if err == nil {
+			return
 		}
-		_, _ = w.Write([]byte(fmt.Sprintf(rootNotificationsHtmlFragment, notificationEndpoint, ln)))
 	}
-	_, _ = w.Write([]byte(`
-	<body>
-	`))
+
+	args.logger.Println(err.Error())
+	w.WriteHeader(http.StatusInternalServerError)
+}
+
+func getEndpoints(args httpEndpointArgs) []EndpointStatus {
+	s := args.exporter.Status()
+	ms := EndpointStatus{
+		Path: metricsEndpoint,
+		Properties: map[string]string{
+			"Uptime":        humanizeTime(s.Uptime),
+			"Last fetch":    humanizeTime(s.LastFetch),
+			"Last duration": s.LastFetchDuration.String(),
+			"Metrics":       humanize.Comma(int64(s.MetricCount)),
+			"UPS":           humanizeList(s.Ups),
+			"Devices":       humanizeList(s.Devices),
+			"Volumes":       humanizeList(s.Volumes),
+			"Interfaces":    humanizeList(s.Interfaces),
+		},
+	}
+	endpoints := []EndpointStatus{ms}
+	if args.grafanaURL != "" {
+		endpoints = append(endpoints, EndpointStatus{
+			Path: notificationEndpoint,
+			Properties: map[string]string{
+				"Last notification": humanizeTime(lastNotification),
+			},
+		})
+	}
+
+	return endpoints
+}
+
+func humanizeList(a []string) string {
+	if len(a) == 0 {
+		return "N/A"
+	}
+
+	return english.OxfordWordSeries(a, "and")
+}
+
+func humanizeTime(t time.Time) string {
+	if t.IsZero() {
+		return "N/A"
+	}
+
+	return humanize.Time(t)
 }

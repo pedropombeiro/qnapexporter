@@ -76,12 +76,12 @@ func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 	}
 
 	e.status.Uptime = now
-	e.status.MetricCount = len(e.fns)
 
 	return e
 }
 
 func (e *promExporter) WriteMetrics(w io.Writer) error {
+	e.status.MetricCount = 0
 	e.status.LastFetch = time.Now()
 	defer func() {
 		e.status.LastFetchDuration = time.Since(e.status.LastFetch)
@@ -109,6 +109,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	for m := range metricsCh {
 		switch v := m.(type) {
 		case []metric:
+			e.status.MetricCount += len(v)
 			for _, m := range v {
 				writeMetricMetadata(w, m)
 				_, _ = fmt.Fprintf(w, "%s %g\n", e.getMetricFullName(m), m.value)

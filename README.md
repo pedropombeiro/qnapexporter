@@ -62,3 +62,9 @@ qnapexporter can expose QNAP events as Grafana annotations, to make it easy to u
    3. Set `Role` to `Editor`
    4. Press `Add`
    5. Take note of the created token (this will be passed to qnapexporter with `--grafana-auth-token`)
+
+## Tips
+
+The root endpoint exposes information about the current status of the program (useful for debugging):
+
+![Status page](assets/status.jpeg "Status page")

@@ -100,7 +100,7 @@ func serveHTTP(e exporter.Exporter, port string, grafanaURL, grafanaAuthToken, h
 	defer e.Close()
 
 	// handle route using handler function
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, e, healthcheck, logger) })
+	http.HandleFunc("/metrics", func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, e, healthcheck, logger) })
 	if grafanaURL != "" {
 		http.HandleFunc("/notification", func(_ http.ResponseWriter, r *http.Request) {
 			handleNotificationHTTPRequest(r, grafanaURL, grafanaAuthToken, logger)

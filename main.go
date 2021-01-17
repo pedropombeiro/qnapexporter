@@ -26,6 +26,8 @@ func main() {
 	port := flag.String("port", ":9094", "Port to serve at (e.g. :9094).")
 	pingTarget := flag.String("ping-target", "1.1.1.1", "Host to periodically ping (e.g. 1.1.1.1).")
 	healthcheck := flag.String("healthcheck", "", "Healthcheck service to ping every 5 minutes (currently supported: healthchecks.io:<check-id>).")
+	grafanaURL := flag.String("grafana-url", os.Getenv("GRAFANA_URL"), "Grafana host (e.g.: https://grafana.example.com).")
+	grafanaAuthToken := flag.String("grafana-auth-token", os.Getenv("GRAFANA_AUTH_TOKEN"), "Grafana authorization token.")
 	logFile := flag.String("log", "", "Log file path (defaults to empty, i.e. STDOUT).")
 	flag.Parse()
 
@@ -49,7 +51,7 @@ func main() {
 
 	e := prometheus.NewExporter(*pingTarget, logger)
 
-	err := serveHTTP(e, *port, *healthcheck, logger, exitCh)
+	err := serveHTTP(e, *port, *grafanaURL, *grafanaAuthToken, *healthcheck, logger, exitCh)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -70,11 +72,40 @@ func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, e exporter
 	handleHealthcheckEnd(healthcheck, err)
 }
 
-func serveHTTP(e exporter.Exporter, port string, healthcheck string, logger *log.Logger, exitCh chan os.Signal) error {
+func handleNotificationHTTPRequest(r *http.Request, grafanaURL, grafanaAuthToken string, logger *log.Logger) {
+	text := r.URL.Query().Get("text")
+	url := fmt.Sprintf("%s/api/annotations", grafanaURL)
+	body := strings.NewReader(fmt.Sprintf(`{"tags":["nas"],"text":%q}`, text))
+
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		logger.Printf("Error creating Grafana annotation request: %v\n", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if grafanaAuthToken != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", grafanaAuthToken))
+	}
+
+	c := http.Client{Timeout: 5 * time.Second}
+	resp, err := c.Do(req)
+	if err == nil {
+		logger.Printf("Created Grafana annotation at %s: %s\n", url, resp.Status)
+	} else {
+		logger.Printf("Error creating Grafana annotation at %s: %v\n", url, err)
+	}
+}
+
+func serveHTTP(e exporter.Exporter, port string, grafanaURL, grafanaAuthToken, healthcheck string, logger *log.Logger, exitCh chan os.Signal) error {
 	defer e.Close()
 
 	// handle route using handler function
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, e, healthcheck, logger) })
+	if grafanaURL != "" {
+		http.HandleFunc("/notification", func(_ http.ResponseWriter, r *http.Request) {
+			handleNotificationHTTPRequest(r, grafanaURL, grafanaAuthToken, logger)
+		})
+	}
 
 	// listen to port
 	server := http.Server{Addr: port}

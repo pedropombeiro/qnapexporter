@@ -1,8 +1,7 @@
 # qnapexporter
 
-`qnapexporter` is a simple Go program meant to be run in the background on a QNAP NAS in order to periodically export
-relevant metrics to Prometheus. It generates a file on the local filesystem which can be exposed to Prometheus using a
-web server such as Nginx.
+`qnapexporter` is a simple Go program meant to be run in the background on a QNAP NAS in order to export
+relevant metrics to Prometheus. It exposes an HTTP `/metrics` endpoint which generates a standard Prometheus metrics file, and a `/notifications` endpoint which can simulate an SMSC endpoint for QNAP notifications.
 
 The data produced by this exporter can be used to create a Grafana dashboard such as the following:
 

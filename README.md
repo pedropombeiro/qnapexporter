@@ -7,6 +7,8 @@ The data produced by this exporter can be used to create a Grafana dashboard suc
 
 ![Grafana dashboard sample](assets/grafana.png "Grafana dashboard sample")
 
+The Grafana dashboard sources are in the `/dashboards` directory.
+
 ## Installation
 
 1. Assuming you have Entware installed on your NAS, install Go:
@@ -31,6 +33,16 @@ The data produced by this exporter can be used to create a Grafana dashboard suc
 
     Normally it should be run as a background task. Unfortunately this is not easy on a QNAP NAS.
     See for example [this forum post](https://forum.qnap.com/viewtopic.php?t=44743#p198192) for ideas on how to achieve it.
+
+1. Add target to `scrape_configs` section of `prometheus.ini`
+
+    ```yaml
+    - job_name: 'qnap'
+      scrape_interval: 10s
+      honor_labels: true
+      static_configs:
+      - targets: ['localhost:9094']
+    ```
 
 ## Customization
 

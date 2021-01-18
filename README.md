@@ -1,3 +1,5 @@
+[![pipeline status](https://gitlab.com/pedropombeiro/qnapexporter/badges/master/pipeline.svg)](https://gitlab.com/pedropombeiro/qnapexporter/-/commits/master)
+
 # qnapexporter
 
 `qnapexporter` is a simple Go program meant to be run in the background on a QNAP NAS in order to export

@@ -31,6 +31,7 @@ var (
 
 type httpEndpointArgs struct {
 	exporter                     exporter.Exporter
+	port                         string
 	grafanaURL, grafanaAuthToken string
 	healthcheck                  string
 	logger                       *log.Logger
@@ -67,7 +68,16 @@ func main() {
 
 	e := prometheus.NewExporter(*pingTarget, logger)
 
-	err := serveHTTP(e, *port, *grafanaURL, *grafanaAuthToken, *healthcheck, logger, exitCh)
+	args := httpEndpointArgs{
+		exporter:         e,
+		port:             *port,
+		healthcheck:      *healthcheck,
+		grafanaURL:       *grafanaURL,
+		grafanaAuthToken: *grafanaAuthToken,
+		logger:           logger,
+	}
+
+	err := serveHTTP(args, exitCh)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -117,31 +127,23 @@ func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, args 
 	}
 }
 
-func serveHTTP(e exporter.Exporter, port string, grafanaURL, grafanaAuthToken, healthcheck string, logger *log.Logger, exitCh chan os.Signal) error {
-	defer e.Close()
-
-	args := httpEndpointArgs{
-		exporter:         e,
-		healthcheck:      healthcheck,
-		grafanaURL:       grafanaURL,
-		grafanaAuthToken: grafanaAuthToken,
-		logger:           logger,
-	}
+func serveHTTP(args httpEndpointArgs, exitCh chan os.Signal) error {
+	defer args.exporter.Close()
 
 	// handle route using handler function
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleRootHTTPRequest(w, r, args) })
 	http.HandleFunc(metricsEndpoint, func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, args) })
-	if grafanaURL != "" {
+	if args.grafanaURL != "" {
 		http.HandleFunc(notificationEndpoint, func(w http.ResponseWriter, r *http.Request) {
 			handleNotificationHTTPRequest(w, r, args)
 		})
 	}
 
 	// listen to port
-	server := http.Server{Addr: port}
-	server.ErrorLog = logger
+	server := http.Server{Addr: args.port}
+	server.ErrorLog = args.logger
 	go func() {
-		log.Printf("Listening to HTTP requests at %s\n", port)
+		log.Printf("Listening to HTTP requests at %s\n", args.port)
 
 		// Wait for program exit
 		<-exitCh

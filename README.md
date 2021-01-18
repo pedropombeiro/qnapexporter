@@ -43,6 +43,7 @@ qnapexporter supports the following command line flags:
 | `--healthcheck`         | N/A           | Healthcheck service to ping every 5 minutes (currently supported: `healthchecks.io:<check-id>`)  |
 | `--grafana-url`         | N/A           | Grafana host (e.g.: https://grafana.example.com), also settable through `GRAFANA_URL` environment variable  |
 | `--grafana-auth-token`  | N/A           | Grafana API token for annotations, also settable through `GRAFANA_AUTH_TOKEN` environment variable  |
+| `--grafana-tags`        | `nas`         | List of Grafana tags for annotations, also settable through `GRAFANA_TAGS` environment variable  |
 | `--log`                 | N/A           | Path to log file (defaults to standard output)  |
 
 ### Configuring support for QNAP events as Grafana annotations

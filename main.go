@@ -33,6 +33,7 @@ type httpEndpointArgs struct {
 	exporter                     exporter.Exporter
 	port                         string
 	grafanaURL, grafanaAuthToken string
+	grafanaTags                  []string
 	healthcheck                  string
 	logger                       *log.Logger
 }
@@ -45,6 +46,7 @@ func main() {
 	healthcheck := flag.String("healthcheck", "", "Healthcheck service to ping every 5 minutes (currently supported: healthchecks.io:<check-id>).")
 	grafanaURL := flag.String("grafana-url", os.Getenv("GRAFANA_URL"), "Grafana host (e.g.: https://grafana.example.com).")
 	grafanaAuthToken := flag.String("grafana-auth-token", os.Getenv("GRAFANA_AUTH_TOKEN"), "Grafana authorization token.")
+	grafanaTags := flag.String("grafana-tags", os.Getenv("GRAFANA_TAGS"), "Grafana annotation tags, separated by quotes (default: 'nas').")
 	logFile := flag.String("log", "", "Log file path (defaults to empty, i.e. STDOUT).")
 	flag.Parse()
 
@@ -74,6 +76,7 @@ func main() {
 		healthcheck:      *healthcheck,
 		grafanaURL:       *grafanaURL,
 		grafanaAuthToken: *grafanaAuthToken,
+		grafanaTags:      strings.Split(*grafanaTags, ","),
 		logger:           logger,
 	}
 
@@ -105,8 +108,12 @@ func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, args 
 		return
 	}
 
+	tags := make([]string, 0, len(args.grafanaTags))
+	for _, t := range args.grafanaTags {
+		tags = append(tags, `"`+t+`"`)
+	}
 	url := fmt.Sprintf("%s/api/annotations", args.grafanaURL)
-	body := strings.NewReader(fmt.Sprintf(`{"tags":["nas"],"text":%q}`, text))
+	body := strings.NewReader(fmt.Sprintf(`{"tags":[%s],"text":%q}`, strings.Join(tags, ","), text))
 
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {

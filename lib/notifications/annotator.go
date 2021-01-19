@@ -69,7 +69,7 @@ func (a *regionMatchingAnnotator) Post(annotation string) (int, error) {
 	reqType := "POST"
 	if id != -1 {
 		reqType = "PATCH"
-		ga.TimeEnd = time.Now().UnixNano() / 1000
+		ga.TimeEnd = time.Now().UnixNano() / 1000000
 		url = fmt.Sprintf("%s/%d", url, id)
 	}
 

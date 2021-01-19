@@ -34,6 +34,7 @@ var rules = []replacementRule{
 	{re: regexp.MustCompile(`\[Firmware Update\] Updated system\.`), substitution: `[Firmware Update] Started updating firmware.`},
 	{re: regexp.MustCompile(`\[Disk S\.M\.A\.R\.T\.\] (.+) Rapid Test result:.*`), substitution: "[Disk S.M.A.R.T.] $1 Rapid Test started."},
 	{re: regexp.MustCompile(`\[Antivirus\] Completed scan job ("[^"]+").+`), substitution: `[Antivirus] Started scan job $1.`},
+	{re: regexp.MustCompile(`\[Antivirus\] User stopped scan job ("[^"]+")\.`), substitution: `[Antivirus] Started scan job $1.`},
 	{re: regexp.MustCompile(`\[SortMyQPKGs\] ('.+') completed`), substitution: `[SortMyQPKGs] $1 requested`},
 	{re: regexp.MustCompile(`\[RunLast\] end ("[^"]+") scripts`), substitution: `[RunLast] begin $1 scripts ...`},
 	{re: regexp.MustCompile(`\[SecurityCounselor\] Finished`), substitution: "[SecurityCounselor] Started"},

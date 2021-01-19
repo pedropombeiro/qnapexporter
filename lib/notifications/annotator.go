@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -42,6 +43,10 @@ func NewAnnotator(
 	c httpClient,
 	logger *log.Logger,
 ) Annotator {
+	if len(tags) == 1 && tags[0] == "" {
+		tags = nil
+	}
+
 	return &regionMatchingAnnotator{
 		grafanaURL:       grafanaURL,
 		grafanaAuthToken: grafanaAuthToken,
@@ -53,14 +58,15 @@ func NewAnnotator(
 }
 
 func (a *regionMatchingAnnotator) Post(annotation string) (int, error) {
-	ga := grafanaAnnotation{
-		Text: annotation,
-		Tags: a.tags,
-	}
 	url := fmt.Sprintf("%s/api/annotations", a.grafanaURL)
+	trimmedAnnotation, annotationTags := extractTags(annotation)
+	ga := grafanaAnnotation{
+		Text: trimmedAnnotation,
+		Tags: mergeTags(a.tags, annotationTags),
+	}
+	id := a.cache.Match(annotation)
 
 	reqType := "POST"
-	id := a.cache.Match(annotation)
 	if id != -1 {
 		reqType = "PATCH"
 		ga.TimeEnd = time.Now().UnixNano() / 1000
@@ -116,4 +122,37 @@ func (a *regionMatchingAnnotator) Post(annotation string) (int, error) {
 	}
 
 	return -1, err
+}
+
+func extractTags(annotation string) (string, []string) {
+	var tags []string
+
+	for annotation[0] == '[' {
+		endIdx := strings.Index(annotation[1:], "] ")
+		if endIdx == -1 {
+			break
+		}
+
+		endIdx++
+		tags = append(tags, annotation[1:endIdx])
+		annotation = annotation[endIdx+2:]
+	}
+
+	return annotation, tags
+}
+
+func mergeTags(t1 []string, t2 []string) []string {
+	keys := make(map[string]bool)
+	list := make([]string, 0, len(t1)+len(t2))
+
+	// If the key(values of the slice) is not equal
+	// to the already present value in new slice (list)
+	// then we append it. else we jump on another element.
+	for _, entry := range append(t1, t2...) {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }

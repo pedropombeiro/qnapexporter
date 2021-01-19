@@ -85,4 +85,8 @@ func TestMatcherAnnotationCache(t *testing.T) {
 
 	id6 := c.Match("[nas] [Firmware Update] Updated system.")
 	require.Equal(t, 6, id6)
+
+	c.Add(12, `[nas] [Antivirus] Started scan job "User data".`)
+	id12 := c.Match(`[nas] [Antivirus] User stopped scan job "User data".`)
+	require.Equal(t, 12, id12)
 }

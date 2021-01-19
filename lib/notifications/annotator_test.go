@@ -17,14 +17,16 @@ func TestNewAnnotator(t *testing.T) {
 	a := NewAnnotator(
 		"",
 		"",
-		[]string{},
+		strings.Split("", ","),
 		new(MockAnnotationCache),
 		new(mockHttpClient),
 		log.New(ioutil.Discard, "", 0),
 	)
 
 	require.NotNil(t, a)
-	assert.IsType(t, &regionMatchingAnnotator{}, a)
+	require.IsType(t, &regionMatchingAnnotator{}, a)
+	c := a.(*regionMatchingAnnotator)
+	assert.Empty(t, c.tags)
 }
 
 func TestPostAnnotation(t *testing.T) {
@@ -95,12 +97,12 @@ func TestPostAnnotation(t *testing.T) {
 		"tags are extracted": {
 			testURL:       "http://grafana.example.com",
 			testAuthToken: "token1",
-			tags:          []string{"tag1", "tag2"},
+			tags:          []string{"tag1"},
 			setupCacheMock: func(c *MockAnnotationCache) {
-				c.On("Match", "test notification").
+				c.On("Match", "[tag2] test notification").
 					Once().
 					Return(-1, nil)
-				c.On("Add", 1, "[tag3] [tag4] test notification").
+				c.On("Add", 1, "[tag2] test notification").
 					Once()
 			},
 			setupClientMock: func(c *mockHttpClient) {
@@ -109,12 +111,38 @@ func TestPostAnnotation(t *testing.T) {
 						assert.Equal(t, "grafana.example.com", req.Host) &&
 						assert.Equal(t, "application/json", req.Header.Get("Content-Type")) &&
 						assert.Equal(t, "Bearer token1", req.Header.Get("Authorization")) &&
-						assert.Equal(t, `{"tags":["tag1","tag2","tag3","tag4"],"text":"test notification"}`, readBody(req))
+						assert.Equal(t, `{"tags":["tag1","tag2"],"text":"test notification"}`, readBody(req))
 				})).
 					Once().
 					Return(responseWithBody(`{"id": 1}`), nil)
 			},
-			notification: "test notification",
+			notification: "[tag2] test notification",
+			expectedID:   1,
+			expectedErr:  nil,
+		},
+		"tags are extracted and deduplicated": {
+			testURL:       "http://grafana.example.com",
+			testAuthToken: "token1",
+			tags:          []string{"tag1"},
+			setupCacheMock: func(c *MockAnnotationCache) {
+				c.On("Match", "[tag1] [tag2] [tag3] test notification").
+					Once().
+					Return(-1, nil)
+				c.On("Add", 1, "[tag1] [tag2] [tag3] test notification").
+					Once()
+			},
+			setupClientMock: func(c *mockHttpClient) {
+				c.On("Do", mock.MatchedBy(func(req *http.Request) bool {
+					return assert.Equal(t, "POST", req.Method) &&
+						assert.Equal(t, "grafana.example.com", req.Host) &&
+						assert.Equal(t, "application/json", req.Header.Get("Content-Type")) &&
+						assert.Equal(t, "Bearer token1", req.Header.Get("Authorization")) &&
+						assert.Equal(t, `{"tags":["tag1","tag2","tag3"],"text":"test notification"}`, readBody(req))
+				})).
+					Once().
+					Return(responseWithBody(`{"id": 1}`), nil)
+			},
+			notification: "[tag1] [tag2] [tag3] test notification",
 			expectedID:   1,
 			expectedErr:  nil,
 		},
@@ -204,4 +232,25 @@ func readBody(req *http.Request) string {
 
 func responseWithBody(body string) *http.Response {
 	return &http.Response{Body: ioutil.NopCloser(strings.NewReader(body))}
+}
+
+func TestExtractTags(t *testing.T) {
+	a, tags := extractTags("[nas] [SecurityCounselor] Started running Security Checkup.")
+	assert.Equal(t, "Started running Security Checkup.", a)
+	assert.Equal(t, []string{"nas", "SecurityCounselor"}, tags)
+
+	a, tags = extractTags("Started running Security Checkup.")
+	assert.Equal(t, "Started running Security Checkup.", a)
+	assert.Empty(t, tags)
+}
+
+func TestMergeTags(t *testing.T) {
+	tags := mergeTags(nil, []string{"nas", "SecurityCounselor"})
+	assert.Equal(t, []string{"nas", "SecurityCounselor"}, tags)
+
+	tags = mergeTags([]string{"nas", "SecurityCounselor"}, nil)
+	assert.Equal(t, []string{"nas", "SecurityCounselor"}, tags)
+
+	tags = mergeTags([]string{"tag1", "tag2"}, []string{"tag2", "tag3"})
+	assert.Equal(t, []string{"tag1", "tag2", "tag3"}, tags)
 }

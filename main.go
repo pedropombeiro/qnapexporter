@@ -16,6 +16,7 @@ import (
 
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
+	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
 )
 
 const (
@@ -26,16 +27,15 @@ const (
 var (
 	healthCheckExpiry   time.Time
 	healthCheckValidity time.Duration = time.Duration(5 * time.Minute)
-	lastNotification    time.Time
 )
 
 type httpEndpointArgs struct {
-	exporter                     exporter.Exporter
-	port                         string
-	grafanaURL, grafanaAuthToken string
-	grafanaTags                  []string
-	healthcheck                  string
-	logger                       *log.Logger
+	exporter    exporter.Exporter
+	annotator   notifications.Annotator
+	port        string
+	grafanaURL  string
+	healthcheck string
+	logger      *log.Logger
 }
 
 func main() {
@@ -71,13 +71,19 @@ func main() {
 	e := prometheus.NewExporter(*pingTarget, logger)
 
 	args := httpEndpointArgs{
-		exporter:         e,
-		port:             *port,
-		healthcheck:      *healthcheck,
-		grafanaURL:       *grafanaURL,
-		grafanaAuthToken: *grafanaAuthToken,
-		grafanaTags:      strings.Split(*grafanaTags, ","),
-		logger:           logger,
+		exporter: e,
+		annotator: notifications.NewAnnotator(
+			*grafanaURL,
+			*grafanaAuthToken,
+			strings.Split(*grafanaTags, ","),
+			notifications.NewAnnotationCache(),
+			&http.Client{Timeout: 5 * time.Second},
+			logger,
+		),
+		port:        *port,
+		healthcheck: *healthcheck,
+		grafanaURL:  *grafanaURL,
+		logger:      logger,
 	}
 
 	err := serveHTTP(args, exitCh)
@@ -102,36 +108,13 @@ func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpE
 }
 
 func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
-	text := r.URL.Query().Get("text")
-	if len(text) == 0 {
+	notification := r.URL.Query().Get("text")
+	if len(notification) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	tags := make([]string, 0, len(args.grafanaTags))
-	for _, t := range args.grafanaTags {
-		tags = append(tags, `"`+t+`"`)
-	}
-	url := fmt.Sprintf("%s/api/annotations", args.grafanaURL)
-	body := strings.NewReader(fmt.Sprintf(`{"tags":[%s],"text":%q}`, strings.Join(tags, ","), text))
-
-	req, err := http.NewRequest("POST", url, body)
-	if err != nil {
-		args.logger.Printf("Error creating Grafana annotation request: %v\n", err)
-		return
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if args.grafanaAuthToken != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", args.grafanaAuthToken))
-	}
-
-	c := http.Client{Timeout: 5 * time.Second}
-	resp, err := c.Do(req)
-	if err == nil {
-		args.logger.Printf("Created Grafana annotation at %s: %s\n", url, resp.Status)
-	} else {
-		args.logger.Printf("Error creating Grafana annotation at %s: %v\n", url, err)
-	}
+	_, _ = args.annotator.Post(notification)
 }
 
 func serveHTTP(args httpEndpointArgs, exitCh chan os.Signal) error {

@@ -69,6 +69,10 @@ type EndpointStatus struct {
 	Properties map[string]string
 }
 
+var (
+	lastNotification time.Time
+)
+
 func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
 	w.Header().Add("Content-Type", "text/html")
 

@@ -9,8 +9,13 @@ type MockAnnotationCache struct {
 	mock.Mock
 }
 
+// Add provides a mock function with given fields: id, annotation
+func (_m *MockAnnotationCache) Add(id int, annotation string) {
+	_m.Called(id, annotation)
+}
+
 // Match provides a mock function with given fields: annotation
-func (_m *MockAnnotationCache) Match(annotation string) (int, error) {
+func (_m *MockAnnotationCache) Match(annotation string) int {
 	ret := _m.Called(annotation)
 
 	var r0 int
@@ -20,12 +25,5 @@ func (_m *MockAnnotationCache) Match(annotation string) (int, error) {
 		r0 = ret.Get(0).(int)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(string) error); ok {
-		r1 = rf(annotation)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }

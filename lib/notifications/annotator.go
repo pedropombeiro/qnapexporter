@@ -60,8 +60,8 @@ func (a *regionMatchingAnnotator) Post(annotation string) (int, error) {
 	url := fmt.Sprintf("%s/api/annotations", a.grafanaURL)
 
 	reqType := "POST"
-	id, err := a.cache.Match(annotation)
-	if err == nil && id != -1 {
+	id := a.cache.Match(annotation)
+	if id != -1 {
 		reqType = "PATCH"
 		ga.TimeEnd = time.Now().UnixNano() / 1000
 		url = fmt.Sprintf("%s/%d", url, id)
@@ -99,6 +99,10 @@ func (a *regionMatchingAnnotator) Post(annotation string) (int, error) {
 			err = json.Unmarshal(body, &response)
 			if err != nil {
 				return -1, fmt.Errorf("unmarshaling response body: %w", err)
+			}
+
+			if id == -1 {
+				a.cache.Add(response.Id, annotation)
 			}
 
 			a.logger.Printf("%s (status: %q), ID: %d\n", response.Message, resp.Status, response.Id)

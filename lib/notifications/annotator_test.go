@@ -2,7 +2,6 @@ package notifications
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -47,6 +46,8 @@ func TestPostAnnotation(t *testing.T) {
 				c.On("Match", "test notification").
 					Once().
 					Return(-1, nil)
+				c.On("Add", 1, "test notification").
+					Once()
 			},
 			setupClientMock: func(c *mockHttpClient) {
 				c.On("Do", mock.MatchedBy(func(req *http.Request) bool {
@@ -54,7 +55,7 @@ func TestPostAnnotation(t *testing.T) {
 						assert.Equal(t, "grafana.example.com", req.Host) &&
 						assert.Equal(t, "application/json", req.Header.Get("Content-Type")) &&
 						assert.Equal(t, "Bearer token1", req.Header.Get("Authorization")) &&
-						assert.Equal(t, `{"tags":["tag1","tag2"],"text":"test notification"}`, readAll(req.Body))
+						assert.Equal(t, `{"tags":["tag1","tag2"],"text":"test notification"}`, readBody(req))
 				})).
 					Once().
 					Return(responseWithBody(`{"id": 1}`), nil)
@@ -74,7 +75,7 @@ func TestPostAnnotation(t *testing.T) {
 			},
 			setupClientMock: func(c *mockHttpClient) {
 				c.On("Do", mock.MatchedBy(func(req *http.Request) bool {
-					body := readAll(req.Body)
+					body := readBody(req)
 					return assert.Equal(t, "PATCH", req.Method) &&
 						assert.Equal(t, "grafana.com", req.Host) &&
 						assert.Equal(t, "/api/annotations/98", req.URL.Path) &&
@@ -89,6 +90,32 @@ func TestPostAnnotation(t *testing.T) {
 			},
 			notification: "patch notification",
 			expectedID:   98,
+			expectedErr:  nil,
+		},
+		"tags are extracted": {
+			testURL:       "http://grafana.example.com",
+			testAuthToken: "token1",
+			tags:          []string{"tag1", "tag2"},
+			setupCacheMock: func(c *MockAnnotationCache) {
+				c.On("Match", "test notification").
+					Once().
+					Return(-1, nil)
+				c.On("Add", 1, "[tag3] [tag4] test notification").
+					Once()
+			},
+			setupClientMock: func(c *mockHttpClient) {
+				c.On("Do", mock.MatchedBy(func(req *http.Request) bool {
+					return assert.Equal(t, "POST", req.Method) &&
+						assert.Equal(t, "grafana.example.com", req.Host) &&
+						assert.Equal(t, "application/json", req.Header.Get("Content-Type")) &&
+						assert.Equal(t, "Bearer token1", req.Header.Get("Authorization")) &&
+						assert.Equal(t, `{"tags":["tag1","tag2","tag3","tag4"],"text":"test notification"}`, readBody(req))
+				})).
+					Once().
+					Return(responseWithBody(`{"id": 1}`), nil)
+			},
+			notification: "test notification",
+			expectedID:   1,
 			expectedErr:  nil,
 		},
 		"HTTP client returns error": {
@@ -133,6 +160,10 @@ func TestPostAnnotation(t *testing.T) {
 		t.Run(tn, func(t *testing.T) {
 			cacheMock := &MockAnnotationCache{}
 			clientMock := &mockHttpClient{}
+			defer func() {
+				cacheMock.AssertExpectations(t)
+				clientMock.AssertExpectations(t)
+			}()
 			tc.setupCacheMock(cacheMock)
 			tc.setupClientMock(clientMock)
 
@@ -157,13 +188,18 @@ func TestPostAnnotation(t *testing.T) {
 	}
 }
 
-func readAll(r io.Reader) string {
-	s, err := ioutil.ReadAll(r)
+func readBody(req *http.Request) string {
+	body, err := req.GetBody()
 	if err != nil {
 		return err.Error()
 	}
 
-	return string(s)
+	b, err := ioutil.ReadAll(body)
+	if err != nil {
+		return err.Error()
+	}
+
+	return string(b)
 }
 
 func responseWithBody(body string) *http.Response {

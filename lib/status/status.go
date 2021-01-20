@@ -34,6 +34,7 @@ const (
 	<table>
 		<tbody>
 			{{ range . }}
+			{{ if .Path }}
 			<tr>
 				<td>
 					<hr/>
@@ -58,6 +59,7 @@ const (
 					</table>
 				</td>
 			</tr>
+			{{ end }}
 			{{ end }}
 		</tbody>
 	</table>
@@ -93,14 +95,12 @@ func (s *Status) WriteHTML(w io.Writer) error {
 		},
 	}
 	endpoints := []endpointStatus{ms}
-	if s.NotificationEndpoint != "" {
-		endpoints = append(endpoints, endpointStatus{
-			Path: s.NotificationEndpoint,
-			Properties: map[string]string{
-				"Last notification": humanizeTime(s.LastNotification),
-			},
-		})
-	}
+	endpoints = append(endpoints, endpointStatus{
+		Path: s.NotificationEndpoint,
+		Properties: map[string]string{
+			"Last notification": humanizeTime(s.LastNotification),
+		},
+	})
 
 	tmpl, err := template.New("html").Parse(statusHtmlTemplate)
 	if err == nil {

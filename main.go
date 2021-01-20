@@ -124,6 +124,7 @@ func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, annot
 
 func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, serverStatus *status.Status, logger *log.Logger) {
 	w.Header().Add("Content-Type", "text/html")
+	w.Header().Add("Cache-Control", "no-cache")
 
 	err := serverStatus.WriteHTML(w)
 	if err != nil {

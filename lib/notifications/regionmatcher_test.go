@@ -7,22 +7,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewNoOpAnnotationCache(t *testing.T) {
-	c := NewNoOpAnnotationCache()
+func TestNewNoOpRegionMatcher(t *testing.T) {
+	c := NewNoOpRegionMatcher()
 
 	require.NotNil(t, c)
-	assert.IsType(t, &noOpAnnotationCache{}, c)
+	assert.IsType(t, &noOpRegionMatcher{}, c)
 }
 
-func TestNewMatcherAnnotationCache(t *testing.T) {
-	c := NewMatcherAnnotationCache(20)
+func TestNewRegionMatcher(t *testing.T) {
+	c := NewRegionMatcher(20)
 
 	require.NotNil(t, c)
-	assert.IsType(t, &matcherAnnotationCache{}, c)
+	assert.IsType(t, &regionMatcher{}, c)
 }
 
-func TestMatcherAnnotationCacheWithSmallCacheSize(t *testing.T) {
-	c := NewMatcherAnnotationCache(2)
+func TestRegionMatcherWithSmallCacheSize(t *testing.T) {
+	c := NewRegionMatcher(2)
 
 	c.Add(1, `[nas] [Storage & Snapshots] Started ext4lazyinit. Volume: ForeignMedia_Vol, Storage pool: "1".`)
 	c.Add(2, "message 2")
@@ -35,8 +35,8 @@ func TestMatcherAnnotationCacheWithSmallCacheSize(t *testing.T) {
 	assert.Equal(t, 3, id)
 }
 
-func TestMatcherAnnotationCache(t *testing.T) {
-	c := NewMatcherAnnotationCache(20)
+func TestRegionMatcher(t *testing.T) {
+	c := NewRegionMatcher(20)
 
 	id1 := c.Match("[nas] [Malware Remover] Started scanning.")
 	require.Equal(t, -1, id1)

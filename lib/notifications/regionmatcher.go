@@ -2,22 +2,22 @@ package notifications
 
 import "regexp"
 
-type AnnotationCache interface {
+type RegionMatcher interface {
 	Add(id int, annotation string)
 	Match(annotation string) int
 }
 
-type noOpAnnotationCache struct {
+type noOpRegionMatcher struct {
 }
 
-func NewNoOpAnnotationCache() AnnotationCache {
-	return new(noOpAnnotationCache)
+func NewNoOpRegionMatcher() RegionMatcher {
+	return new(noOpRegionMatcher)
 }
 
-func (c *noOpAnnotationCache) Add(id int, annotation string) {
+func (c *noOpRegionMatcher) Add(id int, annotation string) {
 }
 
-func (c *noOpAnnotationCache) Match(annotation string) int {
+func (c *noOpRegionMatcher) Match(annotation string) int {
 	return -1
 }
 
@@ -45,18 +45,18 @@ type cacheEntry struct {
 	annotation string
 }
 
-type matcherAnnotationCache struct {
+type regionMatcher struct {
 	cacheSize int
 	cache     []cacheEntry
 }
 
-func NewMatcherAnnotationCache(cacheSize int) AnnotationCache {
-	return &matcherAnnotationCache{
+func NewRegionMatcher(cacheSize int) RegionMatcher {
+	return &regionMatcher{
 		cacheSize: cacheSize,
 	}
 }
 
-func (c *matcherAnnotationCache) Add(id int, annotation string) {
+func (c *regionMatcher) Add(id int, annotation string) {
 	c.cache = append(c.cache, cacheEntry{
 		id:         id,
 		annotation: annotation,
@@ -66,7 +66,7 @@ func (c *matcherAnnotationCache) Add(id int, annotation string) {
 	}
 }
 
-func (c *matcherAnnotationCache) Match(annotation string) (id int) {
+func (c *regionMatcher) Match(annotation string) (id int) {
 	idx := -1
 	defer func() {
 		if idx >= 0 {
@@ -90,7 +90,7 @@ func (c *matcherAnnotationCache) Match(annotation string) (id int) {
 	return -1
 }
 
-func (c *matcherAnnotationCache) findIndex(annotation string) int {
+func (c *regionMatcher) findIndex(annotation string) int {
 	for idx, entry := range c.cache {
 		if entry.annotation == annotation {
 			return idx

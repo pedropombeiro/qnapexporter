@@ -31,7 +31,7 @@ type regionMatchingAnnotator struct {
 	grafanaURL       string
 	grafanaAuthToken string
 	tags             []string
-	cache            AnnotationCache
+	cache            RegionMatcher
 	client           httpClient
 	logger           *log.Logger
 }
@@ -39,7 +39,7 @@ type regionMatchingAnnotator struct {
 func NewAnnotator(
 	grafanaURL, grafanaAuthToken string,
 	tags []string,
-	cache AnnotationCache,
+	cache RegionMatcher,
 	c httpClient,
 	logger *log.Logger,
 ) Annotator {

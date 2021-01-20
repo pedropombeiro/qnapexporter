@@ -76,7 +76,7 @@ func main() {
 			*grafanaURL,
 			*grafanaAuthToken,
 			strings.Split(*grafanaTags, ","),
-			notifications.NewMatcherAnnotationCache(20),
+			notifications.NewRegionMatcher(20),
 			&http.Client{Timeout: 5 * time.Second},
 			logger,
 		),

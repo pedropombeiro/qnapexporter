@@ -18,7 +18,7 @@ func TestNewAnnotator(t *testing.T) {
 		"",
 		"",
 		strings.Split("", ","),
-		new(MockAnnotationCache),
+		new(MockRegionMatcher),
 		new(mockHttpClient),
 		log.New(ioutil.Discard, "", 0),
 	)
@@ -34,7 +34,7 @@ func TestPostAnnotation(t *testing.T) {
 		testURL         string
 		testAuthToken   string
 		tags            []string
-		setupCacheMock  func(c *MockAnnotationCache)
+		setupCacheMock  func(c *MockRegionMatcher)
 		setupClientMock func(c *mockHttpClient)
 		notification    string
 		expectedID      int
@@ -44,7 +44,7 @@ func TestPostAnnotation(t *testing.T) {
 			testURL:       "http://grafana.example.com",
 			testAuthToken: "token1",
 			tags:          []string{"tag1", "tag2"},
-			setupCacheMock: func(c *MockAnnotationCache) {
+			setupCacheMock: func(c *MockRegionMatcher) {
 				c.On("Match", "test notification").
 					Once().
 					Return(-1, nil)
@@ -70,7 +70,7 @@ func TestPostAnnotation(t *testing.T) {
 			testURL:       "http://grafana.com",
 			testAuthToken: "token2",
 			tags:          []string{"tag1"},
-			setupCacheMock: func(c *MockAnnotationCache) {
+			setupCacheMock: func(c *MockRegionMatcher) {
 				c.On("Match", "patch notification").
 					Once().
 					Return(98, nil)
@@ -98,7 +98,7 @@ func TestPostAnnotation(t *testing.T) {
 			testURL:       "http://grafana.example.com",
 			testAuthToken: "token1",
 			tags:          []string{"tag1"},
-			setupCacheMock: func(c *MockAnnotationCache) {
+			setupCacheMock: func(c *MockRegionMatcher) {
 				c.On("Match", "[tag2] test notification").
 					Once().
 					Return(-1, nil)
@@ -124,7 +124,7 @@ func TestPostAnnotation(t *testing.T) {
 			testURL:       "http://grafana.example.com",
 			testAuthToken: "token1",
 			tags:          []string{"tag1"},
-			setupCacheMock: func(c *MockAnnotationCache) {
+			setupCacheMock: func(c *MockRegionMatcher) {
 				c.On("Match", "[tag1] [tag2] [tag3] test notification").
 					Once().
 					Return(-1, nil)
@@ -150,7 +150,7 @@ func TestPostAnnotation(t *testing.T) {
 			testURL:       "http://grafana.com",
 			testAuthToken: "token2",
 			tags:          []string{"tag1"},
-			setupCacheMock: func(c *MockAnnotationCache) {
+			setupCacheMock: func(c *MockRegionMatcher) {
 				c.On("Match", "test notification").
 					Once().
 					Return(-1, nil)
@@ -168,7 +168,7 @@ func TestPostAnnotation(t *testing.T) {
 			testURL:       "http://grafana.com",
 			testAuthToken: "token2",
 			tags:          []string{"tag1"},
-			setupCacheMock: func(c *MockAnnotationCache) {
+			setupCacheMock: func(c *MockRegionMatcher) {
 				c.On("Match", "test notification").
 					Once().
 					Return(-1, nil)
@@ -186,8 +186,8 @@ func TestPostAnnotation(t *testing.T) {
 
 	for tn, tc := range testCases {
 		t.Run(tn, func(t *testing.T) {
-			cacheMock := &MockAnnotationCache{}
-			clientMock := &mockHttpClient{}
+			cacheMock := new(MockRegionMatcher)
+			clientMock := new(mockHttpClient)
 			defer func() {
 				cacheMock.AssertExpectations(t)
 				clientMock.AssertExpectations(t)

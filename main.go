@@ -108,6 +108,7 @@ func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpE
 }
 
 func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
+	lastNotification = time.Now()
 	notification := r.URL.Query().Get("text")
 	if len(notification) == 0 {
 		w.WriteHeader(http.StatusBadRequest)

@@ -1,0 +1,16 @@
+default:
+  image: golang:1.15-buster
+  tags:
+  - gitlab-org
+
+build:
+  script:
+    - make build
+  artifacts:
+    paths:
+      - bin/
+    expire_in: 30 days
+
+test:
+  script:
+    - make test

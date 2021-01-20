@@ -32,7 +32,6 @@ func TestWriteMetrics(t *testing.T) {
 	output := b.String()
 	assert.Contains(t, output, "\nnode_time_seconds{node=\"")
 	assert.Contains(t, output, "dial tcp 127.0.0.1:3493: connect: connection refused")
-	assert.Contains(t, output, "listen ip4:icmp : socket: operation not permitted")
 	assert.True(t, s.Uptime.After(startTime))
 	assert.True(t, s.LastFetch.After(s.Uptime))
 	assert.NotZero(t, s.LastFetchDuration.Microseconds())

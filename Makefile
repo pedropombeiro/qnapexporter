@@ -1,3 +1,8 @@
+.PHONY: build
+build:
+	@ mkdir -p ./bin
+	@ go build -o bin/qnapexporter .
+
 .PHONY: test
 test:
 	@ go test ./...

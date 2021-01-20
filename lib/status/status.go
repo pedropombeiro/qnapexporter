@@ -1,12 +1,13 @@
-package main
+package status
 
 import (
 	"html/template"
-	"net/http"
+	"io"
 	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/dustin/go-humanize/english"
+	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 )
 
 const (
@@ -64,57 +65,52 @@ const (
 `
 )
 
-type EndpointStatus struct {
+type endpointStatus struct {
 	Path       string
 	Properties map[string]string
 }
 
-var (
-	lastNotification time.Time
-)
-
-func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
-	w.Header().Add("Content-Type", "text/html")
-
-	endpoints := getEndpoints(args)
-	tmpl, err := template.New("html").Parse(statusHtmlTemplate)
-	if err == nil {
-		err = tmpl.Execute(w, endpoints)
-		if err == nil {
-			return
-		}
-	}
-
-	args.logger.Println(err.Error())
-	w.WriteHeader(http.StatusInternalServerError)
+type Status struct {
+	MetricsEndpoint      string
+	NotificationEndpoint string
+	ExporterStatus       exporter.Status
+	LastNotification     time.Time
 }
 
-func getEndpoints(args httpEndpointArgs) []EndpointStatus {
-	s := args.exporter.Status()
-	ms := EndpointStatus{
-		Path: metricsEndpoint,
+func (s *Status) WriteHTML(w io.Writer) error {
+	e := s.ExporterStatus
+	ms := endpointStatus{
+		Path: s.MetricsEndpoint,
 		Properties: map[string]string{
-			"Uptime":        humanizeTime(s.Uptime),
-			"Last fetch":    humanizeTime(s.LastFetch),
-			"Last duration": s.LastFetchDuration.String(),
-			"Metrics":       humanize.Comma(int64(s.MetricCount)),
-			"UPS":           humanizeList(s.Ups),
-			"Devices":       humanizeList(s.Devices),
-			"Volumes":       humanizeList(s.Volumes),
-			"Interfaces":    humanizeList(s.Interfaces),
+			"Uptime":        humanizeTime(e.Uptime),
+			"Last fetch":    humanizeTime(e.LastFetch),
+			"Last duration": e.LastFetchDuration.String(),
+			"Metrics":       humanize.Comma(int64(e.MetricCount)),
+			"UPS":           humanizeList(e.Ups),
+			"Devices":       humanizeList(e.Devices),
+			"Volumes":       humanizeList(e.Volumes),
+			"Interfaces":    humanizeList(e.Interfaces),
 		},
 	}
-	endpoints := []EndpointStatus{ms}
-	if args.grafanaURL != "" {
-		endpoints = append(endpoints, EndpointStatus{
-			Path: notificationEndpoint,
+	endpoints := []endpointStatus{ms}
+	if s.NotificationEndpoint != "" {
+		endpoints = append(endpoints, endpointStatus{
+			Path: s.NotificationEndpoint,
 			Properties: map[string]string{
-				"Last notification": humanizeTime(lastNotification),
+				"Last notification": humanizeTime(s.LastNotification),
 			},
 		})
 	}
 
-	return endpoints
+	tmpl, err := template.New("html").Parse(statusHtmlTemplate)
+	if err == nil {
+		err = tmpl.Execute(w, endpoints)
+		if err == nil {
+			return nil
+		}
+	}
+
+	return err
 }
 
 func humanizeList(a []string) string {

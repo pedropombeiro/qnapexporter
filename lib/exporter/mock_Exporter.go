@@ -18,20 +18,6 @@ func (_m *MockExporter) Close() {
 	_m.Called()
 }
 
-// Status provides a mock function with given fields:
-func (_m *MockExporter) Status() Status {
-	ret := _m.Called()
-
-	var r0 Status
-	if rf, ok := ret.Get(0).(func() Status); ok {
-		r0 = rf()
-	} else {
-		r0 = ret.Get(0).(Status)
-	}
-
-	return r0
-}
-
 // WriteMetrics provides a mock function with given fields: w
 func (_m *MockExporter) WriteMetrics(w io.Writer) error {
 	ret := _m.Called(w)

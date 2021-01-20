@@ -30,7 +30,7 @@ type fetchMetricFn func() ([]metric, error)
 type promExporter struct {
 	logger *log.Logger
 
-	status exporter.Status
+	status *exporter.Status
 
 	hostname   string
 	pingTarget string
@@ -51,10 +51,11 @@ type promExporter struct {
 	fns []fetchMetricFn
 }
 
-func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
+func NewExporter(pingTarget string, status *exporter.Status, logger *log.Logger) exporter.Exporter {
 	now := time.Now()
 	e := &promExporter{
 		logger:       logger,
+		status:       status,
 		pingTarget:   pingTarget,
 		volumeExpiry: now,
 		envExpiry:    now,
@@ -75,17 +76,21 @@ func NewExporter(pingTarget string, logger *log.Logger) exporter.Exporter {
 		e.getPingMetrics,          // #13
 	}
 
-	e.status.Uptime = now
+	if status != nil {
+		status.Uptime = now
+	}
 
 	return e
 }
 
 func (e *promExporter) WriteMetrics(w io.Writer) error {
-	e.status.MetricCount = 0
-	e.status.LastFetch = time.Now()
-	defer func() {
-		e.status.LastFetchDuration = time.Since(e.status.LastFetch)
-	}()
+	if e.status != nil {
+		e.status.MetricCount = 0
+		e.status.LastFetch = time.Now()
+		defer func() {
+			e.status.LastFetchDuration = time.Since(e.status.LastFetch)
+		}()
+	}
 
 	if time.Now().After(e.envExpiry) {
 		e.readEnvironment()
@@ -109,7 +114,9 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	for m := range metricsCh {
 		switch v := m.(type) {
 		case []metric:
-			e.status.MetricCount += len(v)
+			if e.status != nil {
+				e.status.MetricCount += len(v)
+			}
 			for _, m := range v {
 				writeMetricMetadata(w, m)
 				_, _ = fmt.Fprintf(w, "%s %g\n", e.getMetricFullName(m), m.value)
@@ -134,10 +141,6 @@ func fetchMetricsWorker(wg *sync.WaitGroup, metricsCh chan<- interface{}, idx in
 	}
 
 	metricsCh <- metrics
-}
-
-func (e *promExporter) Status() exporter.Status {
-	return e.status
 }
 
 func (e *promExporter) Close() {
@@ -219,8 +222,10 @@ func (e *promExporter) readEnvironment() {
 
 	e.envExpiry = e.envExpiry.Add(envValidity)
 
-	e.status.Devices = e.devices
-	e.status.Interfaces = e.ifaces
+	if e.status != nil {
+		e.status.Devices = e.devices
+		e.status.Interfaces = e.ifaces
+	}
 }
 
 func (e *promExporter) getMetricFullName(m metric) string {

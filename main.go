@@ -17,6 +17,7 @@ import (
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
+	"gitlab.com/pedropombeiro/qnapexporter/lib/status"
 )
 
 const (
@@ -29,11 +30,9 @@ var (
 	healthCheckValidity time.Duration = time.Duration(5 * time.Minute)
 )
 
-type httpEndpointArgs struct {
+type httpServerArgs struct {
 	exporter    exporter.Exporter
-	annotator   notifications.Annotator
 	port        string
-	grafanaURL  string
 	healthcheck string
 	logger      *log.Logger
 }
@@ -68,32 +67,38 @@ func main() {
 	exitCh := make(chan os.Signal, 1)
 	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
-	e := prometheus.NewExporter(*pingTarget, logger)
-
-	args := httpEndpointArgs{
-		exporter: e,
-		annotator: notifications.NewAnnotator(
-			*grafanaURL,
-			*grafanaAuthToken,
-			strings.Split(*grafanaTags, ","),
-			notifications.NewRegionMatcher(20),
-			&http.Client{Timeout: 5 * time.Second},
-			logger,
-		),
-		port:        *port,
-		healthcheck: *healthcheck,
-		grafanaURL:  *grafanaURL,
-		logger:      logger,
+	serverStatus := &status.Status{
+		MetricsEndpoint: metricsEndpoint,
+	}
+	if *grafanaURL != "" {
+		serverStatus.NotificationEndpoint = notificationEndpoint
 	}
 
-	err := serveHTTP(args, exitCh)
+	e := prometheus.NewExporter(*pingTarget, &serverStatus.ExporterStatus, logger)
+
+	args := httpServerArgs{
+		exporter:    e,
+		port:        *port,
+		healthcheck: *healthcheck,
+		logger:      logger,
+	}
+	annotator := notifications.NewAnnotator(
+		*grafanaURL,
+		*grafanaAuthToken,
+		strings.Split(*grafanaTags, ","),
+		notifications.NewRegionMatcher(20),
+		&http.Client{Timeout: 5 * time.Second},
+		logger,
+	)
+
+	err := serveHTTP(args, annotator, serverStatus, exitCh)
 	if err != nil {
 		log.Println(err.Error())
 	}
 	os.Exit(1)
 }
 
-func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
+func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpServerArgs) {
 	w.Header().Add("Content-Type", "text/plain")
 
 	handleHealthcheckStart(args.healthcheck)
@@ -107,26 +112,41 @@ func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpE
 	handleHealthcheckEnd(args.healthcheck, err)
 }
 
-func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, args httpEndpointArgs) {
-	lastNotification = time.Now()
+func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, annotator notifications.Annotator) {
 	notification := r.URL.Query().Get("text")
 	if len(notification) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	_, _ = args.annotator.Post(notification)
+	_, _ = annotator.Post(notification)
 }
 
-func serveHTTP(args httpEndpointArgs, exitCh chan os.Signal) error {
+func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, serverStatus *status.Status, logger *log.Logger) {
+	w.Header().Add("Content-Type", "text/html")
+
+	err := serverStatus.WriteHTML(w)
+	if err != nil {
+		logger.Println(err.Error())
+
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
+func serveHTTP(args httpServerArgs, annotator notifications.Annotator, serverStatus *status.Status, exitCh chan os.Signal) error {
 	defer args.exporter.Close()
 
 	// handle route using handler function
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { handleRootHTTPRequest(w, r, args) })
-	http.HandleFunc(metricsEndpoint, func(w http.ResponseWriter, r *http.Request) { handleMetricsHTTPRequest(w, r, args) })
-	if args.grafanaURL != "" {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		handleRootHTTPRequest(w, r, serverStatus, args.logger)
+	})
+	http.HandleFunc(metricsEndpoint, func(w http.ResponseWriter, r *http.Request) {
+		handleMetricsHTTPRequest(w, r, args)
+	})
+	if serverStatus.NotificationEndpoint != "" {
 		http.HandleFunc(notificationEndpoint, func(w http.ResponseWriter, r *http.Request) {
-			handleNotificationHTTPRequest(w, r, args)
+			serverStatus.LastNotification = time.Now()
+			handleNotificationHTTPRequest(w, r, annotator)
 		})
 	}
 

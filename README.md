@@ -15,24 +15,11 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 
 ## Installation
 
-1. Assuming you have Entware installed on your NAS, install Go:
-
-    ```shell
-    opkg install go
-    export GOROOT=/opt/bin/go
-    export PATH="${PATH}:${GOROOT}/bin"
-    ```
-
-1. Install `qnapexporter`
-
-    ```shell
-    go get -u gitlab.com/pedropombeiro/qnapexporter
-    ```
-
+1. Download the latest qnapexporter executable from the [Releases page](https://gitlab.com/pedropombeiro/qnapexporter/-/releases)
 1. Run `qnapexporter`
 
     ```shell
-    ~/go/bin/qnapexporter
+    ./qnapexporter
     ```
 
     Normally it should be run as a background task. Unfortunately this is not easy on a QNAP NAS.

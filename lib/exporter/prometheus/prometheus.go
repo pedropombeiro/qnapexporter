@@ -61,19 +61,20 @@ func NewExporter(pingTarget string, status *exporter.Status, logger *log.Logger)
 		envExpiry:    now,
 	}
 	e.fns = []fetchMetricFn{
-		getUptimeMetrics,          // #1
-		getLoadAvgMetrics,         // #2
-		getCpuRatioMetrics,        // #3
-		getMemInfoMetrics,         // #4
-		e.getUpsStatsMetrics,      // #5
-		e.getSysInfoTempMetrics,   // #6
-		e.getSysInfoFanMetrics,    // #7
-		e.getSysInfoHdMetrics,     // #8
-		e.getSysInfoVolMetrics,    // #9
-		e.getDiskStatsMetrics,     // #10
-		getFlashCacheStatsMetrics, // #11
-		e.getNetworkStatsMetrics,  // #12
-		e.getPingMetrics,          // #13
+		e.getVersionMetrics,       // #1
+		getUptimeMetrics,          // #2
+		getLoadAvgMetrics,         // #3
+		getCpuRatioMetrics,        // #4
+		getMemInfoMetrics,         // #5
+		e.getUpsStatsMetrics,      // #6
+		e.getSysInfoTempMetrics,   // #7
+		e.getSysInfoFanMetrics,    // #8
+		e.getSysInfoHdMetrics,     // #9
+		e.getSysInfoVolMetrics,    // #10
+		e.getDiskStatsMetrics,     // #11
+		getFlashCacheStatsMetrics, // #12
+		e.getNetworkStatsMetrics,  // #13
+		e.getPingMetrics,          // #14
 	}
 
 	if status != nil {

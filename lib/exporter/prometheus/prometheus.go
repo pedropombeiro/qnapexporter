@@ -51,7 +51,8 @@ type promExporter struct {
 	volumes         []volumeInfo
 	volumeLastFetch time.Time
 
-	fns []fetchMetricFn
+	fns     []fetchMetricFn
+	fetchMu sync.Mutex
 }
 
 type ExporterConfig struct {
@@ -93,6 +94,9 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 }
 
 func (e *promExporter) WriteMetrics(w io.Writer) error {
+	e.fetchMu.Lock()
+	defer e.fetchMu.Unlock()
+
 	if e.status != nil {
 		e.status.MetricCount = 0
 		e.status.LastFetch = time.Now()

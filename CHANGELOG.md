@@ -1,3 +1,7 @@
+# Release v0.0.5
+
+Fix speedtest metrics reported as 0.
+
 # Release v0.0.4
 
 Add speedtest metrics.

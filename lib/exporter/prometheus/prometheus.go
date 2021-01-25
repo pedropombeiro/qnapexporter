@@ -28,12 +28,11 @@ const (
 type fetchMetricFn func() ([]metric, error)
 
 type promExporter struct {
-	logger *log.Logger
+	ExporterConfig
 
 	status *exporter.Status
 
-	hostname   string
-	pingTarget string
+	hostname string
 
 	upsState upsState
 
@@ -45,20 +44,23 @@ type promExporter struct {
 	devices    []string
 	envExpiry  time.Time
 
-	volumes      []volumeInfo
-	volumeExpiry time.Time
+	volumes         []volumeInfo
+	volumeLastFetch time.Time
 
 	fns []fetchMetricFn
 }
 
-func NewExporter(pingTarget string, status *exporter.Status, logger *log.Logger) exporter.Exporter {
+type ExporterConfig struct {
+	PingTarget      string
+	Logger          *log.Logger
+}
+
+func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Exporter {
 	now := time.Now()
 	e := &promExporter{
-		logger:       logger,
-		status:       status,
-		pingTarget:   pingTarget,
-		volumeExpiry: now,
-		envExpiry:    now,
+		ExporterConfig: config,
+		status:         status,
+		envExpiry:      now,
 	}
 	e.fns = []fetchMetricFn{
 		e.getVersionMetrics,       // #1
@@ -120,10 +122,15 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 			}
 			for _, m := range v {
 				writeMetricMetadata(w, m)
-				_, _ = fmt.Fprintf(w, "%s %g\n", e.getMetricFullName(m), m.value)
+
+				var timestamp string
+				if !m.timestamp.IsZero() {
+					timestamp = strconv.Itoa(int(m.timestamp.UnixNano() / 1000000))
+				}
+				_, _ = fmt.Fprintf(w, "%s %g %s\n", e.getMetricFullName(m), m.value, timestamp)
 			}
 		case error:
-			e.logger.Println(v.Error())
+			e.Logger.Println(v.Error())
 
 			_, _ = fmt.Fprintf(w, "## %v\n", v)
 		}
@@ -153,25 +160,25 @@ func (e *promExporter) Close() {
 }
 
 func (e *promExporter) readEnvironment() {
-	e.logger.Println("Reading environment...")
+	e.Logger.Println("Reading environment...")
 
 	var err error
 	e.hostname = os.Getenv("HOSTNAME")
 	if e.hostname == "" {
 		e.hostname, err = utils.ExecCommand("hostname")
 	}
-	e.logger.Printf("Hostname: %s, err=%v\n", e.hostname, err)
+	e.Logger.Printf("Hostname: %s, err=%v\n", e.hostname, err)
 
 	if e.iostat == "" {
 		e.iostat, err = exec.LookPath("iostat")
 		if err != nil {
-			e.logger.Printf("Failed to find iostat: %v\n", err)
+			e.Logger.Printf("Failed to find iostat: %v\n", err)
 		}
 	}
 	if e.getsysinfo == "" {
 		e.getsysinfo, _ = exec.LookPath("getsysinfo")
 		if err != nil {
-			e.logger.Printf("Failed to find getsysinfo: %v\n", err)
+			e.Logger.Printf("Failed to find getsysinfo: %v\n", err)
 		}
 	}
 	if e.getsysinfo != "" {
@@ -219,7 +226,7 @@ func (e *promExporter) readEnvironment() {
 
 		e.devices = append(e.devices, dev)
 	}
-	e.logger.Printf("Found devices: %v", e.devices)
+	e.Logger.Printf("Found devices: %v", e.devices)
 
 	e.envExpiry = e.envExpiry.Add(envValidity)
 

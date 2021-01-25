@@ -70,9 +70,10 @@ func (e *promExporter) getPingMetrics() ([]metric, error) {
 		value = math.NaN()
 	}
 	m := metric{
-		name:  "node_network_external_roundtrip_time_ms",
-		attr:  fmt.Sprintf("target=%q", pinger.IPAddr().String()),
-		value: value,
+		name:      "node_network_external_roundtrip_time_ms",
+		attr:      fmt.Sprintf("target=%q", pinger.IPAddr().String()),
+		value:     value,
+		timestamp: time.Now(),
 	}
 
 	return []metric{m}, nil

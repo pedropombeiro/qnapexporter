@@ -33,23 +33,23 @@ func (e *promExporter) readSysVolInfo() {
 
 		desc, err := utils.ExecCommand(e.getsysinfo, "vol_desc", volIdx)
 		if err != nil {
-			e.logger.Printf("Error fetching volume %d description: %v", idx, err)
+			e.Logger.Printf("Error fetching volume %d description: %v", idx, err)
 			continue
 		}
 
 		fileSystem, err := utils.ExecCommand(e.getsysinfo, "vol_fs", volIdx)
 		if err != nil {
-			e.logger.Printf("Error fetching volume %d file system: %v", idx, err)
+			e.Logger.Printf("Error fetching volume %d file system: %v", idx, err)
 			continue
 		}
 		if fileSystem == "Unknown" {
-			e.logger.Printf("Ignoring %q volume with %s file system", desc, fileSystem)
+			e.Logger.Printf("Ignoring %q volume with %s file system", desc, fileSystem)
 			continue
 		}
 
 		volsizeStr, err := utils.ExecCommand(e.getsysinfo, "vol_totalsize", volIdx)
 		if err != nil {
-			e.logger.Printf("Error fetching volume %d size: %v", idx, err)
+			e.Logger.Printf("Error fetching volume %d size: %v", idx, err)
 			continue
 		}
 		volsizeBytes, err := parseVolSize(volsizeStr)
@@ -59,7 +59,7 @@ func (e *promExporter) readSysVolInfo() {
 
 		status, err := utils.ExecCommand(e.getsysinfo, "vol_status", volIdx)
 		if err != nil {
-			e.logger.Printf("Error fetching volume %d status: %v", idx, err)
+			e.Logger.Printf("Error fetching volume %d status: %v", idx, err)
 			continue
 		}
 
@@ -74,8 +74,7 @@ func (e *promExporter) readSysVolInfo() {
 		)
 	}
 
-	e.volumeExpiry = time.Now()
-	e.logger.Printf("Found volumes %v", e.volumes)
+	e.Logger.Printf("Found volumes %v", e.volumes)
 }
 
 func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
@@ -86,7 +85,11 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 	metrics := make([]metric, 0, 2*len(e.volumes))
 	e.status.Volumes = []string{}
 
-	expired := time.Now().After(e.volumeExpiry)
+	expired := e.volumeLastFetch.IsZero() || time.Now().After(e.volumeLastFetch.Add(volumeValidity))
+	if expired {
+		e.volumeLastFetch = time.Now()
+	}
+
 	for idx, v := range e.volumes {
 		volnumStr := strconv.Itoa(idx)
 		e.status.Volumes = append(e.status.Volumes, v.description)
@@ -107,21 +110,19 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 		attr := fmt.Sprintf("volume=%q,filesystem=%q,status=%q", v.description, v.fileSystem, v.status)
 		newMetrics := []metric{
 			{
-				name:  "node_volume_avail_bytes",
-				attr:  attr,
-				value: v.freeSizeBytes,
+				name:      "node_volume_avail_bytes",
+				attr:      attr,
+				value:     v.freeSizeBytes,
+				timestamp: e.volumeLastFetch,
 			},
 			{
-				name:  "node_volume_size_bytes",
-				attr:  attr,
-				value: v.totalSizeBytes,
+				name:      "node_volume_size_bytes",
+				attr:      attr,
+				value:     v.totalSizeBytes,
+				timestamp: e.volumeLastFetch,
 			},
 		}
 		metrics = append(metrics, newMetrics...)
-	}
-
-	if expired {
-		e.volumeExpiry = e.volumeExpiry.Add(volumeValidity)
 	}
 
 	return metrics, nil

@@ -35,7 +35,7 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 
 	if e.upsState.upsClient.ProtocolVersion == "" {
 		if e.upsState.upsConnAttempts < 10 {
-			e.logger.Println("Connecting to UPS daemon")
+			e.Logger.Println("Connecting to UPS daemon")
 
 			e.upsState.upsConnAttempts++
 			e.upsState.upsClient, e.upsState.upsConnErr = nut.Connect("127.0.0.1")

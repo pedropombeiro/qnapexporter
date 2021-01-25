@@ -13,7 +13,11 @@ import (
 )
 
 func TestNewExporter(t *testing.T) {
-	e := NewExporter("1.1.1.1", nil, log.New(ioutil.Discard, "", 0))
+	config := ExporterConfig{
+		PingTarget: "1.1.1.1",
+		Logger:     log.New(ioutil.Discard, "", 0),
+	}
+	e := NewExporter(config, nil)
 
 	require.NotNil(t, e)
 	assert.IsType(t, &promExporter{}, e)
@@ -22,7 +26,11 @@ func TestNewExporter(t *testing.T) {
 func TestWriteMetrics(t *testing.T) {
 	var s exporter.Status
 	startTime := time.Now()
-	e := NewExporter("8.8.8.8", &s, log.New(ioutil.Discard, "", 0))
+	config := ExporterConfig{
+		PingTarget: "8.8.8.8",
+		Logger:     log.New(ioutil.Discard, "", 0),
+	}
+	e := NewExporter(config, &s)
 	b := new(bytes.Buffer)
 	defer e.Close()
 
@@ -39,7 +47,11 @@ func TestWriteMetrics(t *testing.T) {
 }
 
 func BenchmarkWriteMetrics(b *testing.B) {
-	e := NewExporter("8.8.8.8", nil, log.New(ioutil.Discard, "", 0))
+	config := ExporterConfig{
+		PingTarget: "8.8.8.8",
+		Logger:     log.New(ioutil.Discard, "", 0),
+	}
+	e := NewExporter(config, nil)
 	defer e.Close()
 
 	for i := 0; i < b.N; i++ {

@@ -74,7 +74,11 @@ func main() {
 		serverStatus.NotificationEndpoint = notificationEndpoint
 	}
 
-	e := prometheus.NewExporter(*pingTarget, &serverStatus.ExporterStatus, logger)
+	config := prometheus.ExporterConfig{
+		PingTarget:      *pingTarget,
+		Logger:          logger,
+	}
+	e := prometheus.NewExporter(config, &serverStatus.ExporterStatus)
 
 	args := httpServerArgs{
 		exporter:    e,

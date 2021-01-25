@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/showwin/speedtest-go/speedtest"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
@@ -34,6 +35,9 @@ type promExporter struct {
 
 	hostname string
 
+	speedtestTargets speedtest.Servers
+	speedtestLastRun time.Time
+
 	upsState upsState
 
 	getsysinfo string
@@ -52,6 +56,7 @@ type promExporter struct {
 
 type ExporterConfig struct {
 	PingTarget      string
+	SpeedtestServer int
 	Logger          *log.Logger
 }
 
@@ -77,6 +82,7 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 		getFlashCacheStatsMetrics, // #12
 		e.getNetworkStatsMetrics,  // #13
 		e.getPingMetrics,          // #14
+		e.getBandwidthMetrics,     // #15
 	}
 
 	if status != nil {

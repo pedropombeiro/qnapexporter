@@ -42,6 +42,7 @@ func main() {
 
 	port := flag.String("port", ":9094", "Port to serve at (e.g. :9094).")
 	pingTarget := flag.String("ping-target", "1.1.1.1", "Host to periodically ping (e.g. 1.1.1.1).")
+	speedtestServer := flag.Int("speedtest-server", 0, "Speedtest server ID.")
 	healthcheck := flag.String("healthcheck", "", "Healthcheck service to ping every 5 minutes (currently supported: healthchecks.io:<check-id>).")
 	grafanaURL := flag.String("grafana-url", os.Getenv("GRAFANA_URL"), "Grafana host (e.g.: https://grafana.example.com).")
 	grafanaAuthToken := flag.String("grafana-auth-token", os.Getenv("GRAFANA_AUTH_TOKEN"), "Grafana authorization token.")
@@ -76,6 +77,7 @@ func main() {
 
 	config := prometheus.ExporterConfig{
 		PingTarget:      *pingTarget,
+		SpeedtestServer: *speedtestServer,
 		Logger:          logger,
 	}
 	e := prometheus.NewExporter(config, &serverStatus.ExporterStatus)

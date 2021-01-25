@@ -1,6 +1,6 @@
 PKG = gitlab.com/pedropombeiro/qnapexporter
-VERSION_PKG = $(PKG)/lib/exporter/prometheus
-PACKAGE_VERSION ?= 'dev'
+VERSION_PKG = $(PKG)/lib/utils
+PACKAGE_VERSION ?= dev
 REVISION := $(shell git rev-parse --short=8 HEAD || echo unknown)
 BRANCH := $(shell git show-ref | grep "$(REVISION)" | grep -v HEAD | awk '{print $$2}' | sed 's|refs/remotes/origin/||' | sed 's|refs/heads/||' | sort | head -n 1)
 BUILT := $(shell date -u +%Y-%m-%dT%H:%M:%S%z)

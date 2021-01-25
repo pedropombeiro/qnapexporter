@@ -12,6 +12,8 @@ type Exporter interface {
 }
 
 type Status struct {
+	Branch, Revision, Built, Version string
+
 	Uptime            time.Time
 	LastFetch         time.Time
 	LastFetchDuration time.Duration

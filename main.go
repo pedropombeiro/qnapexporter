@@ -18,6 +18,7 @@ import (
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/status"
+	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 const (
@@ -48,6 +49,12 @@ func main() {
 	grafanaAuthToken := flag.String("grafana-auth-token", os.Getenv("GRAFANA_AUTH_TOKEN"), "Grafana authorization token.")
 	grafanaTags := flag.String("grafana-tags", os.Getenv("GRAFANA_TAGS"), "Grafana annotation tags, separated by quotes (default: 'nas').")
 	logFile := flag.String("log", "", "Log file path (defaults to empty, i.e. STDOUT).")
+	defaultUsage := flag.Usage
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "qnapexporter version %s (%s-%s) built on %s\n", utils.VERSION, utils.REVISION, utils.BRANCH, utils.BUILT)
+		fmt.Fprintln(flag.CommandLine.Output(), "")
+		defaultUsage()
+	}
 	flag.Parse()
 
 	healthCheckExpiry = time.Now()
@@ -70,6 +77,12 @@ func main() {
 
 	serverStatus := &status.Status{
 		MetricsEndpoint: metricsEndpoint,
+		ExporterStatus: exporter.Status{
+			Branch:   utils.BRANCH,
+			Revision: utils.REVISION,
+			Built:    utils.BUILT,
+			Version:  utils.VERSION,
+		},
 	}
 	if *grafanaURL != "" {
 		serverStatus.NotificationEndpoint = notificationEndpoint

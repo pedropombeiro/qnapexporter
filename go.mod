@@ -10,7 +10,6 @@ require (
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/mackerelio/go-osstat v0.1.0
 	github.com/robbiet480/go.nut v0.0.0-20200921180721-77b33bf222d9
-	github.com/showwin/speedtest-go v1.1.0
 	github.com/stretchr/objx v0.1.1 // indirect
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect

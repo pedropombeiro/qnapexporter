@@ -8,11 +8,8 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
-	"github.com/showwin/speedtest-go/speedtest"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
-
-const speedtestValidity = 1 * time.Hour
 
 func (e *promExporter) getNetworkStatsMetrics() ([]metric, error) {
 	metrics := make([]metric, 0, len(e.ifaces)*2)
@@ -80,68 +77,4 @@ func (e *promExporter) getPingMetrics() ([]metric, error) {
 	}
 
 	return []metric{m}, nil
-}
-
-func (e *promExporter) getBandwidthMetrics() ([]metric, error) {
-	expired := e.speedtestLastRun.IsZero() || time.Now().After(e.speedtestLastRun.Add(speedtestValidity))
-	if len(e.speedtestTargets) == 0 {
-		user, err := speedtest.FetchUserInfo()
-		if err != nil {
-			return nil, err
-		}
-		serverList, err := speedtest.FetchServerList(user)
-		if err != nil {
-			return nil, err
-		}
-		serverIDs := make([]int, 0)
-		if e.SpeedtestServer != 0 {
-			serverIDs = append(serverIDs, e.SpeedtestServer)
-		}
-
-		e.speedtestTargets, err = serverList.FindServer(serverIDs)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	if expired {
-		e.speedtestLastRun = time.Now()
-	}
-
-	metrics := make([]metric, 0, len(e.speedtestTargets)*2)
-	for _, s := range e.speedtestTargets {
-		attr := fmt.Sprintf("server=%q", s.ID)
-
-		if expired {
-			err := s.DownloadTest(false)
-			if err != nil {
-				return metrics, err
-			}
-		}
-		metrics = append(metrics,
-			metric{
-				name:      "node_network_external_download_speed_bps",
-				attr:      attr,
-				timestamp: e.speedtestLastRun,
-				value:     s.DLSpeed * 1000 * 1000,
-			},
-		)
-
-		if expired {
-			err := s.UploadTest(false)
-			if err != nil {
-				return metrics, err
-			}
-		}
-		metrics = append(metrics,
-			metric{
-				name:      "node_network_external_upload_speed_bps",
-				attr:      attr,
-				timestamp: e.speedtestLastRun,
-				value:     s.ULSpeed * 1000 * 1000,
-			},
-		)
-	}
-
-	return metrics, nil
 }

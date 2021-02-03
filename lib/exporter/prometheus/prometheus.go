@@ -118,6 +118,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	}()
 
 	// Retrieve metrics from channel and write them to the response
+	var err error
 	for m := range metricsCh {
 		switch v := m.(type) {
 		case []metric:
@@ -134,13 +135,14 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 				_, _ = fmt.Fprintf(w, "%s %g %s\n", e.getMetricFullName(m), m.value, timestamp)
 			}
 		case error:
+			err = v
 			e.Logger.Println(v.Error())
 
 			_, _ = fmt.Fprintf(w, "## %v\n", v)
 		}
 	}
 
-	return nil
+	return err
 }
 
 func fetchMetricsWorker(wg *sync.WaitGroup, metricsCh chan<- interface{}, idx int, fetchMetricsFn fetchMetricFn) {

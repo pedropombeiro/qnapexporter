@@ -35,7 +35,7 @@ func TestWriteMetrics(t *testing.T) {
 	defer e.Close()
 
 	err := e.WriteMetrics(b)
-	assert.NoError(t, err)
+	require.Error(t, err)
 
 	output := b.String()
 	assert.Contains(t, output, "\nnode_time_seconds{node=\"")

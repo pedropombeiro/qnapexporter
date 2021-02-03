@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 
 	nut "github.com/robbiet480/go.nut"
 )
@@ -15,9 +16,10 @@ type upsState struct {
 	upsLock   sync.Mutex
 	upsClient nut.Client
 
-	upsConnErr      error
-	upsConnAttempts int
-	upsList         *[]nut.UPS
+	upsConnErr          error
+	upsConnErrTimestamp time.Time
+	upsConnAttempts     int
+	upsList             *[]nut.UPS
 }
 
 func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
@@ -40,6 +42,9 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 	}()
 
 	if e.upsState.upsClient.ProtocolVersion == "" {
+		if e.upsState.upsConnAttempts >= 10 && time.Since(e.upsState.upsConnErrTimestamp) >= 1*time.Hour {
+			e.upsState.upsConnAttempts = 0
+		}
 		if e.upsState.upsConnAttempts < 10 {
 			e.Logger.Println("Connecting to UPS daemon")
 
@@ -47,6 +52,7 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 			e.upsState.upsClient, e.upsState.upsConnErr = nut.Connect("127.0.0.1")
 		}
 		if e.upsState.upsConnErr != nil {
+			e.upsState.upsConnErrTimestamp = time.Now()
 			return nil, fmt.Errorf("%w (attempt %d)", e.upsState.upsConnErr, e.upsState.upsConnAttempts)
 		}
 	}

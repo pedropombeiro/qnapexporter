@@ -25,10 +25,16 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 	defer e.upsState.upsLock.Unlock()
 
 	defer func() {
-		if err != nil {
-			var syscallErr *os.SyscallError
-			if errors.As(err, &syscallErr) && syscallErr.Err == syscall.ECONNRESET {
+		if err == nil {
+			return
+		}
+
+		var syscallErr *os.SyscallError
+		if errors.As(err, &syscallErr) {
+			switch syscallErr.Err {
+			case syscall.ECONNRESET, syscall.EPIPE:
 				_, _ = e.upsState.upsClient.Disconnect()
+				e.upsState.upsClient.ProtocolVersion = ""
 			}
 		}
 	}()

@@ -14,24 +14,28 @@ func getCpuRatioMetrics() ([]metric, error) {
 
 	metrics := []metric{
 		{
-			name:  "node_cpu_ratio",
-			attr:  `mode="user"`,
-			value: float64(s.User) / float64(s.Total),
+			name:       "node_cpu_seconds_total",
+			attr:       `mode="user"`,
+			metricType: "counter",
+			value:      float64(s.User),
 		},
 		{
-			name:  "node_cpu_ratio",
-			attr:  `mode="nice"`,
-			value: float64(s.Nice) / float64(s.Total),
+			name:       "node_cpu_seconds_total",
+			attr:       `mode="nice"`,
+			metricType: "counter",
+			value:      float64(s.Nice),
 		},
 		{
-			name:  "node_cpu_ratio",
-			attr:  `mode="system"`,
-			value: float64(s.System) / float64(s.Total),
+			name:       "node_cpu_seconds_total",
+			attr:       `mode="system"`,
+			metricType: "counter",
+			value:      float64(s.System),
 		},
 		{
-			name:  "node_cpu_ratio",
-			attr:  `mode="idle"`,
-			value: float64(s.Idle) / float64(s.Total),
+			name:       "node_cpu_seconds_total",
+			attr:       `mode="idle"`,
+			metricType: "counter",
+			value:      float64(s.Idle),
 		},
 	}
 

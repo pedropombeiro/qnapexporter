@@ -1,11 +1,17 @@
 package prometheus
 
 import (
-	"github.com/mackerelio/go-osstat/cpu"
+	"github.com/shirou/gopsutil/v3/cpu"
 )
 
 func getCpuRatioMetrics() ([]metric, error) {
-	s, err := cpu.Get()
+	a, err := cpu.Times(false)
+	if err != nil {
+		return nil, err
+	}
+	s := a[0]
+
+	counts, err := cpu.Counts(false)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +61,7 @@ func getCpuRatioMetrics() ([]metric, error) {
 		},
 		{
 			name:  "node_cpu_count",
-			value: float64(s.CPUCount),
+			value: float64(counts),
 		},
 	}
 

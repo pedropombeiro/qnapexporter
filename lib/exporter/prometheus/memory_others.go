@@ -3,11 +3,11 @@
 package prometheus
 
 import (
-	"github.com/mackerelio/go-osstat/memory"
+	"github.com/shirou/gopsutil/v3/mem"
 )
 
 func getMemInfoMetrics() ([]metric, error) {
-	s, err := memory.Get()
+	s, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, err
 	}

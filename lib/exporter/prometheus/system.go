@@ -5,13 +5,13 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mackerelio/go-osstat/loadavg"
-	"github.com/mackerelio/go-osstat/uptime"
+	"github.com/shirou/gopsutil/v3/host"
+	"github.com/shirou/gopsutil/v3/load"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 func getUptimeMetrics() ([]metric, error) {
-	u, err := uptime.Get()
+	u, err := host.Uptime()
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +19,7 @@ func getUptimeMetrics() ([]metric, error) {
 	return []metric{
 		{
 			name:       "node_time_seconds",
-			value:      u.Seconds(),
+			value:      float64(u),
 			help:       "System uptime measured in seconds",
 			metricType: "counter",
 		},
@@ -27,15 +27,15 @@ func getUptimeMetrics() ([]metric, error) {
 }
 
 func getLoadAvgMetrics() ([]metric, error) {
-	s, err := loadavg.Get()
+	s, err := load.Avg()
 	if err != nil {
 		return nil, err
 	}
 
 	metrics := []metric{
-		{name: "node_load1", value: s.Loadavg1},
-		{name: "node_load5", value: s.Loadavg5},
-		{name: "node_load15", value: s.Loadavg15},
+		{name: "node_load1", value: s.Load1},
+		{name: "node_load5", value: s.Load5},
+		{name: "node_load15", value: s.Load15},
 	}
 	return metrics, nil
 }

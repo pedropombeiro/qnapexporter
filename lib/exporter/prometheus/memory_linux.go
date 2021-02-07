@@ -1,11 +1,9 @@
 package prometheus
 
-import (
-	"github.com/mackerelio/go-osstat/memory"
-)
+import "github.com/shirou/gopsutil/v3/mem"
 
 func getMemInfoMetrics() ([]metric, error) {
-	s, err := memory.Get()
+	s, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, err
 	}
@@ -18,9 +16,7 @@ func getMemInfoMetrics() ([]metric, error) {
 		{name: "node_memory_Inactive_bytes", value: float64(s.Inactive)},
 		{name: "node_memory_SwapTotal_bytes", value: float64(s.SwapTotal)},
 		{name: "node_memory_SwapFree_bytes", value: float64(s.SwapFree)},
-	}
-	if s.MemAvailableEnabled {
-		metrics = append(metrics, metric{name: "node_memory_MemAvailable_bytes", value: float64(s.Available)})
+		{name: "node_memory_MemAvailable_bytes", value: float64(s.Available)},
 	}
 
 	return metrics, nil

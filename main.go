@@ -17,6 +17,7 @@ import (
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
+	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/status"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
@@ -99,6 +100,7 @@ func main() {
 		*grafanaURL,
 		*grafanaAuthToken,
 		append(strings.Split(*grafanaTags, ","), "notification-center"),
+		tagextractor.NewNotificationCenterTagExtractor(),
 		notifications.NewRegionMatcher(20),
 		&http.Client{Timeout: 5 * time.Second},
 		logger,

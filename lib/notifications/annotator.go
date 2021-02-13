@@ -7,8 +7,9 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 	"time"
+
+	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
 )
 
 type Annotator interface {
@@ -45,75 +46,22 @@ func NewSimpleAnnotator(
 		tags = nil
 	}
 
-	return &simpleAnnotator{
+	return &regionMatchingAnnotator{
 		grafanaURL:       grafanaURL,
 		grafanaAuthToken: grafanaAuthToken,
 		tags:             tags,
+		tagExtractor:     tagextractor.NewNoOpTagExtractor(),
+		cache:            NewNoOpRegionMatcher(),
 		client:           c,
 		logger:           logger,
 	}
-}
-
-func (a *simpleAnnotator) Post(annotation string, time time.Time) (int, error) {
-	url := fmt.Sprintf("%s/api/annotations", a.grafanaURL)
-	ga := grafanaAnnotation{
-		Text: annotation,
-		Tags: a.tags,
-		Time: time.UnixNano() / 1000000,
-	}
-
-	reqType := "POST"
-	jsonBytes, err := json.Marshal(ga)
-	if err != nil {
-		a.logger.Printf("Error marshalling Grafana annotation: %v\n", err)
-		return -1, err
-	}
-	bodyReader := bytes.NewReader(jsonBytes)
-	req, err := http.NewRequest(reqType, url, bodyReader)
-	if err != nil {
-		a.logger.Printf("Error creating Grafana annotation request: %v\n", err)
-		return -1, err
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	if a.grafanaAuthToken != "" {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", a.grafanaAuthToken))
-	}
-
-	resp, err := a.client.Do(req)
-	if err == nil {
-		if resp.StatusCode < 300 {
-			body, readErr := ioutil.ReadAll(resp.Body)
-			if readErr != nil {
-				return -1, fmt.Errorf("reading response body: %w", readErr)
-			}
-
-			var response struct {
-				Id      int    `json:"id"`
-				Message string `json:"message"`
-			}
-			err = json.Unmarshal(body, &response)
-			if err != nil {
-				return -1, fmt.Errorf("unmarshaling response body: %w", err)
-			}
-
-			a.logger.Printf("%s (status: %q), ID: %d\n", response.Message, resp.Status, response.Id)
-			return response.Id, nil
-		}
-
-		a.logger.Printf("Error creating Grafana annotation at %s: HTTP %d %q\n", url, resp.StatusCode, resp.Status)
-		err = fmt.Errorf("call to %s failed with HTTP %d %q", url, resp.StatusCode, resp.Status)
-	} else {
-		a.logger.Printf("Error creating Grafana annotation at %s: %v\n", url, err)
-	}
-
-	return -1, err
 }
 
 type regionMatchingAnnotator struct {
 	grafanaURL       string
 	grafanaAuthToken string
 	tags             []string
+	tagExtractor     tagextractor.TagExtractor
 	cache            RegionMatcher
 	client           httpClient
 	logger           *log.Logger
@@ -122,6 +70,7 @@ type regionMatchingAnnotator struct {
 func NewRegionMatchingAnnotator(
 	grafanaURL, grafanaAuthToken string,
 	tags []string,
+	tagExtractor tagextractor.TagExtractor,
 	cache RegionMatcher,
 	c httpClient,
 	logger *log.Logger,
@@ -134,6 +83,7 @@ func NewRegionMatchingAnnotator(
 		grafanaURL:       grafanaURL,
 		grafanaAuthToken: grafanaAuthToken,
 		tags:             tags,
+		tagExtractor:     tagExtractor,
 		cache:            cache,
 		client:           c,
 		logger:           logger,
@@ -142,7 +92,7 @@ func NewRegionMatchingAnnotator(
 
 func (a *regionMatchingAnnotator) Post(annotation string, time time.Time) (int, error) {
 	url := fmt.Sprintf("%s/api/annotations", a.grafanaURL)
-	trimmedAnnotation, annotationTags := extractTags(annotation)
+	trimmedAnnotation, annotationTags := a.tagExtractor.Extract(annotation)
 	ga := grafanaAnnotation{
 		Text: trimmedAnnotation,
 		Tags: mergeTags(a.tags, annotationTags),
@@ -207,23 +157,6 @@ func (a *regionMatchingAnnotator) Post(annotation string, time time.Time) (int, 
 	}
 
 	return -1, err
-}
-
-func extractTags(annotation string) (string, []string) {
-	var tags []string
-
-	for annotation[0] == '[' {
-		endIdx := strings.Index(annotation[1:], "] ")
-		if endIdx == -1 {
-			break
-		}
-
-		endIdx++
-		tags = append(tags, annotation[1:endIdx])
-		annotation = annotation[endIdx+2:]
-	}
-
-	return annotation, tags
 }
 
 func mergeTags(t1 []string, t2 []string) []string {

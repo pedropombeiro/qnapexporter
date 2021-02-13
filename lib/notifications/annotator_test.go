@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -14,7 +15,7 @@ import (
 )
 
 func TestNewAnnotator(t *testing.T) {
-	a := NewAnnotator(
+	a := NewRegionMatchingAnnotator(
 		"",
 		"",
 		strings.Split("", ","),
@@ -57,7 +58,7 @@ func TestPostAnnotation(t *testing.T) {
 						assert.Equal(t, "grafana.example.com", req.Host) &&
 						assert.Equal(t, "application/json", req.Header.Get("Content-Type")) &&
 						assert.Equal(t, "Bearer token1", req.Header.Get("Authorization")) &&
-						assert.Equal(t, `{"tags":["tag1","tag2"],"text":"test notification"}`, readBody(req))
+						assert.Equal(t, `{"tags":["tag1","tag2"],"time":1577880000000,"text":"test notification"}`, readBody(req))
 				})).
 					Once().
 					Return(responseWithBody(`{"id": 1}`), nil)
@@ -111,7 +112,7 @@ func TestPostAnnotation(t *testing.T) {
 						assert.Equal(t, "grafana.example.com", req.Host) &&
 						assert.Equal(t, "application/json", req.Header.Get("Content-Type")) &&
 						assert.Equal(t, "Bearer token1", req.Header.Get("Authorization")) &&
-						assert.Equal(t, `{"tags":["tag1","tag2"],"text":"test notification"}`, readBody(req))
+						assert.Equal(t, `{"tags":["tag1","tag2"],"time":1577880000000,"text":"test notification"}`, readBody(req))
 				})).
 					Once().
 					Return(responseWithBody(`{"id": 1}`), nil)
@@ -137,7 +138,7 @@ func TestPostAnnotation(t *testing.T) {
 						assert.Equal(t, "grafana.example.com", req.Host) &&
 						assert.Equal(t, "application/json", req.Header.Get("Content-Type")) &&
 						assert.Equal(t, "Bearer token1", req.Header.Get("Authorization")) &&
-						assert.Equal(t, `{"tags":["tag1","tag2","tag3"],"text":"test notification"}`, readBody(req))
+						assert.Equal(t, `{"tags":["tag1","tag2","tag3"],"time":1577880000000,"text":"test notification"}`, readBody(req))
 				})).
 					Once().
 					Return(responseWithBody(`{"id": 1}`), nil)
@@ -195,7 +196,7 @@ func TestPostAnnotation(t *testing.T) {
 			tc.setupCacheMock(cacheMock)
 			tc.setupClientMock(clientMock)
 
-			a := NewAnnotator(
+			a := NewRegionMatchingAnnotator(
 				tc.testURL,
 				tc.testAuthToken,
 				tc.tags,
@@ -204,7 +205,7 @@ func TestPostAnnotation(t *testing.T) {
 				log.New(ioutil.Discard, "", 0),
 			)
 
-			id, err := a.Post(tc.notification)
+			id, err := a.Post(tc.notification, time.Date(2020, 1, 1, 12, 0, 0, 0, time.UTC))
 
 			if tc.expectedErr == nil {
 				assert.NoError(t, err)

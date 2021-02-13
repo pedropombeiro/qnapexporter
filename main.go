@@ -70,10 +70,6 @@ func main() {
 	}
 	logger := log.New(logWriter, "", log.LstdFlags)
 
-	// Setup our Ctrl+C handler
-	exitCh := make(chan os.Signal, 1)
-	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
-
 	serverStatus := &status.Status{
 		MetricsEndpoint: metricsEndpoint,
 		ExporterStatus: exporter.Status{
@@ -99,16 +95,25 @@ func main() {
 		healthcheck: *healthcheck,
 		logger:      logger,
 	}
-	annotator := notifications.NewAnnotator(
+	notifCenterAnnotator := notifications.NewRegionMatchingAnnotator(
 		*grafanaURL,
 		*grafanaAuthToken,
-		strings.Split(*grafanaTags, ","),
+		append(strings.Split(*grafanaTags, ","), "notification-center"),
 		notifications.NewRegionMatcher(20),
 		&http.Client{Timeout: 5 * time.Second},
 		logger,
 	)
+	dockerAnnotator := notifications.NewSimpleAnnotator(
+		*grafanaURL,
+		*grafanaAuthToken,
+		append(strings.Split(*grafanaTags, ","), "docker"),
+		&http.Client{Timeout: 5 * time.Second},
+		logger,
+	)
 
-	err := serveHTTP(args, annotator, serverStatus, exitCh)
+	go handleDockerEvents(args, dockerAnnotator)
+
+	err := serveHTTP(args, notifCenterAnnotator, serverStatus)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -136,7 +141,7 @@ func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, annot
 		return
 	}
 
-	_, _ = annotator.Post(notification)
+	_, _ = annotator.Post(notification, time.Now())
 }
 
 func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, serverStatus *status.Status, logger *log.Logger) {
@@ -151,8 +156,12 @@ func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, serverStatus 
 	}
 }
 
-func serveHTTP(args httpServerArgs, annotator notifications.Annotator, serverStatus *status.Status, exitCh chan os.Signal) error {
+func serveHTTP(args httpServerArgs, annotator notifications.Annotator, serverStatus *status.Status) error {
 	defer args.exporter.Close()
+
+	// Setup our Ctrl+C handler
+	exitCh := make(chan os.Signal, 1)
+	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
 	// handle route using handler function
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

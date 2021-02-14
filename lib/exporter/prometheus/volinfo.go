@@ -10,6 +10,7 @@ import (
 )
 
 type volumeInfo struct {
+	index                         string
 	fileSystem                    string
 	description                   string
 	status                        string
@@ -28,14 +29,20 @@ func (e *promExporter) readSysVolInfo() {
 
 	e.volumes = make([]volumeInfo, 0, volCount)
 
-	for idx := 0; idx < volCount; idx++ {
-		volIdx := strconv.FormatUint(uint64(idx), 10)
+	idx := uint64(0)
+	for parsedVolCount := 0; parsedVolCount < volCount; idx++ {
+		volIdx := strconv.FormatUint(idx, 10)
 
 		desc, err := utils.ExecCommand(e.getsysinfo, "vol_desc", volIdx)
 		if err != nil {
 			e.Logger.Printf("Error fetching volume %d description: %v", idx, err)
 			continue
 		}
+		description := parseVolDesc(desc)
+		if description == "" {
+			continue
+		}
+		parsedVolCount++
 
 		fileSystem, err := utils.ExecCommand(e.getsysinfo, "vol_fs", volIdx)
 		if err != nil {
@@ -66,7 +73,8 @@ func (e *promExporter) readSysVolInfo() {
 		e.volumes = append(
 			e.volumes,
 			volumeInfo{
-				description:    parseVolDesc(desc),
+				index:          volIdx,
+				description:    description,
 				fileSystem:     fileSystem,
 				status:         status,
 				totalSizeBytes: volsizeBytes,
@@ -91,11 +99,10 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 	}
 
 	for idx, v := range e.volumes {
-		volnumStr := strconv.Itoa(idx)
 		e.status.Volumes = append(e.status.Volumes, v.description)
 
 		if expired {
-			freesizeStr, err := utils.ExecCommand(e.getsysinfo, "vol_freesize", volnumStr)
+			freesizeStr, err := utils.ExecCommand(e.getsysinfo, "vol_freesize", v.index)
 			if err != nil {
 				return nil, err
 			}
@@ -134,7 +141,7 @@ func parseVolDesc(desc string) string {
 	case strings.HasPrefix(desc, "[Volume"):
 		index = 8
 	case strings.HasPrefix(desc, "[Single Disk Volume:"):
-		index = 21
+		return ""
 	default:
 		return desc
 	}

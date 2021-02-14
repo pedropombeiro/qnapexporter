@@ -12,6 +12,12 @@
   "__requires": [
     {
       "type": "panel",
+      "id": "bargauge",
+      "name": "Bar gauge",
+      "version": ""
+    },
+    {
+      "type": "panel",
       "id": "gauge",
       "name": "Gauge",
       "version": ""
@@ -20,13 +26,25 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.3.7"
+      "version": "7.4.1"
     },
     {
       "type": "panel",
       "id": "graph",
       "name": "Graph",
       "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "marcusolsson-hourly-heatmap-panel",
+      "name": "Hourly heatmap",
+      "version": "0.9.1"
+    },
+    {
+      "type": "panel",
+      "id": "natel-discrete-panel",
+      "name": "Discrete",
+      "version": "0.1.0"
     },
     {
       "type": "datasource",
@@ -71,7 +89,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": null,
-  "iteration": 1611009307669,
+  "iteration": 1613341263833,
   "links": [
     {
       "icon": "external link",
@@ -94,6 +112,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "mappings": [],
@@ -136,9 +157,10 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "avg(ups_ups_load{ups=\"$upsname\"})",
@@ -206,7 +228,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -281,6 +303,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "mappings": [],
           "min": 0,
@@ -323,9 +348,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "sum(ups_ups_load{ups=\"$upsname\"}/100*ups_ups_realpower_nominal{ups=\"$upsname\"}/1000*24*$kwhprice)",
@@ -381,7 +407,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -445,6 +471,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "mappings": [
@@ -456,7 +485,6 @@
               "value": "null"
             }
           ],
-          "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -506,9 +534,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "ups_battery_runtime{ups=\"$upsname\"}",
@@ -565,6 +594,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 1,
           "mappings": [
@@ -576,7 +608,6 @@
               "value": "null"
             }
           ],
-          "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -634,9 +665,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "ups_battery_voltage{ups=\"$upsname\"}",
@@ -693,6 +725,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 1,
           "mappings": [
@@ -704,7 +739,6 @@
               "value": "null"
             }
           ],
-          "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -762,9 +796,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "ups_input_voltage{ups=\"$upsname\"}",
@@ -820,6 +855,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "mappings": [],
@@ -854,6 +892,8 @@
       },
       "id": 5,
       "options": {
+        "displayMode": "lcd",
+        "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
             "last"
@@ -861,10 +901,10 @@
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showUnfilled": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "avg(ups_battery_charge{ups=\"$upsname\"})",
@@ -877,7 +917,7 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "Battery Charge",
-      "type": "gauge"
+      "type": "bargauge"
     },
     {
       "alert": {
@@ -924,26 +964,9 @@
       "fieldConfig": {
         "defaults": {
           "custom": {},
-          "decimals": 0,
-          "mappings": [],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "#EAB839",
-                "value": 50
-              },
-              {
-                "color": "green",
-                "value": 80
-              }
-            ]
+            "steps": []
           },
           "unit": "percent"
         },
@@ -975,7 +998,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1003,7 +1026,8 @@
           "fill": true,
           "line": true,
           "op": "lt",
-          "value": 25
+          "value": 25,
+          "visible": true
         }
       ],
       "timeFrom": null,
@@ -1051,6 +1075,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "mappings": [],
           "min": 0,
@@ -1093,9 +1120,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "sum(ups_ups_load{ups=\"$upsname\"}/100*ups_ups_realpower_nominal{ups=\"$upsname\"}/1000*24*$kwhprice*30)",
@@ -1115,6 +1143,9 @@
       "description": "",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "mappings": [
             {
@@ -1125,7 +1156,6 @@
               "value": "null"
             }
           ],
-          "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -1175,9 +1205,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "alias": "Watts",
@@ -1281,7 +1312,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1345,10 +1376,10 @@
       "description": "",
       "fieldConfig": {
         "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
+          "color": {
+            "mode": "thresholds"
           },
+          "custom": {},
           "decimals": 0,
           "mappings": [
             {
@@ -1438,9 +1469,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "value_and_name"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "ups_ups_status{ups='$upsname'}",
@@ -1457,183 +1489,94 @@
       "type": "stat"
     },
     {
-      "alert": {
-        "alertRuleTags": {},
-        "conditions": [
-          {
-            "evaluator": {
-              "params": [
-                100
-              ],
-              "type": "lt"
-            },
-            "operator": {
-              "type": "and"
-            },
-            "query": {
-              "params": [
-                "B",
-                "5m",
-                "now"
-              ]
-            },
-            "reducer": {
-              "params": [],
-              "type": "last"
-            },
-            "type": "query"
-          }
-        ],
-        "executionErrorState": "alerting",
-        "for": "5m",
-        "frequency": "1m",
-        "handler": 1,
-        "message": "UPS is receiving no power!",
-        "name": "UPS Input Voltage alert",
-        "noDataState": "alerting",
-        "notifications": []
-      },
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
-      "decimals": 0,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
-          "unit": "volt"
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "calculation": "mean",
+            "colorPalette": "custom",
+            "colorSpace": "rgb",
+            "groupBy": 60,
+            "invertPalette": true,
+            "thresholds": {
+              "mode": "percentage",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 50
+                }
+              ]
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 20
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "percent"
         },
         "overrides": []
       },
-      "fill": 0,
-      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 8,
         "x": 4,
         "y": 12
       },
-      "hiddenSeries": false,
-      "id": 6,
-      "legend": {
-        "avg": true,
-        "current": true,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
+      "id": 27,
+      "interval": "1h",
       "options": {
-        "alertThreshold": true
+        "from": "0",
+        "legendGradientQuality": "high",
+        "regions": [],
+        "showCellBorder": false,
+        "showLegend": false,
+        "showTooltip": true,
+        "showValueIndicator": false,
+        "to": "0",
+        "valueFieldName": "Value"
       },
-      "percentage": false,
       "pluginVersion": "7.3.7",
-      "pointradius": 0.5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "$$hashKey": "object:178",
-          "alias": "/.+ limit/",
-          "color": "rgb(201, 201, 201)",
-          "dashLength": 3,
-          "dashes": true,
-          "fill": 0,
-          "legend": false,
-          "spaceLength": 3
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(ups_input_voltage{node=\"$node\",ups=\"$upsname\"})",
-          "interval": "",
-          "legendFormat": "Voltage",
-          "refId": "A"
-        },
-        {
-          "expr": "ups_input_voltage{node='nas',ups='qnapups'}",
-          "hide": true,
+          "expr": "ups_ups_load{ups=\"qnapups\"}",
           "interval": "",
           "legendFormat": "",
-          "refId": "B"
-        },
-        {
-          "expr": "avg(ups_input_transfer_low{node=\"$node\",ups=\"$upsname\"})",
-          "interval": "",
-          "legendFormat": "Low limit",
-          "refId": "C"
-        },
-        {
-          "expr": "avg(ups_input_transfer_high{node=\"$node\",ups=\"$upsname\"})",
-          "interval": "",
-          "legendFormat": "High limit",
-          "refId": "D"
+          "refId": "A"
         }
       ],
-      "thresholds": [
-        {
-          "colorMode": "critical",
-          "fill": true,
-          "line": true,
-          "op": "lt",
-          "value": 100
-        }
-      ],
-      "timeFrom": null,
-      "timeRegions": [],
+      "timeFrom": "1w",
       "timeShift": null,
-      "title": "UPS Input Voltage",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "$$hashKey": "object:80",
-          "decimals": null,
-          "format": "volt",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "$$hashKey": "object:81",
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "title": "UPS Load",
+      "type": "marcusolsson-hourly-heatmap-panel"
     },
     {
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "mappings": [],
           "min": 0,
@@ -1676,9 +1619,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "sum(ups_ups_load{ups=\"$upsname\"}/100*ups_ups_realpower_nominal{ups=\"$upsname\"}/1000*24*$kwhprice*365.25)",
@@ -1734,7 +1678,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1792,10 +1736,324 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "backgroundColor": "rgba(128,128,128,0.1)",
+      "colorMaps": [
+        {
+          "color": "#CCC",
+          "text": "N/A"
+        }
+      ],
+      "crosshairColor": "#8F070C",
+      "datasource": "${DS_PROMETHEUS}",
+      "display": "timeline",
+      "expandFromQueryS": 0,
+      "extendLastValue": true,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 18
+      },
+      "highlightOnMouseover": true,
+      "id": 29,
+      "legendSortBy": "-ms",
+      "lineColor": "rgba(0,0,0,0.1)",
+      "metricNameColor": "#000000",
+      "pluginVersion": "7.3.7",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "rowHeight": 50,
+      "showLegend": true,
+      "showLegendNames": false,
+      "showLegendPercent": true,
+      "showLegendTime": true,
+      "showLegendValues": true,
+      "showTimeAxis": true,
+      "targets": [
+        {
+          "expr": "ups_ups_status{ups='$upsname'}",
+          "interval": "",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ],
+      "textSize": 24,
+      "textSizeTime": 12,
+      "timeFrom": null,
+      "timeOptions": [
+        {
+          "name": "Years",
+          "value": "years"
+        },
+        {
+          "name": "Months",
+          "value": "months"
+        },
+        {
+          "name": "Weeks",
+          "value": "weeks"
+        },
+        {
+          "name": "Days",
+          "value": "days"
+        },
+        {
+          "name": "Hours",
+          "value": "hours"
+        },
+        {
+          "name": "Minutes",
+          "value": "minutes"
+        },
+        {
+          "name": "Seconds",
+          "value": "seconds"
+        },
+        {
+          "name": "Milliseconds",
+          "value": "milliseconds"
+        }
+      ],
+      "timePrecision": {
+        "name": "Minutes",
+        "value": "minutes"
+      },
+      "timeShift": null,
+      "timeTextColor": "#d8d9da",
+      "title": "UPS Status",
+      "type": "natel-discrete-panel",
+      "units": "short",
+      "useTimePrecision": false,
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        },
+        {
+          "op": "=",
+          "text": "Online",
+          "value": "0"
+        },
+        {
+          "op": "=",
+          "text": "Charging",
+          "value": "1"
+        },
+        {
+          "op": "=",
+          "text": "Discharging",
+          "value": "2"
+        },
+        {
+          "op": "=",
+          "text": "Offline",
+          "value": "3"
+        },
+        {
+          "op": "=",
+          "text": "Replace battery",
+          "value": "999"
+        },
+        {
+          "op": "=",
+          "text": "Other",
+          "value": "99"
+        }
+      ],
+      "valueTextColor": "#000000",
+      "writeAllValues": false,
+      "writeLastValue": true,
+      "writeMetricNames": false
+    },
+    {
+      "alert": {
+        "alertRuleTags": {},
+        "conditions": [
+          {
+            "evaluator": {
+              "params": [
+                100
+              ],
+              "type": "lt"
+            },
+            "operator": {
+              "type": "and"
+            },
+            "query": {
+              "params": [
+                "B",
+                "5m",
+                "now"
+              ]
+            },
+            "reducer": {
+              "params": [],
+              "type": "last"
+            },
+            "type": "query"
+          }
+        ],
+        "executionErrorState": "alerting",
+        "for": "5m",
+        "frequency": "1m",
+        "handler": 1,
+        "message": "UPS is receiving no power!",
+        "name": "UPS Input Voltage alert",
+        "noDataState": "alerting",
+        "notifications": []
+      },
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "decimals": 0,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "unit": "volt"
+        },
+        "overrides": []
+      },
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 6,
+        "w": 9,
+        "x": 12,
+        "y": 18
+      },
+      "hiddenSeries": false,
+      "id": 6,
+      "legend": {
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.4.1",
+      "pointradius": 0.5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "/.+ limit/",
+          "color": "rgb(201, 201, 201)",
+          "dashLength": 3,
+          "dashes": true,
+          "fill": 0,
+          "legend": false,
+          "spaceLength": 3
+        }
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg(ups_input_voltage{node=\"$node\",ups=\"$upsname\"})",
+          "interval": "",
+          "legendFormat": "Voltage",
+          "refId": "A"
+        },
+        {
+          "expr": "ups_input_voltage{node='nas',ups='qnapups'}",
+          "hide": true,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "expr": "avg(ups_input_transfer_low{node=\"$node\",ups=\"$upsname\"})",
+          "interval": "",
+          "legendFormat": "Low limit",
+          "refId": "C"
+        },
+        {
+          "expr": "avg(ups_input_transfer_high{node=\"$node\",ups=\"$upsname\"})",
+          "interval": "",
+          "legendFormat": "High limit",
+          "refId": "D"
+        }
+      ],
+      "thresholds": [
+        {
+          "colorMode": "critical",
+          "fill": true,
+          "line": true,
+          "op": "lt",
+          "value": 100,
+          "visible": true
+        }
+      ],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "UPS Input Voltage",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": null,
+          "format": "volt",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": false
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "30s",
-  "schemaVersion": 26,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [
     "ups",
@@ -1808,6 +2066,7 @@
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
         "definition": "label_values(ups_ups_load, ups)",
+        "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
@@ -1815,7 +2074,10 @@
         "multi": false,
         "name": "upsname",
         "options": [],
-        "query": "label_values(ups_ups_load, ups)",
+        "query": {
+          "query": "label_values(ups_ups_load, ups)",
+          "refId": "Prometheus-upsname-Variable-Query"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1832,6 +2094,7 @@
           "text": ".11",
           "value": ".11"
         },
+        "description": null,
         "error": null,
         "hide": 0,
         "label": "kWh Price",
@@ -1852,6 +2115,7 @@
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
         "definition": "label_values(ups_ups_status,node)",
+        "description": null,
         "error": null,
         "hide": 2,
         "includeAll": false,
@@ -1859,7 +2123,10 @@
         "multi": false,
         "name": "node",
         "options": [],
-        "query": "label_values(ups_ups_status,node)",
+        "query": {
+          "query": "label_values(ups_ups_status,node)",
+          "refId": "Prometheus-node-Variable-Query"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1873,12 +2140,12 @@
     ]
   },
   "time": {
-    "from": "now-30d",
+    "from": "now-24h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "UPS",
   "uid": "IAcYVB-Gz",
-  "version": 18
+  "version": 10
 }

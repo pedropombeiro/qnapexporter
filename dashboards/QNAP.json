@@ -26,7 +26,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.3.7"
+      "version": "7.4.1"
     },
     {
       "type": "panel",
@@ -39,6 +39,12 @@
       "id": "graph",
       "name": "Graph",
       "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "marcusolsson-hourly-heatmap-panel",
+      "name": "Hourly heatmap",
+      "version": "0.9.1"
     },
     {
       "type": "datasource",
@@ -94,6 +100,36 @@
           "borgmatic"
         ],
         "type": "tags"
+      },
+      {
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": false,
+        "iconColor": "#B877D9",
+        "limit": 100,
+        "matchAny": true,
+        "name": "plex",
+        "showIn": 0,
+        "tags": [
+          "nzbget",
+          "plex"
+        ],
+        "type": "tags"
+      },
+      {
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": false,
+        "iconColor": "#B877D9",
+        "limit": 100,
+        "matchAny": true,
+        "name": "docker",
+        "showIn": 0,
+        "tags": [
+          "docker"
+        ],
+        "target": {},
+        "type": "tags"
       }
     ]
   },
@@ -102,7 +138,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": null,
-  "iteration": 1611008290907,
+  "iteration": 1613342508888,
   "links": [
     {
       "icon": "external link",
@@ -110,6 +146,15 @@
         "nas"
       ],
       "type": "dashboards"
+    },
+    {
+      "icon": "external link",
+      "tags": [],
+      "targetBlank": true,
+      "title": "QTS",
+      "tooltip": "",
+      "type": "link",
+      "url": "https://nas.pombei.ro"
     }
   ],
   "panels": [
@@ -132,6 +177,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "mappings": [
             {
@@ -142,7 +190,6 @@
               "value": "null"
             }
           ],
-          "nullValueMode": "connected",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -157,7 +204,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 3,
         "x": 0,
         "y": 1
@@ -176,9 +223,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "max(node_time_seconds{job='qnap'})",
@@ -196,6 +244,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "mappings": [],
@@ -219,7 +270,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 4,
         "w": 3,
         "x": 3,
         "y": 1
@@ -237,9 +288,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "avg(node_systmp_C)",
@@ -257,6 +309,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "mappings": [],
@@ -280,73 +335,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 3,
         "x": 6,
-        "y": 1
-      },
-      "id": 42,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.3.7",
-      "targets": [
-        {
-          "expr": "avg(node_cputmp_C)",
-          "interval": "",
-          "legendFormat": "$node CPU temperature",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "CPU temp",
-      "type": "stat"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "decimals": 0,
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 75
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 3,
-        "x": 9,
         "y": 1
       },
       "id": 43,
@@ -362,9 +353,10 @@
           "fields": "",
           "values": false
         },
+        "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "node_hdtmp_C{node='$node'}",
@@ -383,6 +375,9 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "mappings": [],
@@ -410,9 +405,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 4,
-        "x": 12,
+        "x": 9,
         "y": 1
       },
       "id": 45,
@@ -426,9 +421,10 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "avg(node_sysfan_RPM)",
@@ -444,18 +440,157 @@
       "type": "gauge"
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "mappings": [],
-          "max": 2400,
-          "min": 800,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 90
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 13,
+        "y": 1
+      },
+      "id": 18,
+      "options": {
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "text": {}
+      },
+      "pluginVersion": "7.4.1",
+      "targets": [
+        {
+          "expr": "node_flashcache_cached_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Allocated",
+          "refId": "A"
+        },
+        {
+          "expr": "node_flashcache_dirty_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "Dirty",
+          "refId": "B"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "SSD Cache Allocation",
+      "type": "gauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 25
+              },
+              {
+                "color": "green",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 16,
+        "y": 1
+      },
+      "id": 69,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.4.1",
+      "targets": [
+        {
+          "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
+          "interval": "",
+          "legendFormat": "Write hits ",
+          "refId": "B"
+        },
+        {
+          "expr": "node_flashcache_read_hit_percent{job='qnap',node='$node'}",
+          "interval": "",
+          "legendFormat": "Read hits",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "SSD Cache Hit Rate",
+      "type": "stat"
+    },
+    {
+      "cacheTimeout": null,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -464,129 +599,116 @@
                 "value": null
               },
               {
-                "color": "#EAB839",
-                "value": 1200
-              },
-              {
                 "color": "red",
-                "value": 2000
+                "value": 0.8
               }
             ]
           },
-          "unit": "rotrpm"
+          "unit": "percentunit"
         },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byRegexp",
-              "options": ".*system\\ temp.*"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "celsius"
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
-        "h": 6,
-        "w": 8,
-        "x": 16,
+        "h": 7,
+        "w": 5,
+        "x": 19,
         "y": 1
       },
-      "hiddenSeries": false,
-      "id": 46,
-      "legend": {
-        "avg": true,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
+      "id": 54,
+      "interval": null,
+      "links": [],
       "options": {
-        "alertThreshold": true
+        "displayMode": "gradient",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {}
       },
-      "percentage": false,
-      "pluginVersion": "7.3.7",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "alias": "nas system temperature",
-          "dashes": true,
-          "fill": 0,
-          "yaxis": 2
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "pluginVersion": "7.4.1",
       "targets": [
         {
-          "expr": "avg(node_sysfan_RPM)",
+          "expr": "1-(node_volume_avail_bytes{job='qnap',status=~'.+'}/node_volume_size_bytes{job='qnap',status=~'.+'})",
+          "instant": true,
           "interval": "",
-          "legendFormat": "$node system fan",
+          "legendFormat": "{{volume}} ({{status}})",
           "refId": "A"
-        },
-        {
-          "expr": "avg(node_systmp_C)",
-          "interval": "",
-          "legendFormat": "$node system temperature",
-          "refId": "B"
         }
       ],
-      "thresholds": [],
       "timeFrom": null,
-      "timeRegions": [],
       "timeShift": null,
-      "title": "System fan",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "rotrpm",
-          "label": "",
-          "logBase": 1,
-          "max": "2400",
-          "min": "800",
-          "show": true
-        },
-        {
+      "title": "Volume Usage",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
           "decimals": 0,
-          "format": "celsius",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 75
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 3,
+        "y": 5
+      },
+      "id": 42,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.4.1",
+      "targets": [
+        {
+          "expr": "avg(node_cputmp_C)",
+          "interval": "",
+          "legendFormat": "$node CPU temperature",
+          "refId": "A"
         }
       ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "CPU temp",
+      "type": "stat"
     },
     {
       "collapsed": false,
@@ -595,7 +717,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 8
       },
       "id": 56,
       "panels": [],
@@ -606,10 +728,13 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
-          "decimals": 1,
+          "decimals": 0,
           "mappings": [],
-          "max": 4,
+          "max": 1,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -620,15 +745,15 @@
               },
               {
                 "color": "orange",
-                "value": 3
+                "value": 0.75
               },
               {
                 "color": "red",
-                "value": 3.8
+                "value": 0.95
               }
             ]
           },
-          "unit": "none"
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -636,7 +761,7 @@
         "h": 6,
         "w": 3,
         "x": 0,
-        "y": 8
+        "y": 9
       },
       "id": 20,
       "options": {
@@ -649,12 +774,13 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
-          "expr": "node_load1{job='qnap',node='$node'}",
+          "expr": "node_load1{job='qnap',node='$node'}/node_cpu_count",
           "instant": true,
           "interval": "",
           "legendFormat": "",
@@ -699,7 +825,7 @@
         "for": "5m",
         "frequency": "5m",
         "handler": 1,
-        "message": "Average CPU load is above acceptable average",
+        "message": "Average CPU load on ${node} is above acceptable average",
         "name": "CPU load alert",
         "noDataState": "no_data",
         "notifications": []
@@ -722,7 +848,7 @@
         "h": 6,
         "w": 9,
         "x": 3,
-        "y": 8
+        "y": 9
       },
       "hiddenSeries": false,
       "id": 8,
@@ -742,14 +868,14 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [
         {
-          "alias": "15m load average",
-          "color": "#E02F44",
+          "alias": "24h load average",
+          "color": "#FADE2A",
           "dashes": true,
           "fill": 0,
           "fillGradient": 0
@@ -767,14 +893,14 @@
           "refId": "A"
         },
         {
-          "expr": "node_load15{job='qnap',node='$node'}",
+          "expr": "avg_over_time((node_load1{job='qnap',node='$node'})[24h:])",
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "15m load average",
+          "legendFormat": "24h load average",
           "refId": "B"
         },
         {
-          "expr": "(node_load1{job='qnap',node='nas'} - node_load1:avg_over_time_1w{job='qnap',node='nas'})/node_load1:stddev_over_time_1w{job='qnap',node='nas'}",
+          "expr": "(node_load1{job='qnap'} - node_load1:avg_over_time_1w{job='qnap'})/node_load1:stddev_over_time_1w{job='qnap'}",
           "hide": false,
           "interval": "",
           "intervalFactor": 1,
@@ -788,14 +914,16 @@
           "fill": true,
           "line": true,
           "op": "lt",
-          "value": -3
+          "value": -3,
+          "visible": true
         },
         {
           "colorMode": "critical",
           "fill": true,
           "line": true,
           "op": "gt",
-          "value": 3
+          "value": 3,
+          "visible": true
         }
       ],
       "timeFrom": null,
@@ -842,11 +970,14 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 0,
           "links": [],
           "mappings": [],
-          "max": 1,
+          "max": 100,
           "min": 0,
           "thresholds": {
             "mode": "absolute",
@@ -861,7 +992,7 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "percent"
         },
         "overrides": []
       },
@@ -869,7 +1000,7 @@
         "h": 6,
         "w": 3,
         "x": 12,
-        "y": 8
+        "y": 9
       },
       "id": 50,
       "interval": "",
@@ -882,12 +1013,14 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
-          "expr": "1-node_cpu_ratio{job='qnap',node='$node',mode='idle'}",
+          "expr": "100-((avg without (mode) (rate(node_cpu_seconds_total{job=\"qnap\",mode=\"idle\"}[$__rate_interval])))/node_cpu_count)",
+          "format": "table",
           "instant": true,
           "interval": "",
           "legendFormat": "Used capacity",
@@ -907,10 +1040,28 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
+          "color": {},
           "custom": {},
-          "links": []
+          "thresholds": {
+            "mode": "absolute",
+            "steps": []
+          },
+          "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CPU temperature"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "celsius"
+              }
+            ]
+          }
+        ]
       },
       "fill": 1,
       "fillGradient": 5,
@@ -918,7 +1069,7 @@
         "h": 6,
         "w": 9,
         "x": 15,
-        "y": 8
+        "y": 9
       },
       "hiddenSeries": false,
       "id": 25,
@@ -926,6 +1077,7 @@
       "legend": {
         "avg": true,
         "current": false,
+        "hideZero": true,
         "max": false,
         "min": false,
         "show": true,
@@ -939,14 +1091,20 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [
         {
           "alias": "CPU temperature",
+          "color": "#C4162A",
+          "dashes": true,
+          "fill": 0,
+          "fillGradient": 0,
           "lines": true,
+          "linewidth": 2,
+          "stack": false,
           "yaxis": 2
         }
       ],
@@ -955,28 +1113,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_cpu_ratio{job='qnap',node='$node',mode='user'}",
+          "expr": "(rate(node_cpu_seconds_total{job=\"qnap\",mode!=\"idle\"}[$__rate_interval])) / ignoring(mode) group_left node_cpu_count",
+          "instant": false,
           "interval": "",
-          "legendFormat": "User",
+          "legendFormat": "{{mode}}",
           "refId": "A"
-        },
-        {
-          "expr": "node_cpu_ratio{job='qnap',node='$node',mode='system'}",
-          "interval": "",
-          "legendFormat": "System",
-          "refId": "C"
-        },
-        {
-          "expr": "node_cpu_ratio{job='qnap',node='$node',mode='iowait'}",
-          "interval": "",
-          "legendFormat": "I/O wait",
-          "refId": "D"
-        },
-        {
-          "expr": "node_cpu_ratio{job='qnap',node='$node',mode='nice'}",
-          "interval": "",
-          "legendFormat": "Other",
-          "refId": "E"
         },
         {
           "expr": "node_cputmp_C{node='$node'}",
@@ -992,7 +1133,7 @@
       "title": "CPU Usage",
       "tooltip": {
         "shared": true,
-        "sort": 0,
+        "sort": 2,
         "value_type": "individual"
       },
       "type": "graph",
@@ -1005,8 +1146,8 @@
       },
       "yaxes": [
         {
-          "decimals": 1,
-          "format": "percentunit",
+          "decimals": 0,
+          "format": "percent",
           "label": "",
           "logBase": 1,
           "max": null,
@@ -1032,6 +1173,9 @@
       "description": "Used memory is \"total usable memory\" minus \"available memory\". (Available memory is the sum of free, buffer, cache, and other reclaimable memory.) Cache memory used by file systems and processes are not included in \"used memory\".",
       "fieldConfig": {
         "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
           "custom": {},
           "decimals": 1,
           "links": [],
@@ -1059,7 +1203,7 @@
         "h": 6,
         "w": 3,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "id": 49,
       "options": {
@@ -1071,9 +1215,10 @@
           "values": false
         },
         "showThresholdLabels": false,
-        "showThresholdMarkers": true
+        "showThresholdMarkers": true,
+        "text": {}
       },
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "targets": [
         {
           "expr": "node_memory_MemTotal_bytes{job='qnap',node='$node'}-node_memory_MemAvailable_bytes{job='qnap',node='$node'}",
@@ -1120,6 +1265,7 @@
         "for": "1m",
         "frequency": "1m",
         "handler": 1,
+        "message": "RAM usage on ${node} is above 15GB!",
         "name": "RAM alert",
         "noDataState": "no_data",
         "notifications": []
@@ -1144,7 +1290,7 @@
         "h": 6,
         "w": 9,
         "x": 3,
-        "y": 14
+        "y": 15
       },
       "hiddenSeries": false,
       "id": 6,
@@ -1166,15 +1312,25 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.3.7",
+      "pluginVersion": "7.4.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
       "seriesOverrides": [
         {
           "alias": "Available",
+          "color": "#F2495C",
           "dashes": true,
           "fill": 0
+        },
+        {
+          "alias": "/.* average/",
+          "color": "#FADE2A",
+          "dashes": true,
+          "fill": 0,
+          "fillGradient": 0,
+          "legend": false,
+          "stack": false
         }
       ],
       "spaceLength": 10,
@@ -1182,7 +1338,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_memory_MemTotal_bytes{job='qnap',node='nas'}-node_memory_MemAvailable_bytes{job='qnap',node='nas'}",
+          "expr": "node_memory_MemTotal_bytes{job='qnap'}-node_memory_MemAvailable_bytes{job='qnap'}",
           "interval": "",
           "legendFormat": "Used",
           "refId": "D"
@@ -1192,6 +1348,12 @@
           "interval": "",
           "legendFormat": "Available",
           "refId": "B"
+        },
+        {
+          "expr": "avg_over_time((node_memory_MemTotal_bytes{job='qnap',node='nas'}-node_memory_MemAvailable_bytes{job='qnap',node='nas'})[24h:])",
+          "interval": "",
+          "legendFormat": "24h average",
+          "refId": "A"
         }
       ],
       "thresholds": [
@@ -1200,7 +1362,8 @@
           "fill": true,
           "line": true,
           "op": "gt",
-          "value": 15032385536
+          "value": 15032385536,
+          "visible": true
         }
       ],
       "timeFrom": null,
@@ -1266,7 +1429,7 @@
         "h": 6,
         "w": 3,
         "x": 12,
-        "y": 14
+        "y": 15
       },
       "id": 27,
       "interval": null,
@@ -1303,625 +1466,32 @@
       "valueName": "current"
     },
     {
-      "aliasColors": {},
-      "breakPoint": "50%",
-      "cacheTimeout": null,
-      "combine": {
-        "label": "Others",
-        "threshold": 0
-      },
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": null,
-            "filterable": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "bytes"
-        },
-        "overrides": []
-      },
-      "fontSize": "80%",
-      "format": "bytes",
-      "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 15,
-        "y": 14
-      },
-      "id": 66,
-      "interval": null,
-      "legend": {
-        "header": "",
-        "percentage": false,
-        "show": true,
-        "values": true
-      },
-      "legendType": "Right side",
-      "links": [],
-      "nullPointMode": "connected",
-      "pieType": "pie",
-      "pluginVersion": "7.3.7",
-      "strokeWidth": 1,
-      "targets": [
-        {
-          "expr": "node_memory_MemFree_bytes{node='$node'}",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "Free",
-          "refId": "A"
-        },
-        {
-          "expr": "node_memory_Cached_bytes{node='$node'}",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "Cache",
-          "refId": "B"
-        },
-        {
-          "expr": "node_memory_MemAvailable_bytes{node='$node'}-(node_memory_Cached_bytes{node='$node'}+node_memory_MemFree_bytes{node='$node'})",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "Buffer",
-          "refId": "C"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Available Memory Usage",
-      "type": "grafana-piechart-panel",
-      "valueName": "current"
-    },
-    {
-      "collapsed": false,
-      "datasource": "${DS_PROMETHEUS}",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 20
-      },
-      "id": 62,
-      "panels": [],
-      "title": "Network",
-      "type": "row"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "decimals": 0,
-          "mappings": [],
-          "max": 1000000000,
-          "min": 0,
-          "noValue": "Idle",
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "Bps"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 3,
-        "x": 0,
-        "y": 21
-      },
-      "id": 29,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.3.7",
-      "targets": [
-        {
-          "expr": "irate(node_network_transmit_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
-          "interval": "",
-          "legendFormat": "Tx",
-          "refId": "B"
-        },
-        {
-          "expr": "irate(node_network_receive_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
-          "interval": "",
-          "legendFormat": "Rx",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Network I/O",
-      "type": "stat"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 3,
-        "y": 21
-      },
-      "hiddenSeries": false,
-      "id": 22,
-      "legend": {
-        "avg": true,
-        "current": false,
-        "hideEmpty": true,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.7",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "alias": "/receive.*/",
-          "transform": "negative-Y"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "irate(node_network_receive_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
-          "interval": "",
-          "legendFormat": "{{interface}} receive rate (1m)",
-          "refId": "A"
-        },
-        {
-          "expr": "irate(node_network_transmit_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
-          "interval": "",
-          "legendFormat": "{{interface}} sent rate (1m)",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Network I/O",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "Bps",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "decimals": null,
-          "format": "MBs",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "alert": {
-        "alertRuleTags": {},
-        "conditions": [
-          {
-            "evaluator": {
-              "params": [
-                50
-              ],
-              "type": "gt"
-            },
-            "operator": {
-              "type": "and"
-            },
-            "query": {
-              "params": [
-                "A",
-                "5m",
-                "now"
-              ]
-            },
-            "reducer": {
-              "params": [],
-              "type": "avg"
-            },
-            "type": "query"
-          }
-        ],
-        "executionErrorState": "alerting",
-        "for": "5m",
-        "frequency": "1m",
-        "handler": 1,
-        "name": "Ping time to 1.1.1.1 alert",
-        "noDataState": "alerting",
-        "notifications": []
-      },
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "unit": "dtdurationms"
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 21
-      },
-      "hiddenSeries": false,
-      "id": 37,
-      "legend": {
-        "avg": true,
-        "current": false,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.7",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "node_network_external_roundtrip_time_ms{job='qnap',node='nas'}",
-          "interval": "",
-          "legendFormat": "Ping time",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [
-        {
-          "colorMode": "critical",
-          "fill": true,
-          "line": true,
-          "op": "gt",
-          "value": 50
-        }
-      ],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Ping time to $ping_target",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "dtdurationms",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "collapsed": false,
-      "datasource": "${DS_PROMETHEUS}",
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 27
-      },
-      "id": 64,
-      "panels": [],
-      "title": "Disk / Volumes",
-      "type": "row"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "decimals": 0,
-          "mappings": [],
-          "max": 1000000000,
-          "min": 0,
-          "noValue": "Idle",
-          "thresholds": {
-            "mode": "percentage",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "KBs"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 3,
-        "x": 0,
-        "y": 28
-      },
-      "id": 31,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.3.7",
-      "targets": [
-        {
-          "expr": "rate(node_disk_written_kbytes_total{job='qnap',node='$node',device='$device'}[15s])",
-          "interval": "",
-          "legendFormat": "write",
-          "refId": "B"
-        },
-        {
-          "expr": "rate(node_disk_read_kbytes_total{job='qnap',node='$node',device='$device'}[15s])",
-          "interval": "",
-          "legendFormat": "read",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Disk I/O",
-      "type": "stat"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 3,
-        "y": 28
-      },
-      "hiddenSeries": false,
-      "id": 23,
-      "interval": "",
-      "legend": {
-        "avg": true,
-        "current": false,
-        "hideEmpty": true,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.7",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "alias": "/.*read.*/",
-          "transform": "negative-Y"
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "rate(node_disk_read_kbytes_total{job='qnap',node='$node',device='$device'}[15s])",
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{device}} read rate (15s)",
-          "refId": "A"
-        },
-        {
-          "expr": "rate(node_disk_written_kbytes_total{job='qnap',node='$node',device='$device'}[15s])",
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{device}} write rate (15s)",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Disk I/O",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "KBs",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "decimals": null,
-          "format": "MBs",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "cacheTimeout": null,
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-GrYlRd"
+            "mode": "thresholds"
           },
-          "custom": {},
-          "decimals": 0,
+          "custom": {
+            "calculation": "mean",
+            "colorPalette": "interpolateSpectral",
+            "colorSpace": "rgb",
+            "groupBy": 60,
+            "invertPalette": true,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "blue",
+                  "value": null
+                },
+                {
+                  "color": "orange",
+                  "value": 4
+                }
+              ]
+            }
+          },
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -1932,409 +1502,1174 @@
               },
               {
                 "color": "red",
-                "value": 0.8
+                "value": 4
               }
             ]
-          },
-          "unit": "percentunit"
+          }
         },
         "overrides": []
       },
       "gridPos": {
         "h": 6,
-        "w": 12,
-        "x": 12,
-        "y": 28
+        "w": 9,
+        "x": 15,
+        "y": 15
       },
-      "id": 54,
-      "interval": null,
-      "links": [],
+      "id": 68,
+      "interval": "1h",
       "options": {
-        "displayMode": "gradient",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true
+        "from": "0",
+        "legendGradientQuality": "high",
+        "showCellBorder": false,
+        "showLegend": false,
+        "showTooltip": true,
+        "showValueIndicator": false,
+        "to": "0"
       },
       "pluginVersion": "7.3.7",
       "targets": [
         {
-          "expr": "1-(node_volume_avail_bytes{job='qnap',status=~'.+'}/node_volume_size_bytes{job='qnap',status=~'.+'})",
-          "instant": true,
+          "expr": "node_load15",
+          "format": "time_series",
           "interval": "",
-          "legendFormat": "{{volume}} ({{status}})",
+          "legendFormat": "",
           "refId": "A"
         }
       ],
-      "timeFrom": null,
+      "timeFrom": "1w",
       "timeShift": null,
-      "title": "Volume Usage",
-      "type": "bargauge"
+      "title": "CPU Load",
+      "type": "marcusolsson-hourly-heatmap-panel"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 21
       },
-      "id": 60,
-      "panels": [],
-      "title": "SSD Cache",
+      "id": 62,
+      "panels": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {},
+              "decimals": 0,
+              "mappings": [],
+              "max": 1000000000,
+              "min": 0,
+              "noValue": "Idle",
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 100
+                  }
+                ]
+              },
+              "unit": "Bps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 3,
+            "x": 0,
+            "y": 22
+          },
+          "id": 29,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.4.1",
+          "repeat": "interface",
+          "repeatDirection": "v",
+          "scopedVars": {
+            "interface": {
+              "selected": true,
+              "text": "eth0",
+              "value": "eth0"
+            }
+          },
+          "targets": [
+            {
+              "expr": "irate(node_network_transmit_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
+              "interval": "",
+              "legendFormat": "Tx",
+              "refId": "B"
+            },
+            {
+              "expr": "irate(node_network_receive_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
+              "interval": "",
+              "legendFormat": "Rx",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "$interface network I/O",
+          "type": "stat"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 6,
+            "w": 9,
+            "x": 3,
+            "y": 22
+          },
+          "hiddenSeries": false,
+          "id": 22,
+          "legend": {
+            "avg": true,
+            "current": false,
+            "hideEmpty": true,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.4.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "repeat": "interface",
+          "repeatDirection": "v",
+          "scopedVars": {
+            "interface": {
+              "selected": true,
+              "text": "eth0",
+              "value": "eth0"
+            }
+          },
+          "seriesOverrides": [
+            {
+              "alias": "/receive.*/",
+              "transform": "negative-Y"
+            }
+          ],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "irate(node_network_receive_bytes_total{job='qnap',node='$node',device='$interface'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "{{interface}} receive rate",
+              "refId": "A"
+            },
+            {
+              "expr": "irate(node_network_transmit_bytes_total{job='qnap',node='$node',device='$interface'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "{{interface}} sent rate",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "$interface network I/O",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "Bps",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "decimals": null,
+              "format": "MBs",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": false
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "alert": {
+            "alertRuleTags": {},
+            "conditions": [
+              {
+                "evaluator": {
+                  "params": [
+                    50
+                  ],
+                  "type": "gt"
+                },
+                "operator": {
+                  "type": "and"
+                },
+                "query": {
+                  "params": [
+                    "A",
+                    "5m",
+                    "now"
+                  ]
+                },
+                "reducer": {
+                  "params": [],
+                  "type": "avg"
+                },
+                "type": "query"
+              }
+            ],
+            "executionErrorState": "alerting",
+            "for": "5m",
+            "frequency": "1m",
+            "handler": 1,
+            "message": "Average ping time from ${node} over last 5 minutes is above 50ms!",
+            "name": "Ping time to 1.1.1.1 alert",
+            "noDataState": "alerting",
+            "notifications": []
+          },
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS}",
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "unit": "dtdurationms"
+            },
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 6,
+            "w": 12,
+            "x": 12,
+            "y": 22
+          },
+          "hiddenSeries": false,
+          "id": 37,
+          "legend": {
+            "avg": true,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.4.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "/.* average/",
+              "dashes": true,
+              "fill": 0,
+              "fillGradient": 0,
+              "legend": false
+            }
+          ],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "node_network_external_roundtrip_time_ms{job='qnap'}",
+              "interval": "",
+              "legendFormat": "Ping time",
+              "refId": "A"
+            },
+            {
+              "expr": "avg_over_time((node_network_external_roundtrip_time_ms{job='qnap',node='$node'} > 0)[24h:])",
+              "interval": "",
+              "legendFormat": "24h average",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [
+            {
+              "colorMode": "critical",
+              "fill": true,
+              "line": true,
+              "op": "gt",
+              "value": 50,
+              "visible": true
+            }
+          ],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "Ping time to $ping_target",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "format": "dtdurationms",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": false
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        }
+      ],
+      "repeat": null,
+      "title": "Network ($interface)",
       "type": "row"
     },
     {
+      "collapsed": true,
       "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "orange",
-                "value": 25
-              },
-              {
-                "color": "green",
-                "value": 50
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
       "gridPos": {
-        "h": 7,
-        "w": 3,
+        "h": 1,
+        "w": 24,
         "x": 0,
-        "y": 35
+        "y": 22
       },
-      "id": 17,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.3.7",
-      "targets": [
+      "id": 64,
+      "panels": [
         {
-          "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
-          "interval": "",
-          "legendFormat": "Write hits ",
-          "refId": "B"
-        },
-        {
-          "expr": "node_flashcache_read_hit_percent{job='qnap',node='$node'}",
-          "interval": "",
-          "legendFormat": "Read hits",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "SSD Cache Hit Rate",
-      "type": "stat"
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 9,
-        "x": 3,
-        "y": 35
-      },
-      "hiddenSeries": false,
-      "id": 2,
-      "interval": "",
-      "legend": {
-        "avg": true,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.7",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "node_flashcache_read_hit_percent{job='qnap',node='$node'}",
-          "interval": "",
-          "legendFormat": "Read hits",
-          "refId": "A"
-        },
-        {
-          "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
-          "interval": "",
-          "legendFormat": "Write hits",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "SSD Cache Hit Rate History",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": null,
-          "format": "percent",
-          "label": "",
-          "logBase": 1,
-          "max": "100",
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "decimals": 0,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
               },
+              "custom": {},
+              "decimals": 0,
+              "mappings": [],
+              "max": 1000000000000,
+              "min": 0,
+              "noValue": "Idle",
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 100
+                  }
+                ]
+              },
+              "unit": "Bps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 3,
+            "x": 0,
+            "y": 23
+          },
+          "id": 31,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.4.1",
+          "repeat": "device",
+          "repeatDirection": "v",
+          "scopedVars": {
+            "device": {
+              "selected": true,
+              "text": "nvme0n1",
+              "value": "nvme0n1"
+            }
+          },
+          "targets": [
+            {
+              "expr": "rate(node_disk_written_bytes_total{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "write",
+              "refId": "B"
+            },
+            {
+              "expr": "rate(node_disk_read_bytes_total{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "read",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "$device throughput",
+          "type": "stat"
+        },
+        {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 6,
+            "w": 21,
+            "x": 3,
+            "y": 23
+          },
+          "hiddenSeries": false,
+          "id": 23,
+          "interval": "",
+          "legend": {
+            "alignAsTable": true,
+            "avg": true,
+            "current": true,
+            "hideEmpty": true,
+            "max": true,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.4.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "repeat": "device",
+          "repeatDirection": "v",
+          "scopedVars": {
+            "device": {
+              "selected": true,
+              "text": "nvme0n1",
+              "value": "nvme0n1"
+            }
+          },
+          "seriesOverrides": [
+            {
+              "alias": "/.*read.*/",
+              "transform": "negative-Y"
+            }
+          ],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "rate(node_disk_read_bytes_total{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "read rate",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(node_disk_written_bytes_total{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "write rate",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "$device throughput",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": null,
+              "format": "Bps",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "decimals": null,
+              "format": "MBs",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": false
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
+        },
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {},
+              "decimals": 0,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "noValue": "Idle",
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 100
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
               {
-                "color": "#EAB839",
-                "value": 90
+                "matcher": {
+                  "id": "byName",
+                  "options": "I/O time"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "ms"
+                  },
+                  {
+                    "id": "thresholds",
+                    "value": {
+                      "mode": "absolute",
+                      "steps": [
+                        {
+                          "color": "green",
+                          "value": null
+                        },
+                        {
+                          "color": "red",
+                          "value": 500
+                        }
+                      ]
+                    }
+                  }
+                ]
               }
             ]
           },
-          "unit": "percentunit"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 3,
-        "x": 12,
-        "y": 35
-      },
-      "id": 18,
-      "options": {
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
+          "gridPos": {
+            "h": 6,
+            "w": 3,
+            "x": 0,
+            "y": 29
+          },
+          "id": 71,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "last"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.4.1",
+          "repeatDirection": "v",
+          "targets": [
+            {
+              "expr": "rate(node_disk_iotime_msec{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "I/O time",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(node_disk_iops_in_progress{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "IOPS in progress",
+              "refId": "B"
+            }
           ],
-          "fields": "",
-          "values": false
-        },
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true
-      },
-      "pluginVersion": "7.3.7",
-      "targets": [
-        {
-          "expr": "node_flashcache_cached_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "Allocated",
-          "refId": "A"
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "$device disk I/O",
+          "type": "stat"
         },
         {
-          "expr": "node_flashcache_dirty_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
-          "instant": true,
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 6,
+            "w": 21,
+            "x": 3,
+            "y": 29
+          },
+          "hiddenSeries": false,
+          "id": 70,
           "interval": "",
-          "legendFormat": "Dirty",
-          "refId": "B"
+          "legend": {
+            "alignAsTable": true,
+            "avg": true,
+            "current": true,
+            "hideEmpty": true,
+            "max": true,
+            "min": false,
+            "rightSide": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.4.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "repeatDirection": "v",
+          "seriesOverrides": [
+            {
+              "alias": "/.*read.*/",
+              "transform": "negative-Y"
+            },
+            {
+              "alias": "/.*time.*/",
+              "dashes": true,
+              "yaxis": 2
+            }
+          ],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "rate(node_disk_read_ops_total{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "read",
+              "refId": "A"
+            },
+            {
+              "expr": "rate(node_disk_write_ops_total{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "write",
+              "refId": "B"
+            },
+            {
+              "expr": "rate(node_disk_read_time_msec{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "read time",
+              "refId": "C"
+            },
+            {
+              "expr": "rate(node_disk_write_time_msec{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 1,
+              "legendFormat": "write time",
+              "refId": "D"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "$device IOPS",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": null,
+              "format": "ops",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "decimals": null,
+              "format": "ms",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": true,
+            "alignLevel": null
+          }
         }
       ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "SSD Cache Allocation",
-      "type": "gauge"
+      "title": "Disk activity ($device)",
+      "type": "row"
     },
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
+      "collapsed": true,
       "datasource": "${DS_PROMETHEUS}",
-      "decimals": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {},
-          "links": []
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
-        "h": 7,
-        "w": 9,
-        "x": 15,
-        "y": 35
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
       },
-      "hiddenSeries": false,
-      "id": 4,
-      "interval": "",
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.7",
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
+      "id": 60,
+      "panels": [
         {
-          "expr": "node_flashcache_cached_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
-          "interval": "",
-          "legendFormat": "Allocated",
-          "refId": "A"
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "orange",
+                    "value": 25
+                  },
+                  {
+                    "color": "green",
+                    "value": 50
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 0,
+            "y": 24
+          },
+          "id": 17,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "7.4.1",
+          "targets": [
+            {
+              "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
+              "interval": "",
+              "legendFormat": "Write hits ",
+              "refId": "B"
+            },
+            {
+              "expr": "node_flashcache_read_hit_percent{job='qnap',node='$node'}",
+              "interval": "",
+              "legendFormat": "Read hits",
+              "refId": "A"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "SSD Cache Hit Rate",
+          "type": "stat"
         },
         {
-          "expr": "node_flashcache_dirty_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS}",
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 7,
+            "w": 11,
+            "x": 3,
+            "y": 24
+          },
+          "hiddenSeries": false,
+          "id": 2,
           "interval": "",
-          "legendFormat": "Dirty",
-          "refId": "B"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "SSD Cache Usage",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "decimals": 0,
-          "format": "percentunit",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": "0",
-          "show": true
+          "legend": {
+            "avg": true,
+            "current": false,
+            "max": false,
+            "min": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.4.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "node_flashcache_read_hit_percent{job='qnap',node='$node'}",
+              "interval": "",
+              "legendFormat": "Read hits",
+              "refId": "A"
+            },
+            {
+              "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
+              "interval": "",
+              "legendFormat": "Write hits",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": null,
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "SSD Cache Hit Rate History",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": null,
+              "format": "percent",
+              "label": "",
+              "logBase": 1,
+              "max": "100",
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
         },
         {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": false
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS}",
+          "decimals": null,
+          "fieldConfig": {
+            "defaults": {
+              "custom": {},
+              "links": []
+            },
+            "overrides": []
+          },
+          "fill": 1,
+          "fillGradient": 0,
+          "gridPos": {
+            "h": 7,
+            "w": 10,
+            "x": 14,
+            "y": 24
+          },
+          "hiddenSeries": false,
+          "id": 4,
+          "interval": "",
+          "legend": {
+            "avg": false,
+            "current": false,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
+          "options": {
+            "alertThreshold": true
+          },
+          "percentage": false,
+          "pluginVersion": "7.4.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "expr": "node_flashcache_cached_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
+              "interval": "",
+              "legendFormat": "Allocated",
+              "refId": "A"
+            },
+            {
+              "expr": "node_flashcache_dirty_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
+              "interval": "",
+              "legendFormat": "Dirty",
+              "refId": "B"
+            }
+          ],
+          "thresholds": [],
+          "timeFrom": "1w",
+          "timeRegions": [],
+          "timeShift": null,
+          "title": "SSD Cache Usage",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "buckets": null,
+            "mode": "time",
+            "name": null,
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "decimals": 0,
+              "format": "percentunit",
+              "label": "",
+              "logBase": 1,
+              "max": null,
+              "min": "0",
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 1,
+              "max": null,
+              "min": null,
+              "show": false
+            }
+          ],
+          "yaxis": {
+            "align": false,
+            "alignLevel": null
+          }
         }
       ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "title": "SSD Cache",
+      "type": "row"
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 26,
+  "schemaVersion": 27,
   "style": "dark",
   "tags": [
     "qnap",
@@ -2346,15 +2681,19 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
-        "definition": "",
+        "definition": "label_values(node_load1, node)",
+        "description": null,
         "error": null,
         "hide": 2,
         "includeAll": false,
         "label": "node",
-        "multi": false,
+        "multi": true,
         "name": "node",
         "options": [],
-        "query": "label_values(node_load1, node)",
+        "query": {
+          "query": "label_values(node_load1, node)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2369,15 +2708,19 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
-        "definition": "",
+        "definition": "label_values(node_network_receive_bytes_total, device)",
+        "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "interface",
-        "multi": false,
+        "multi": true,
         "name": "interface",
         "options": [],
-        "query": "label_values(node_network_receive_bytes_total, device)",
+        "query": {
+          "query": "label_values(node_network_receive_bytes_total, device)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2392,15 +2735,19 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
-        "definition": "",
+        "definition": "label_values(node_disk_read_bytes_total, device)",
+        "description": null,
         "error": null,
         "hide": 0,
         "includeAll": false,
         "label": "device",
-        "multi": false,
+        "multi": true,
         "name": "device",
         "options": [],
-        "query": "label_values(node_disk_read_kbytes_total, device)",
+        "query": {
+          "query": "label_values(node_disk_read_bytes_total, device)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2416,6 +2763,7 @@
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
         "definition": "label_values(node_network_external_roundtrip_time_ms, target)",
+        "description": null,
         "error": null,
         "hide": 2,
         "includeAll": false,
@@ -2423,7 +2771,10 @@
         "multi": false,
         "name": "ping_target",
         "options": [],
-        "query": "label_values(node_network_external_roundtrip_time_ms, target)",
+        "query": {
+          "query": "label_values(node_network_external_roundtrip_time_ms, target)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2439,6 +2790,7 @@
         "current": {},
         "datasource": "${DS_PROMETHEUS}",
         "definition": "label_values(node_hdtmp_C,hd)",
+        "description": null,
         "error": null,
         "hide": 2,
         "includeAll": false,
@@ -2446,7 +2798,10 @@
         "multi": false,
         "name": "hd",
         "options": [],
-        "query": "label_values(node_hdtmp_C,hd)",
+        "query": {
+          "query": "label_values(node_hdtmp_C,hd)",
+          "refId": "StandardVariableQuery"
+        },
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -2460,7 +2815,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -2481,5 +2836,5 @@
   "timezone": "",
   "title": "QNAP",
   "uid": "0hvVnIaGk",
-  "version": 42
+  "version": 35
 }

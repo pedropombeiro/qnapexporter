@@ -40,7 +40,6 @@ type promExporter struct {
 	syshdnum   int
 	sysfannum  int
 	ifaces     []string
-	iostat     string
 	devices    []string
 	envExpiry  time.Time
 
@@ -175,12 +174,6 @@ func (e *promExporter) readEnvironment() {
 	}
 	e.Logger.Printf("Hostname: %s, err=%v\n", e.hostname, err)
 
-	if e.iostat == "" {
-		e.iostat, err = exec.LookPath("iostat")
-		if err != nil {
-			e.Logger.Printf("Failed to find iostat: %v\n", err)
-		}
-	}
 	if e.getsysinfo == "" {
 		e.getsysinfo, _ = exec.LookPath("getsysinfo")
 		if err != nil {

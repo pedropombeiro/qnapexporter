@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/shirou/gopsutil/v3/disk"
+
 	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
@@ -75,56 +77,75 @@ func getFlashCacheStatsMetrics() ([]metric, error) {
 }
 
 func (e *promExporter) getDiskStatsMetrics() ([]metric, error) {
-	if e.iostat == "" {
-		return nil, nil
-	}
-
-	args := []string{"-k", "-d"}
-	args = append(args, e.devices...)
-	lines, err := utils.ExecCommandGetLines(e.iostat, args...)
+	stats, err := disk.IOCounters(e.devices...)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(lines) < 4 {
-		return nil, fmt.Errorf("iostat output missing expected lines - found %d lines", len(lines))
-	}
-
 	metrics := make([]metric, 0, len(e.devices)*2)
-	for _, line := range lines[3:] {
-		readMetric, err := e.getDiskStatMetric("node_disk_read_kbytes_total", "Total number of kilobytes read", line, 5)
-		if err != nil {
-			return nil, err
-		}
-		metrics = append(metrics, readMetric)
+	for _, s := range stats {
+		attr := fmt.Sprintf(`device=%q`, s.Name)
 
-		writeMetric, err := e.getDiskStatMetric("node_disk_written_kbytes_total", "Total number of kilobytes written", line, 6)
-		if err != nil {
-			return nil, err
-		}
-		metrics = append(metrics, writeMetric)
+		metrics = append(
+			metrics,
+			metric{
+				name:       "node_disk_read_bytes_total",
+				attr:       attr,
+				value:      float64(s.ReadBytes),
+				help:       "Total number of bytes read",
+				metricType: "counter",
+			},
+			metric{
+				name:       "node_disk_written_bytes_total",
+				attr:       attr,
+				value:      float64(s.WriteBytes),
+				help:       "Total number of bytes written",
+				metricType: "counter",
+			},
+			metric{
+				name:       "node_disk_read_ops_total",
+				attr:       attr,
+				value:      float64(s.ReadCount),
+				help:       "Total number of read operations",
+				metricType: "counter",
+			},
+			metric{
+				name:       "node_disk_write_ops_total",
+				attr:       attr,
+				value:      float64(s.WriteCount),
+				help:       "Total number of write operations",
+				metricType: "counter",
+			},
+			metric{
+				name:       "node_disk_read_time_msec",
+				attr:       attr,
+				value:      float64(s.ReadTime),
+				help:       "# of milliseconds spent reading",
+				metricType: "counter",
+			},
+			metric{
+				name:       "node_disk_write_time_msec",
+				attr:       attr,
+				value:      float64(s.WriteTime),
+				help:       "# of milliseconds spent writing",
+				metricType: "counter",
+			},
+			metric{
+				name:       "node_disk_iops_in_progress",
+				attr:       attr,
+				value:      float64(s.IopsInProgress),
+				help:       "# of I/Os currently in progress",
+				metricType: "gauge",
+			},
+			metric{
+				name:       "node_disk_iotime_msec",
+				attr:       attr,
+				value:      float64(s.IoTime),
+				help:       "# of milliseconds spent doing I/Os",
+				metricType: "counter",
+			},
+		)
 	}
 
 	return metrics, nil
-}
-
-func (e *promExporter) getDiskStatMetric(name string, help string, line string, field int) (metric, error) {
-	fields := strings.Fields(line)
-	if field >= len(fields) {
-		return metric{}, fmt.Errorf("disk stat metric %q: field %d missing in %d total fields", name, field, len(fields))
-	}
-
-	value, err := strconv.ParseFloat(fields[field], 64)
-	if err != nil {
-		return metric{}, err
-	}
-
-	dev := fields[0]
-	return metric{
-		name:       name,
-		attr:       fmt.Sprintf(`device=%q`, dev),
-		value:      value,
-		help:       help,
-		metricType: "counter",
-	}, nil
 }

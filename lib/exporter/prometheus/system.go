@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -9,6 +10,8 @@ import (
 	"github.com/shirou/gopsutil/v3/load"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
+
+var fanRpmRe = regexp.MustCompile(`(?m)fan = (\d+) rpm`)
 
 func getUptimeMetrics() ([]metric, error) {
 	u, err := host.Uptime()
@@ -89,9 +92,43 @@ func (e *promExporter) getSysInfoFanMetrics() ([]metric, error) {
 		}
 		metrics = append(metrics, metric{
 			name:  "node_sysfan_RPM",
-			attr:  fmt.Sprintf(`fan=%q`, fannumStr),
+			attr:  fmt.Sprintf(`fan=%q,type="System"`, fannumStr),
 			value: fan,
 		})
+	}
+
+	return metrics, nil
+}
+
+func (e *promExporter) getEnclosureFanMetrics() ([]metric, error) {
+	if e.hal_app == "" {
+		return nil, nil
+	}
+
+	metrics := make([]metric, 0, len(e.enclosures))
+
+	for _, enc := range e.enclosures {
+		for fanNum := 0; fanNum < enc.fanCount; fanNum++ {
+			fanOutput, err := utils.ExecCommand(e.hal_app, "--se_sys_get_fan", fmt.Sprintf("enc_sys_id=%s,obj_index=%d", enc.id, fanNum))
+			if err != nil {
+				return nil, err
+			}
+
+			matches := fanRpmRe.FindStringSubmatch(fanOutput)
+			if len(matches) < 2 {
+				continue
+			}
+
+			fan, err := strconv.ParseFloat(matches[1], 64)
+			if err != nil {
+				return nil, err
+			}
+			metrics = append(metrics, metric{
+				name:  "node_sysfan_RPM",
+				attr:  fmt.Sprintf(`fan="%d",type=%q`, 1+fanNum, enc.name),
+				value: fan,
+			})
+		}
 	}
 
 	return metrics, nil

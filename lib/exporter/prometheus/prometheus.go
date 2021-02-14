@@ -27,6 +27,14 @@ const (
 
 type fetchMetricFn func() ([]metric, error)
 
+type qnapEnclosure struct {
+	id        string
+	name      string
+	diskCount int
+	fanCount  int
+	tempCount int
+}
+
 type promExporter struct {
 	ExporterConfig
 
@@ -41,6 +49,8 @@ type promExporter struct {
 	sysfannum  int
 	ifaces     []string
 	devices    []string
+	hal_app    string
+	enclosures []qnapEnclosure
 	envExpiry  time.Time
 
 	volumes         []volumeInfo
@@ -71,12 +81,13 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 		e.getUpsStatsMetrics,      // #6
 		e.getSysInfoTempMetrics,   // #7
 		e.getSysInfoFanMetrics,    // #8
-		e.getSysInfoHdMetrics,     // #9
-		e.getSysInfoVolMetrics,    // #10
-		e.getDiskStatsMetrics,     // #11
-		getFlashCacheStatsMetrics, // #12
-		e.getNetworkStatsMetrics,  // #13
-		e.getPingMetrics,          // #14
+		e.getEnclosureFanMetrics,  // #9
+		e.getSysInfoHdMetrics,     // #10
+		e.getSysInfoVolMetrics,    // #11
+		e.getDiskStatsMetrics,     // #12
+		getFlashCacheStatsMetrics, // #13
+		e.getNetworkStatsMetrics,  // #14
+		e.getPingMetrics,          // #15
 	}
 
 	if status != nil {
@@ -196,6 +207,37 @@ func (e *promExporter) readEnvironment() {
 		}
 
 		e.readSysVolInfo()
+	}
+
+	if e.hal_app == "" {
+		e.hal_app, _ = exec.LookPath("hal_app")
+		if err != nil {
+			e.Logger.Printf("Failed to find hal_app: %v\n", err)
+		}
+	}
+	e.enclosures = nil
+	e.status.Enclosures = nil
+	if e.hal_app != "" {
+		seEnumOutput, err := utils.ExecCommand(e.hal_app, "--se_enum")
+		if err == nil {
+			lines := utils.FindMatchingLines("qm2_", seEnumOutput)
+			if len(lines) != 0 {
+				for _, line := range lines {
+					fields := strings.Fields(line)
+					enc := qnapEnclosure{
+						id:   fields[2],
+						name: fields[4],
+					}
+					enc.diskCount, _ = strconv.Atoi(fields[7])
+					enc.fanCount, _ = strconv.Atoi(fields[8])
+					enc.tempCount, _ = strconv.Atoi(fields[10])
+					if enc.fanCount != 0 {
+						e.enclosures = append(e.enclosures, enc)
+						e.status.Enclosures = append(e.status.Enclosures, enc.name)
+					}
+				}
+			}
+		}
 	}
 
 	info, _ := ioutil.ReadDir(netDir)

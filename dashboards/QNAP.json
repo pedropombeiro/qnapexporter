@@ -138,7 +138,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": null,
-  "iteration": 1613342508888,
+  "iteration": 1613346931461,
   "links": [
     {
       "icon": "external link",
@@ -204,8 +204,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 3,
+        "h": 4,
+        "w": 6,
         "x": 0,
         "y": 1
       },
@@ -229,7 +229,7 @@
       "pluginVersion": "7.4.1",
       "targets": [
         {
-          "expr": "max(node_time_seconds{job='qnap'})",
+          "expr": "node_time_seconds{job='qnap'}",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -238,71 +238,6 @@
       "timeFrom": null,
       "timeShift": null,
       "title": "System Uptime",
-      "type": "stat"
-    },
-    {
-      "datasource": "${DS_PROMETHEUS}",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
-          "decimals": 0,
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 50
-              }
-            ]
-          },
-          "unit": "celsius"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 3,
-        "y": 1
-      },
-      "id": 41,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "7.4.1",
-      "targets": [
-        {
-          "expr": "avg(node_systmp_C)",
-          "interval": "",
-          "legendFormat": "$node system temperature",
-          "refId": "A"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "System temp",
       "type": "stat"
     },
     {
@@ -335,7 +270,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 3,
         "x": 6,
         "y": 1
@@ -392,7 +327,7 @@
               },
               {
                 "color": "#EAB839",
-                "value": 1200
+                "value": 1800
               },
               {
                 "color": "red",
@@ -405,8 +340,8 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 4,
+        "h": 8,
+        "w": 3,
         "x": 9,
         "y": 1
       },
@@ -427,16 +362,17 @@
       "pluginVersion": "7.4.1",
       "targets": [
         {
-          "expr": "avg(node_sysfan_RPM)",
+          "expr": "node_sysfan_RPM{job=\"qnap\",node=\"$node\"}",
+          "format": "time_series",
           "instant": true,
           "interval": "",
-          "legendFormat": "$node system fan",
+          "legendFormat": "{{type}} fan #{{fan}}",
           "refId": "A"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "System fan",
+      "title": "Fans",
       "type": "gauge"
     },
     {
@@ -467,9 +403,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 3,
-        "x": 13,
+        "x": 12,
         "y": 1
       },
       "id": 18,
@@ -539,9 +475,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
+        "h": 8,
         "w": 3,
-        "x": 16,
+        "x": 15,
         "y": 1
       },
       "id": 69,
@@ -609,9 +545,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 7,
-        "w": 5,
-        "x": 19,
+        "h": 8,
+        "w": 6,
+        "x": 18,
         "y": 1
       },
       "id": 54,
@@ -633,7 +569,7 @@
       "pluginVersion": "7.4.1",
       "targets": [
         {
-          "expr": "1-(node_volume_avail_bytes{job='qnap',status=~'.+'}/node_volume_size_bytes{job='qnap',status=~'.+'})",
+          "expr": "1-(node_volume_avail_bytes{job='qnap',node=\"$node\",status=~'.+'}/node_volume_size_bytes{job='qnap',node=\"$node\",status=~'.+'})",
           "instant": true,
           "interval": "",
           "legendFormat": "{{volume}} ({{status}})",
@@ -666,6 +602,71 @@
               },
               {
                 "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 5
+      },
+      "id": 41,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.4.1",
+      "targets": [
+        {
+          "expr": "node_systmp_C{job=\"qnap\",node=\"$node\"}",
+          "interval": "",
+          "legendFormat": "$node system temperature",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "System temp",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {},
+          "decimals": 0,
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
                 "value": 75
               }
             ]
@@ -675,7 +676,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 4,
         "w": 3,
         "x": 3,
         "y": 5
@@ -699,7 +700,7 @@
       "pluginVersion": "7.4.1",
       "targets": [
         {
-          "expr": "avg(node_cputmp_C)",
+          "expr": "node_cputmp_C{job=\"qnap\",node=\"$node\"}",
           "interval": "",
           "legendFormat": "$node CPU temperature",
           "refId": "A"
@@ -717,7 +718,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 9
       },
       "id": 56,
       "panels": [],
@@ -761,7 +762,7 @@
         "h": 6,
         "w": 3,
         "x": 0,
-        "y": 9
+        "y": 10
       },
       "id": 20,
       "options": {
@@ -848,7 +849,7 @@
         "h": 6,
         "w": 9,
         "x": 3,
-        "y": 9
+        "y": 10
       },
       "hiddenSeries": false,
       "id": 8,
@@ -1000,7 +1001,7 @@
         "h": 6,
         "w": 3,
         "x": 12,
-        "y": 9
+        "y": 10
       },
       "id": 50,
       "interval": "",
@@ -1069,7 +1070,7 @@
         "h": 6,
         "w": 9,
         "x": 15,
-        "y": 9
+        "y": 10
       },
       "hiddenSeries": false,
       "id": 25,
@@ -1203,7 +1204,7 @@
         "h": 6,
         "w": 3,
         "x": 0,
-        "y": 15
+        "y": 16
       },
       "id": 49,
       "options": {
@@ -1290,7 +1291,7 @@
         "h": 6,
         "w": 9,
         "x": 3,
-        "y": 15
+        "y": 16
       },
       "hiddenSeries": false,
       "id": 6,
@@ -1429,7 +1430,7 @@
         "h": 6,
         "w": 3,
         "x": 12,
-        "y": 15
+        "y": 16
       },
       "id": 27,
       "interval": null,
@@ -1513,7 +1514,7 @@
         "h": 6,
         "w": 9,
         "x": 15,
-        "y": 15
+        "y": 16
       },
       "id": 68,
       "interval": "1h",
@@ -1548,7 +1549,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 22
       },
       "id": 62,
       "panels": [
@@ -1919,7 +1920,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 22
+        "y": 23
       },
       "id": 64,
       "panels": [
@@ -2378,7 +2379,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 24
       },
       "id": 60,
       "panels": [
@@ -2836,5 +2837,5 @@
   "timezone": "",
   "title": "QNAP",
   "uid": "0hvVnIaGk",
-  "version": 35
+  "version": 38
 }

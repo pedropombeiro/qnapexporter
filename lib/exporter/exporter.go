@@ -22,4 +22,5 @@ type Status struct {
 	Interfaces        []string
 	Devices           []string
 	Volumes           []string
+	Enclosures        []string
 }

@@ -92,6 +92,7 @@ func (s *Status) WriteHTML(w io.Writer) error {
 			"Devices":       humanizeList(e.Devices),
 			"Volumes":       humanizeList(e.Volumes),
 			"Interfaces":    humanizeList(e.Interfaces),
+			"Enclosures":    humanizeList(e.Enclosures),
 		},
 	}
 	endpoints := []endpointStatus{ms}

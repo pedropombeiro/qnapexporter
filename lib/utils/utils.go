@@ -51,3 +51,16 @@ func ExecCommandGetLines(cmd string, args ...string) ([]string, error) {
 
 	return strings.Split(output, "\n"), nil
 }
+
+func FindMatchingLines(token string, output string) []string {
+	lines := strings.Split(output, "\n")
+
+	var matchingLines []string
+	for _, line := range lines {
+		if strings.Contains(line, token) {
+			matchingLines = append(matchingLines, line)
+		}
+	}
+
+	return matchingLines
+}

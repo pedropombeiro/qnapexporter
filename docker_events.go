@@ -87,6 +87,10 @@ func handleDockerEvents(args httpServerArgs, annotator notifications.Annotator, 
 func formatDockerActorAttributes(attr map[string]string) string {
 	var s string
 	for k, v := range attr {
+		if strings.HasPrefix(k, "com.docker.") {
+			continue
+		}
+
 		if s != "" {
 			s += ","
 		}

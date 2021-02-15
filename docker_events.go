@@ -13,16 +13,20 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
 )
 
-func handleDockerEvents(args httpServerArgs, annotator notifications.Annotator) error {
+func handleDockerEvents(args httpServerArgs, annotator notifications.Annotator, exporterStatus *exporter.Status) error {
+	exporterStatus.Docker = "Connecting..."
+
 	// Setup our Ctrl+C handler
 	exitCh := make(chan os.Signal, 1)
 	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
 	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
 	if err != nil {
+		exporterStatus.Docker = err.Error()
 		args.logger.Println(err)
 		return err
 	}
@@ -59,16 +63,19 @@ func handleDockerEvents(args httpServerArgs, annotator notifications.Annotator) 
 		),
 	}
 	msgs, errs := cli.Events(ctx, opts)
+	exporterStatus.Docker = "Waiting for events"
 
 	for {
 		select {
 		case err := <-errs:
 			if err != nil {
+				exporterStatus.Docker = err.Error()
 				args.logger.Println(err)
 			}
 		case msg := <-msgs:
 			t := time.Unix(0, msg.TimeNano)
 			m := strings.Join([]string{msg.Type, msg.Action, msg.Actor.ID, formatDockerActorAttributes(msg.Actor.Attributes)}, " ")
+			exporterStatus.Docker = m
 			args.logger.Printf("%v: %s\n", t, m)
 			_, _ = annotator.Post(m, t)
 		case <-ctx.Done():

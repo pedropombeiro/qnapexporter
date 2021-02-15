@@ -23,4 +23,5 @@ type Status struct {
 	Devices           []string
 	Volumes           []string
 	Enclosures        []string
+	Docker            string
 }

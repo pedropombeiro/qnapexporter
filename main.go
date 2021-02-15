@@ -113,7 +113,7 @@ func main() {
 		logger,
 	)
 
-	go handleDockerEvents(args, dockerAnnotator)
+	go handleDockerEvents(args, dockerAnnotator, &serverStatus.ExporterStatus)
 
 	err := serveHTTP(args, notifCenterAnnotator, serverStatus)
 	if err != nil {

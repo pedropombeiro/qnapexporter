@@ -183,12 +183,14 @@ func (e *promExporter) readEnvironment() {
 	if e.hostname == "" {
 		e.hostname, err = utils.ExecCommand("hostname")
 	}
-	e.Logger.Printf("Hostname: %s, err=%v\n", e.hostname, err)
+	e.Logger.Printf("Hostname: %s, err=%v", e.hostname, err)
 
 	if e.getsysinfo == "" {
 		e.getsysinfo, _ = exec.LookPath("getsysinfo")
-		if err != nil {
-			e.Logger.Printf("Failed to find getsysinfo: %v\n", err)
+		if err == nil {
+			e.Logger.Printf("Retrieved getsysinfo path: %q", e.getsysinfo)
+		} else {
+			e.Logger.Printf("Failed to find getsysinfo: %v", err)
 		}
 	}
 	if e.getsysinfo != "" {
@@ -198,6 +200,7 @@ func (e *promExporter) readEnvironment() {
 		} else {
 			e.syshdnum = -1
 		}
+		e.Logger.Printf("Retrieved sysdhnum: %d", e.syshdnum)
 
 		sysfannumOutput, err := utils.ExecCommand(e.getsysinfo, "sysfannum")
 		if err == nil {
@@ -205,19 +208,23 @@ func (e *promExporter) readEnvironment() {
 		} else {
 			e.sysfannum = -1
 		}
+		e.Logger.Printf("Retrieved sysfannum: %d", e.sysfannum)
 
 		e.readSysVolInfo()
+		e.Logger.Printf("Retrieved sysvolinfo")
 	}
 
 	if e.hal_app == "" {
 		e.hal_app, _ = exec.LookPath("hal_app")
 		if err != nil {
-			e.Logger.Printf("Failed to find hal_app: %v\n", err)
+			e.Logger.Printf("Failed to find hal_app: %v", err)
 		}
+		e.Logger.Printf("Retrieved hal_app path: %q", e.hal_app)
 	}
 	e.enclosures = nil
 	e.status.Enclosures = nil
 	if e.hal_app != "" {
+		e.Logger.Println("Retrieving QM2 encosures")
 		seEnumOutput, err := utils.ExecCommand(e.hal_app, "--se_enum")
 		if err == nil {
 			lines := utils.FindMatchingLines("qm2_", seEnumOutput)
@@ -240,6 +247,7 @@ func (e *promExporter) readEnvironment() {
 		}
 	}
 
+	e.Logger.Printf("Retrieving network interfaces in %q...", netDir)
 	info, _ := ioutil.ReadDir(netDir)
 	e.ifaces = make([]string, 0, len(info))
 	for _, d := range info {
@@ -251,6 +259,7 @@ func (e *promExporter) readEnvironment() {
 		e.ifaces = append(e.ifaces, iface)
 	}
 
+	e.Logger.Printf("Retrieving devices in %q...", devDir)
 	info, _ = ioutil.ReadDir(devDir)
 	e.devices = make([]string, 0, len(info))
 	for _, d := range info {

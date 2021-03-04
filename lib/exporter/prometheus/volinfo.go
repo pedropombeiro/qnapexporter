@@ -26,6 +26,7 @@ func (e *promExporter) readSysVolInfo() {
 			volCount = 0
 		}
 	}
+	e.Logger.Printf("Retrieved volCount: %d", volCount)
 
 	e.volumes = make([]volumeInfo, 0, volCount)
 
@@ -39,26 +40,31 @@ func (e *promExporter) readSysVolInfo() {
 			continue
 		}
 		description := parseVolDesc(desc)
+		e.Logger.Printf("Retrieved vol_desc %q, parsed to %q", desc, description)
+
+		parsedVolCount++
 		if description == "" {
 			continue
 		}
-		parsedVolCount++
 
 		fileSystem, err := utils.ExecCommand(e.getsysinfo, "vol_fs", volIdx)
 		if err != nil {
-			e.Logger.Printf("Error fetching volume %d file system: %v", idx, err)
+			e.Logger.Printf("Error fetching volume %q file system: %v", description, err)
 			continue
 		}
+		e.Logger.Printf("Retrieved volume %q vol_fs %q", description, fileSystem)
 		if fileSystem == "Unknown" {
-			e.Logger.Printf("Ignoring %q volume with %s file system", desc, fileSystem)
+			e.Logger.Printf("Ignoring %q volume with %s file system", description, fileSystem)
 			continue
 		}
 
 		volsizeStr, err := utils.ExecCommand(e.getsysinfo, "vol_totalsize", volIdx)
 		if err != nil {
-			e.Logger.Printf("Error fetching volume %d size: %v", idx, err)
+			e.Logger.Printf("Error fetching volume %q size: %v", description, err)
 			continue
 		}
+		e.Logger.Printf("Retrieved volume %q vol_totalsize %q", description, volsizeStr)
+
 		volsizeBytes, err := parseVolSize(volsizeStr)
 		if err != nil {
 			continue
@@ -66,9 +72,10 @@ func (e *promExporter) readSysVolInfo() {
 
 		status, err := utils.ExecCommand(e.getsysinfo, "vol_status", volIdx)
 		if err != nil {
-			e.Logger.Printf("Error fetching volume %d status: %v", idx, err)
+			e.Logger.Printf("Error fetching volume %q status: %v", description, err)
 			continue
 		}
+		e.Logger.Printf("Retrieved volume %q vol_status %q", description, status)
 
 		e.volumes = append(
 			e.volumes,

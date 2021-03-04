@@ -1,3 +1,8 @@
+# Release v0.0.8
+
+- Fix hang at startup if a volume was ignored
+- Add more tracing when reading environment
+
 # Release v0.0.7
 
 - Fix CPU metrics

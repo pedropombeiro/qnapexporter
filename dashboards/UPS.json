@@ -26,7 +26,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.4.1"
+      "version": "7.5.3"
     },
     {
       "type": "panel",
@@ -89,7 +89,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": null,
-  "iteration": 1613341263833,
+  "iteration": 1617918061936,
   "links": [
     {
       "icon": "external link",
@@ -112,10 +112,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "max": 100,
@@ -160,7 +156,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "avg(ups_ups_load{ups=\"$upsname\"})",
@@ -184,7 +180,6 @@
       "decimals": 0,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "unit": "percent"
         },
         "overrides": [
@@ -228,7 +223,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -303,10 +298,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "mappings": [],
           "min": 0,
           "noValue": "N/A",
@@ -351,7 +342,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "sum(ups_ups_load{ups=\"$upsname\"}/100*ups_ups_realpower_nominal{ups=\"$upsname\"}/1000*24*$kwhprice)",
@@ -374,7 +365,6 @@
       "decimals": 0,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "displayName": "Daily Consumption",
           "unit": "kwatth"
         },
@@ -407,7 +397,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -471,10 +461,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "decimals": 0,
           "mappings": [
             {
@@ -537,7 +523,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "ups_battery_runtime{ups=\"$upsname\"}",
@@ -594,10 +580,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "decimals": 1,
           "mappings": [
             {
@@ -668,7 +650,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "ups_battery_voltage{ups=\"$upsname\"}",
@@ -725,10 +707,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "decimals": 1,
           "mappings": [
             {
@@ -799,7 +777,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "ups_input_voltage{ups=\"$upsname\"}",
@@ -855,10 +833,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "max": 100,
@@ -904,7 +878,7 @@
         "showUnfilled": true,
         "text": {}
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "avg(ups_battery_charge{ups=\"$upsname\"})",
@@ -963,11 +937,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": []
-          },
           "unit": "percent"
         },
         "overrides": []
@@ -998,7 +967,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1075,10 +1044,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "mappings": [],
           "min": 0,
           "noValue": "N/A",
@@ -1123,7 +1088,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "sum(ups_ups_load{ups=\"$upsname\"}/100*ups_ups_realpower_nominal{ups=\"$upsname\"}/1000*24*$kwhprice*30)",
@@ -1143,10 +1108,6 @@
       "description": "",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "mappings": [
             {
               "id": 0,
@@ -1208,7 +1169,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "alias": "Watts",
@@ -1279,7 +1240,6 @@
       "decimals": 0,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "displayName": "Daily Consumption",
           "unit": "kwatth"
         },
@@ -1312,7 +1272,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1376,10 +1336,6 @@
       "description": "",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "decimals": 0,
           "mappings": [
             {
@@ -1472,7 +1428,7 @@
         "text": {},
         "textMode": "value_and_name"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "ups_ups_status{ups='$upsname'}",
@@ -1492,9 +1448,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
           "custom": {
             "calculation": "mean",
             "colorPalette": "custom",
@@ -1574,10 +1527,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {},
           "mappings": [],
           "min": 0,
           "noValue": "N/A",
@@ -1622,7 +1571,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "sum(ups_ups_load{ups=\"$upsname\"}/100*ups_ups_realpower_nominal{ups=\"$upsname\"}/1000*24*$kwhprice*365.25)",
@@ -1645,7 +1594,6 @@
       "decimals": 0,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "displayName": "Daily Consumption",
           "unit": "kwatth"
         },
@@ -1678,7 +1626,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1751,9 +1699,7 @@
       "expandFromQueryS": 0,
       "extendLastValue": true,
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "gridPos": {
@@ -1924,7 +1870,6 @@
       "decimals": 0,
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "unit": "volt"
         },
         "overrides": []
@@ -1942,8 +1887,8 @@
       "legend": {
         "avg": true,
         "current": true,
-        "max": false,
-        "min": false,
+        "max": true,
+        "min": true,
         "show": true,
         "total": false,
         "values": true
@@ -1955,7 +1900,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 0.5,
       "points": false,
       "renderer": "flot",
@@ -2147,5 +2092,5 @@
   "timezone": "",
   "title": "UPS",
   "uid": "IAcYVB-Gz",
-  "version": 10
+  "version": 12
 }

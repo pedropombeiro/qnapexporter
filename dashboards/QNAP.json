@@ -12,12 +12,6 @@
   "__requires": [
     {
       "type": "panel",
-      "id": "bargauge",
-      "name": "Bar gauge",
-      "version": ""
-    },
-    {
-      "type": "panel",
       "id": "gauge",
       "name": "Gauge",
       "version": ""
@@ -26,7 +20,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "7.4.1"
+      "version": "7.4.3"
     },
     {
       "type": "panel",
@@ -138,7 +132,7 @@
   "gnetId": null,
   "graphTooltip": 2,
   "id": null,
-  "iteration": 1613346931461,
+  "iteration": 1617833210253,
   "links": [
     {
       "icon": "external link",
@@ -180,7 +174,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "mappings": [
             {
               "id": 0,
@@ -226,7 +219,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_time_seconds{job='qnap'}",
@@ -247,7 +240,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "max": 100,
@@ -291,7 +283,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_hdtmp_C{node='$node'}",
@@ -313,7 +305,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "max": 2400,
@@ -359,7 +350,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_sysfan_RPM{job=\"qnap\",node=\"$node\"}",
@@ -382,7 +373,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "thresholds": {
@@ -422,7 +412,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_flashcache_cached_blocks{job='qnap',node='$node'}/node_flashcache_total_blocks{job='qnap',node='$node'}",
@@ -451,7 +441,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -496,7 +485,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
@@ -524,7 +513,6 @@
           "color": {
             "mode": "continuous-GrYlRd"
           },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "thresholds": {
@@ -554,7 +542,9 @@
       "interval": null,
       "links": [],
       "options": {
-        "displayMode": "gradient",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -563,23 +553,23 @@
           "fields": "",
           "values": false
         },
-        "showUnfilled": true,
-        "text": {}
+        "text": {},
+        "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "1-(node_volume_avail_bytes{job='qnap',node=\"$node\",status=~'.+'}/node_volume_size_bytes{job='qnap',node=\"$node\",status=~'.+'})",
-          "instant": true,
+          "instant": false,
           "interval": "",
-          "legendFormat": "{{volume}} ({{status}})",
+          "legendFormat": "{{status}}: {{volume}}",
           "refId": "A"
         }
       ],
       "timeFrom": null,
       "timeShift": null,
       "title": "Volume Usage",
-      "type": "bargauge"
+      "type": "stat"
     },
     {
       "datasource": "${DS_PROMETHEUS}",
@@ -588,7 +578,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "max": 100,
@@ -632,7 +621,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_systmp_C{job=\"qnap\",node=\"$node\"}",
@@ -653,7 +642,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "max": 100,
@@ -697,7 +685,7 @@
         "text": {},
         "textMode": "auto"
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_cputmp_C{job=\"qnap\",node=\"$node\"}",
@@ -732,7 +720,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 0,
           "mappings": [],
           "max": 1,
@@ -778,7 +765,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_load1{job='qnap',node='$node'}/node_cpu_count",
@@ -800,17 +787,16 @@
           {
             "evaluator": {
               "params": [
-                -3,
-                3
+                4
               ],
-              "type": "outside_range"
+              "type": "gt"
             },
             "operator": {
               "type": "and"
             },
             "query": {
               "params": [
-                "C",
+                "A",
                 "5m",
                 "now"
               ]
@@ -838,7 +824,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "links": []
         },
         "overrides": []
@@ -869,7 +854,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -899,14 +884,6 @@
           "intervalFactor": 1,
           "legendFormat": "24h load average",
           "refId": "B"
-        },
-        {
-          "expr": "(node_load1{job='qnap'} - node_load1:avg_over_time_1w{job='qnap'})/node_load1:stddev_over_time_1w{job='qnap'}",
-          "hide": false,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "nas 1m z-score",
-          "refId": "C"
         }
       ],
       "thresholds": [
@@ -914,16 +891,8 @@
           "colorMode": "critical",
           "fill": true,
           "line": true,
-          "op": "lt",
-          "value": -3,
-          "visible": true
-        },
-        {
-          "colorMode": "critical",
-          "fill": true,
-          "line": true,
           "op": "gt",
-          "value": 3,
+          "value": 4,
           "visible": true
         }
       ],
@@ -946,6 +915,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:72",
           "format": "short",
           "label": "",
           "logBase": 1,
@@ -954,6 +924,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:73",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -974,7 +945,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 0,
           "links": [],
           "mappings": [],
@@ -1017,7 +987,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "100-((avg without (mode) (rate(node_cpu_seconds_total{job=\"qnap\",mode=\"idle\"}[$__rate_interval])))/node_cpu_count)",
@@ -1041,12 +1011,6 @@
       "datasource": "${DS_PROMETHEUS}",
       "fieldConfig": {
         "defaults": {
-          "color": {},
-          "custom": {},
-          "thresholds": {
-            "mode": "absolute",
-            "steps": []
-          },
           "unit": "percent"
         },
         "overrides": [
@@ -1092,7 +1056,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1177,7 +1141,6 @@
           "color": {
             "mode": "thresholds"
           },
-          "custom": {},
           "decimals": 1,
           "links": [],
           "mappings": [],
@@ -1219,7 +1182,7 @@
         "showThresholdMarkers": true,
         "text": {}
       },
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "targets": [
         {
           "expr": "node_memory_MemTotal_bytes{job='qnap',node='$node'}-node_memory_MemAvailable_bytes{job='qnap',node='$node'}",
@@ -1279,7 +1242,6 @@
       "description": "Used memory is \"total usable memory\" minus \"available memory\". (Available memory is the sum of free, buffer, cache, and other reclaimable memory.) Cache memory used by file systems and processes are not included in \"used memory\".",
       "fieldConfig": {
         "defaults": {
-          "custom": {},
           "links": [],
           "unit": "bytes"
         },
@@ -1313,7 +1275,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.4.1",
+      "pluginVersion": "7.5.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1419,9 +1381,7 @@
       "datasource": "${DS_PROMETHEUS}",
       "description": "Physical swap memory",
       "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
+        "defaults": {},
         "overrides": []
       },
       "fontSize": "80%",
@@ -1448,6 +1408,7 @@
       "targets": [
         {
           "expr": "node_memory_SwapFree_bytes{job='qnap',node='$node'}",
+          "instant": false,
           "interval": "",
           "legendFormat": "Free",
           "refId": "B"
@@ -1475,7 +1436,7 @@
           },
           "custom": {
             "calculation": "mean",
-            "colorPalette": "interpolateSpectral",
+            "colorPalette": "fieldOptions",
             "colorSpace": "rgb",
             "groupBy": 60,
             "invertPalette": true,
@@ -1498,15 +1459,28 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "blue",
                 "value": null
               },
               {
+                "color": "green",
+                "value": 0.4
+              },
+              {
+                "color": "#EAB839",
+                "value": 0.7
+              },
+              {
+                "color": "orange",
+                "value": 0.9
+              },
+              {
                 "color": "red",
-                "value": 4
+                "value": 1.01
               }
             ]
-          }
+          },
+          "unit": "percentunit"
         },
         "overrides": []
       },
@@ -1530,7 +1504,7 @@
       "pluginVersion": "7.3.7",
       "targets": [
         {
-          "expr": "node_load15",
+          "expr": "node_load15/node_cpu_count",
           "format": "time_series",
           "interval": "",
           "legendFormat": "",
@@ -1587,7 +1561,7 @@
             "h": 6,
             "w": 3,
             "x": 0,
-            "y": 22
+            "y": 23
           },
           "id": 29,
           "options": {
@@ -1605,7 +1579,7 @@
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "repeat": "interface",
           "repeatDirection": "v",
           "scopedVars": {
@@ -1617,13 +1591,14 @@
           },
           "targets": [
             {
-              "expr": "irate(node_network_transmit_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
+              "expr": "irate(node_network_transmit_bytes_total{job='qnap',node='$node',device='$interface'}[$__rate_interval])",
+              "instant": true,
               "interval": "",
               "legendFormat": "Tx",
               "refId": "B"
             },
             {
-              "expr": "irate(node_network_receive_bytes_total{job='qnap',node='$node',device='$interface'}[1m])",
+              "expr": "irate(node_network_receive_bytes_total{job='qnap',node='$node',device='$interface'}[$__rate_interval])",
               "interval": "",
               "legendFormat": "Rx",
               "refId": "A"
@@ -1653,7 +1628,7 @@
             "h": 6,
             "w": 9,
             "x": 3,
-            "y": 22
+            "y": 23
           },
           "hiddenSeries": false,
           "id": 22,
@@ -1674,7 +1649,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1808,7 +1783,7 @@
             "h": 6,
             "w": 12,
             "x": 12,
-            "y": 22
+            "y": 23
           },
           "hiddenSeries": false,
           "id": 37,
@@ -1828,7 +1803,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1958,7 +1933,7 @@
             "h": 6,
             "w": 3,
             "x": 0,
-            "y": 23
+            "y": 24
           },
           "id": 31,
           "options": {
@@ -1976,7 +1951,7 @@
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "repeat": "device",
           "repeatDirection": "v",
           "scopedVars": {
@@ -1989,6 +1964,7 @@
           "targets": [
             {
               "expr": "rate(node_disk_written_bytes_total{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "instant": true,
               "interval": "",
               "legendFormat": "write",
               "refId": "B"
@@ -2024,7 +2000,7 @@
             "h": 6,
             "w": 21,
             "x": 3,
-            "y": 23
+            "y": 24
           },
           "hiddenSeries": false,
           "id": 23,
@@ -2048,7 +2024,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -2192,7 +2168,7 @@
             "h": 6,
             "w": 3,
             "x": 0,
-            "y": 29
+            "y": 30
           },
           "id": 71,
           "options": {
@@ -2210,11 +2186,20 @@
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
+          "repeat": "device",
           "repeatDirection": "v",
+          "scopedVars": {
+            "device": {
+              "selected": true,
+              "text": "nvme0n1",
+              "value": "nvme0n1"
+            }
+          },
           "targets": [
             {
               "expr": "rate(node_disk_iotime_msec{job='qnap',node='$node',device='$device'}[$__rate_interval])",
+              "instant": true,
               "interval": "",
               "legendFormat": "I/O time",
               "refId": "A"
@@ -2250,7 +2235,7 @@
             "h": 6,
             "w": 21,
             "x": 3,
-            "y": 29
+            "y": 30
           },
           "hiddenSeries": false,
           "id": 70,
@@ -2274,11 +2259,19 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
+          "repeat": "device",
           "repeatDirection": "v",
+          "scopedVars": {
+            "device": {
+              "selected": true,
+              "text": "nvme0n1",
+              "value": "nvme0n1"
+            }
+          },
           "seriesOverrides": [
             {
               "alias": "/.*read.*/",
@@ -2369,6 +2362,7 @@
           }
         }
       ],
+      "repeat": null,
       "title": "Disk activity ($device)",
       "type": "row"
     },
@@ -2417,7 +2411,7 @@
             "h": 7,
             "w": 3,
             "x": 0,
-            "y": 24
+            "y": 43
           },
           "id": 17,
           "options": {
@@ -2435,7 +2429,7 @@
             "text": {},
             "textMode": "auto"
           },
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "targets": [
             {
               "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
@@ -2474,7 +2468,7 @@
             "h": 7,
             "w": 11,
             "x": 3,
-            "y": 24
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 2,
@@ -2495,7 +2489,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -2579,7 +2573,7 @@
             "h": 7,
             "w": 10,
             "x": 14,
-            "y": 24
+            "y": 43
           },
           "hiddenSeries": false,
           "id": 4,
@@ -2600,7 +2594,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "7.4.1",
+          "pluginVersion": "7.4.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -2837,5 +2831,5 @@
   "timezone": "",
   "title": "QNAP",
   "uid": "0hvVnIaGk",
-  "version": 38
+  "version": 49
 }

@@ -3,11 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
-	"os/signal"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -17,12 +13,8 @@ import (
 	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
 )
 
-func handleDockerEvents(args httpServerArgs, annotator notifications.Annotator, exporterStatus *exporter.Status) error {
+func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator notifications.Annotator, exporterStatus *exporter.Status) error {
 	exporterStatus.Docker = "Connecting..."
-
-	// Setup our Ctrl+C handler
-	exitCh := make(chan os.Signal, 1)
-	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
 	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
 	if err != nil {

@@ -113,9 +113,21 @@ func main() {
 		logger,
 	)
 
-	go handleDockerEvents(args, dockerAnnotator, &serverStatus.ExporterStatus)
+	ctx, cancelFn := context.WithCancel(context.Background())
 
-	err := serveHTTP(args, notifCenterAnnotator, serverStatus)
+	// Setup our Ctrl+C handler
+	exitCh := make(chan os.Signal, 1)
+	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+	go func() {
+		defer cancelFn()
+
+		// Wait for program exit
+		<-exitCh
+	}()
+
+	go handleDockerEvents(ctx, args, dockerAnnotator, &serverStatus.ExporterStatus)
+
+	err := serveHTTP(ctx, args, notifCenterAnnotator, serverStatus)
 	if err != nil {
 		log.Println(err.Error())
 	}
@@ -158,12 +170,8 @@ func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, serverStatus 
 	}
 }
 
-func serveHTTP(args httpServerArgs, annotator notifications.Annotator, serverStatus *status.Status) error {
+func serveHTTP(ctx context.Context, args httpServerArgs, annotator notifications.Annotator, serverStatus *status.Status) error {
 	defer args.exporter.Close()
-
-	// Setup our Ctrl+C handler
-	exitCh := make(chan os.Signal, 1)
-	signal.Notify(exitCh, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
 
 	// handle route using handler function
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -186,15 +194,15 @@ func serveHTTP(args httpServerArgs, annotator notifications.Annotator, serverSta
 		log.Printf("Listening to HTTP requests at %s\n", args.port)
 
 		// Wait for program exit
-		<-exitCh
+		<-ctx.Done()
 
 		log.Println("Program aborted, exiting...")
 		ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(5*time.Second))
+		defer cancel()
 		err := server.Shutdown(ctx)
 		if err != nil {
 			log.Println(err.Error())
 		}
-		cancel()
 	}()
 
 	return server.ListenAndServe()

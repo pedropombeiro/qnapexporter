@@ -71,6 +71,7 @@ func handleDockerEvents(args httpServerArgs, annotator notifications.Annotator, 
 			if err != nil {
 				exporterStatus.Docker = err.Error()
 				args.logger.Println(err)
+				time.Sleep(10 * time.Second)
 			}
 		case msg := <-msgs:
 			t := time.Unix(0, msg.TimeNano)
@@ -79,6 +80,7 @@ func handleDockerEvents(args httpServerArgs, annotator notifications.Annotator, 
 			args.logger.Printf("%v: %s\n", t, m)
 			_, _ = annotator.Post(m, t)
 		case <-ctx.Done():
+			exporterStatus.Docker = "Done"
 			return nil
 		}
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
@@ -23,14 +24,38 @@ func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator noti
 		return err
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go func() {
-		<-exitCh
-		log.Println("Program aborted, stopping Docker listener...")
-		cancel()
-	}()
+	msgs, errs := dockerEvents(ctx, cli, exporterStatus)
 
+	for {
+		select {
+		case err := <-errs:
+			if err != nil {
+				exporterStatus.Docker = err.Error()
+				args.logger.Println(err)
+
+				select {
+				case <-time.After(10 * time.Second):
+					// Wait for 10 seconds before retrying connection to Docker daemon
+					msgs, errs = dockerEvents(ctx, cli, exporterStatus)
+					break
+				case <-ctx.Done():
+					break
+				}
+			}
+		case msg := <-msgs:
+			t := time.Unix(0, msg.TimeNano)
+			m := strings.Join([]string{msg.Type, msg.Action, msg.Actor.ID, formatDockerActorAttributes(msg.Actor.Attributes)}, " ")
+			exporterStatus.Docker = m
+			args.logger.Printf("%v: %s\n", t, m)
+			_, _ = annotator.Post(m, t)
+		case <-ctx.Done():
+			exporterStatus.Docker = "Done"
+			return nil
+		}
+	}
+}
+
+func dockerEvents(ctx context.Context, cli *client.Client, exporterStatus *exporter.Status) (<-chan events.Message, <-chan error) {
 	opts := types.EventsOptions{
 		Since: "1h",
 		Filters: filters.NewArgs(
@@ -57,25 +82,7 @@ func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator noti
 	msgs, errs := cli.Events(ctx, opts)
 	exporterStatus.Docker = "Waiting for events"
 
-	for {
-		select {
-		case err := <-errs:
-			if err != nil {
-				exporterStatus.Docker = err.Error()
-				args.logger.Println(err)
-				time.Sleep(10 * time.Second)
-			}
-		case msg := <-msgs:
-			t := time.Unix(0, msg.TimeNano)
-			m := strings.Join([]string{msg.Type, msg.Action, msg.Actor.ID, formatDockerActorAttributes(msg.Actor.Attributes)}, " ")
-			exporterStatus.Docker = m
-			args.logger.Printf("%v: %s\n", t, m)
-			_, _ = annotator.Post(m, t)
-		case <-ctx.Done():
-			exporterStatus.Docker = "Done"
-			return nil
-		}
-	}
+	return msgs, errs
 }
 
 func formatDockerActorAttributes(attr map[string]string) string {

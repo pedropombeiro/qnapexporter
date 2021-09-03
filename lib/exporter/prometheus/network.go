@@ -51,6 +51,10 @@ func getNetworkStatMetric(name string, help string, iface string, direction stri
 }
 
 func (e *promExporter) getPingMetrics() ([]metric, error) {
+	if e.PingTarget == "" {
+		return nil, nil
+	}
+
 	pinger, err := ping.NewPinger(e.PingTarget)
 	if err != nil {
 		return nil, err

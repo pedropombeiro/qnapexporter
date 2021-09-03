@@ -43,7 +43,7 @@ func main() {
 	runtime.GOMAXPROCS(0)
 
 	port := flag.String("port", ":9094", "Port to serve at (e.g. :9094).")
-	pingTarget := flag.String("ping-target", "1.1.1.1", "Host to periodically ping (e.g. 1.1.1.1).")
+	pingTarget := flag.String("ping-target", "", "Host to periodically ping (e.g. 1.1.1.1).")
 	healthcheck := flag.String("healthcheck", os.Getenv("HEALTHCHECK_CONFIG"), "Healthcheck service to ping every 5 minutes (currently supported: healthchecks.io:<check-id>).")
 	grafanaURL := flag.String("grafana-url", os.Getenv("GRAFANA_URL"), "Grafana host (e.g.: https://grafana.example.com).")
 	grafanaAuthToken := flag.String("grafana-auth-token", os.Getenv("GRAFANA_AUTH_TOKEN"), "Grafana authorization token.")

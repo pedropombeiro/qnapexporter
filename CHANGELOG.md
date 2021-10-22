@@ -1,3 +1,3 @@
-# Release v1.0.1
+# Release v1.0.2
 
-- Fix CPU hogging when Docker daemon is unreachable
+- Ignore when flashcache is not present (e.g. on QTS 5)

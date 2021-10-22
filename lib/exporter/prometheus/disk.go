@@ -2,6 +2,7 @@ package prometheus
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
@@ -55,6 +56,11 @@ func (e *promExporter) getSysInfoHdMetrics() ([]metric, error) {
 func getFlashCacheStatsMetrics() ([]metric, error) {
 	lines, err := utils.ReadFileLines(flashcacheStatsPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			// Ignore if the file does not exist
+			return nil, nil
+		}
+
 		return nil, err
 	}
 

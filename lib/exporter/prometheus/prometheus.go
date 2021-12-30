@@ -40,7 +40,8 @@ type promExporter struct {
 
 	status *exporter.Status
 
-	hostname string
+	hostname      string
+	kernelVersion int
 
 	upsState upsState
 
@@ -55,6 +56,8 @@ type promExporter struct {
 
 	volumes         []volumeInfo
 	volumeLastFetch time.Time
+
+	dmCacheClients []string
 
 	fns     []fetchMetricFn
 	fetchMu sync.Mutex
@@ -73,21 +76,22 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 		envExpiry:      now,
 	}
 	e.fns = []fetchMetricFn{
-		e.getVersionMetrics,       // #1
-		getUptimeMetrics,          // #2
-		getLoadAvgMetrics,         // #3
-		getCpuRatioMetrics,        // #4
-		getMemInfoMetrics,         // #5
-		e.getUpsStatsMetrics,      // #6
-		e.getSysInfoTempMetrics,   // #7
-		e.getSysInfoFanMetrics,    // #8
-		e.getEnclosureFanMetrics,  // #9
-		e.getSysInfoHdMetrics,     // #10
-		e.getSysInfoVolMetrics,    // #11
-		e.getDiskStatsMetrics,     // #12
-		getFlashCacheStatsMetrics, // #13
-		e.getNetworkStatsMetrics,  // #14
-		e.getPingMetrics,          // #15
+		e.getVersionMetrics,         // #1
+		getUptimeMetrics,            // #2
+		getLoadAvgMetrics,           // #3
+		getCpuRatioMetrics,          // #4
+		getMemInfoMetrics,           // #5
+		e.getUpsStatsMetrics,        // #6
+		e.getSysInfoTempMetrics,     // #7
+		e.getSysInfoFanMetrics,      // #8
+		e.getEnclosureFanMetrics,    // #9
+		e.getSysInfoHdMetrics,       // #10
+		e.getSysInfoVolMetrics,      // #11
+		e.getDiskStatsMetrics,       // #12
+		e.getFlashCacheStatsMetrics, // #13
+		e.getDmCacheStatsMetrics,    // #14
+		e.getNetworkStatsMetrics,    // #15
+		e.getPingMetrics,            // #16
 	}
 
 	if status != nil {
@@ -185,6 +189,15 @@ func (e *promExporter) readEnvironment() {
 	}
 	e.Logger.Printf("Hostname: %s, err=%v", e.hostname, err)
 
+	e.Logger.Println("Retrieving QTS version")
+	kernelVersionStr, err := utils.ExecCommand("uname", "-r")
+	if err == nil {
+		e.kernelVersion, err = strconv.Atoi(strings.SplitN(kernelVersionStr, ".", 2)[0])
+	}
+	if err != nil {
+		e.kernelVersion = 4
+	}
+
 	if e.getsysinfo == "" {
 		e.getsysinfo, _ = exec.LookPath("getsysinfo")
 		if err == nil {
@@ -224,7 +237,7 @@ func (e *promExporter) readEnvironment() {
 	e.enclosures = nil
 	e.status.Enclosures = nil
 	if e.hal_app != "" {
-		e.Logger.Println("Retrieving QM2 encosures")
+		e.Logger.Println("Retrieving QM2 enclosures")
 		seEnumOutput, err := utils.ExecCommand(e.hal_app, "--se_enum")
 		if err == nil {
 			lines := utils.FindMatchingLines("qm2_", seEnumOutput)
@@ -278,11 +291,26 @@ func (e *promExporter) readEnvironment() {
 	}
 	e.Logger.Printf("Found devices: %v", e.devices)
 
+	e.dmCacheClients = []string{}
+	if e.kernelVersion >= 5 {
+		e.Logger.Print("Retrieving dm-cache devices...")
+
+		table, err := utils.ExecCommand("dmsetup", "table")
+		if err == nil {
+			cacheClients := utils.FindMatchingLines("cache_client", table)
+			for _, cacheClient := range cacheClients {
+				e.dmCacheClients = append(e.dmCacheClients, strings.SplitN(cacheClient, ":", 2)[0])
+			}
+		}
+		e.Logger.Printf("Found cache clients: %v", e.dmCacheClients)
+	}
+
 	e.envExpiry = e.envExpiry.Add(envValidity)
 
 	if e.status != nil {
 		e.status.Devices = e.devices
 		e.status.Interfaces = e.ifaces
+		e.status.DmCaches = e.dmCacheClients
 	}
 }
 

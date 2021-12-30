@@ -93,6 +93,7 @@ func (s *Status) WriteHTML(w io.Writer) error {
 			"Volumes":       humanizeList(e.Volumes),
 			"Interfaces":    humanizeList(e.Interfaces),
 			"Enclosures":    humanizeList(e.Enclosures),
+			"dm-caches":     humanizeList(e.DmCaches),
 			"Docker":        e.Docker,
 		},
 	}

@@ -4,7 +4,7 @@ stages:
   - release
 
 default:
-  image: golang:1.15-buster
+  image: golang:1.17-buster
   tags:
   - gitlab-org
 

@@ -4,10 +4,10 @@ module gitlab.com/pedropombeiro/qnapexporter
 go 1.17
 
 require (
-	github.com/docker/docker v20.10.3+incompatible
+	github.com/docker/docker v20.10.12+incompatible
 	github.com/dustin/go-humanize v1.0.0
-	github.com/go-ping/ping v0.0.0-20210201192233-b6486c6f1f2d
-	github.com/robbiet480/go.nut v0.0.0-20200921180721-77b33bf222d9
+	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534
+	github.com/robbiet480/go.nut v0.0.0-20211005235800-e810489c32db
 	github.com/shirou/gopsutil/v3 v3.21.1
 	github.com/stretchr/testify v1.7.0
 )
@@ -23,6 +23,7 @@ require (
 	github.com/go-ole/go-ole v1.2.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
@@ -33,8 +34,9 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/stretchr/objx v0.3.0 // indirect
-	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
-	golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/grpc v1.35.0 // indirect

@@ -97,113 +97,148 @@ func (e *promExporter) getDmCacheStatsMetrics() ([]metric, error) {
 		return nil, fmt.Errorf("get dm-cache status (dmsetup %s): %w", args, err)
 	}
 
-	metrics := make([]metric, 0, len(lines))
+	metrics := make([]metric, 0, len(lines)+6*2)
 	for index, line := range lines {
 		tokens := strings.SplitN(line, " ", 13)
 		cache := e.dmCacheClients[index]
 		allocationRatioStr := strings.TrimSpace(tokens[3])
 		allocationTokens := strings.SplitN(allocationRatioStr, "/", 2)
 		attr := fmt.Sprintf("device=%q", cache)
-		//readHits := getTokenValue(tokens[4])
-		//readMisses := getTokenValue(tokens[5])
-		//writeHits := getTokenValue(tokens[6])
-		//writeMisses := getTokenValue(tokens[7])
-		//dirtyBlocks := getTokenValue(tokens[11])
-
-		//totalReads := (readHits + readMisses)
-		//if totalReads > 0 {
-			//metrics = append(metrics, metric{
-				//name:       "node_flashcache_read_hits",
-				//attr:       attr,
-				//value:      readHits,
-				//help:       "Number of times a READ bio has been mapped to the cache",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_flashcache_reads",
-				//attr:       attr,
-				//value:      totalReads,
-				//help:       "Number of times a READ bio has ocurred",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_flashcache_read_hit_percent",
-				//attr:       attr,
-				//value:      readHits / totalReads * 100.0,
-				//metricType: "counter",
-			//})
-
-			//metrics = append(metrics, metric{
-				//name:       "node_dmcache_read_hit_total",
-				//attr:       attr,
-				//value:      readHits,
-				//help:       "Number of times a READ bio has been mapped to the cache",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_dmcache_read_total",
-				//attr:       attr,
-				//value:      totalReads,
-				//help:       "Number of times a READ bio has ocurred",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_dmcache_read_hit_percent",
-				//attr:       attr,
-				//value:      readHits / totalReads * 100.0,
-				//metricType: "counter",
-			//})
-		//}
-
-		//totalWrites := (writeHits + writeMisses)
-		//if totalWrites > 0 {
-			//metrics = append(metrics, metric{
-				//name:       "node_flashcache_write_hits",
-				//attr:       attr,
-				//value:      writeHits,
-				//help:       "Number of times a WRITE bio has been mapped to the cache",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_flashcache_writes",
-				//attr:       attr,
-				//value:      totalWrites,
-				//help:       "Number of times a WRITE bio has ocurred",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_flashcache_write_hit_percent",
-				//attr:       attr,
-				//value:      writeHits / totalWrites * 100.0,
-				//metricType: "counter",
-			//})
-
-			//metrics = append(metrics, metric{
-				//name:       "node_dmcache_read_hit_total",
-				//attr:       attr,
-				//value:      readHits,
-				//help:       "Number of times a READ bio has been mapped to the cache",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_dmcache_read_total",
-				//attr:       attr,
-				//value:      totalReads,
-				//help:       "Number of times a READ bio has ocurred",
-				//metricType: "counter",
-			//})
-			//metrics = append(metrics, metric{
-				//name:       "node_dmcache_write_hit_percent",
-				//attr:       attr,
-				//value:      writeHits / totalWrites * 100.0,
-				//metricType: "counter",
-			//})
-		//}
 
 		metrics = appendFloatMetric(metrics, "node_flashcache_cached_blocks", allocationTokens[0], 1, "", "")
 		metrics = appendFloatMetric(metrics, "node_flashcache_total_blocks", allocationTokens[1], 1, "", "")
 		metrics = appendFloatMetric(metrics, "node_dmcache_used_bytes_total", allocationTokens[0], 1024*1024, attr, "Number of blocks resident in the cache")
 		metrics = appendFloatMetric(metrics, "node_dmcache_bytes_total", allocationTokens[1], 1024*1024, attr, "Total number of cache blocks")
+	}
+
+	return e.appendDmCacheHitMetrics(metrics)
+}
+
+func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, error) {
+	if e.dmCacheDeviceMinorNumber != "" {
+		return metrics, nil
+	}
+
+	cache := fmt.Sprintf("dm-%s", e.dmCacheDeviceMinorNumber)
+	dmCacheStatsFilePath := fmt.Sprintf(dmCacheStatsFilePathFormat, cache)
+
+	lines, err := utils.ReadFileLines(dmCacheStatsFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Ignore if the file does not exist
+			return metrics, nil
+		}
+
+		return nil, err
+	}
+
+	var readHits, readTotal, writeHits, writeTotal float64
+	for _, line := range lines {
+		tokens := strings.SplitN(line, ":", 2)
+		id := strings.TrimSpace(tokens[0])
+		valueStr := strings.TrimSpace(tokens[1])
+		value, err := strconv.ParseFloat(valueStr, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		switch id {
+		case "read hit":
+			readHits = value
+		case "reads":
+			readTotal = value
+		case "write hit":
+			writeHits = value
+		case "writes":
+			writeTotal = value
+		}
+	}
+
+	attr := fmt.Sprintf("device=%q", cache)
+	metrics = append(metrics, metric{
+		name:       "node_flashcache_read_hits",
+		attr:       attr,
+		value:      readHits,
+		help:       "Number of times a READ bio has been mapped to the cache",
+		metricType: "counter",
+	})
+	metrics = append(metrics, metric{
+		name:       "node_dmcache_read_hit_total",
+		attr:       attr,
+		value:      readHits,
+		help:       "Number of times a READ bio has been mapped to the cache",
+		metricType: "counter",
+	})
+	metrics = append(metrics, metric{
+		name:       "node_flashcache_reads",
+		attr:       attr,
+		value:      readTotal,
+		help:       "Number of times a READ bio has ocurred",
+		metricType: "counter",
+	})
+	metrics = append(metrics, metric{
+		name:       "node_dmcache_read_total",
+		attr:       attr,
+		value:      readTotal,
+		help:       "Number of times a READ bio has ocurred",
+		metricType: "counter",
+	})
+	if readTotal > 0 {
+		metrics = append(metrics, metric{
+			name:       "node_flashcache_read_hit_percent",
+			attr:       attr,
+			value:      readHits / readTotal * 100,
+			metricType: "counter",
+		})
+		metrics = append(metrics, metric{
+			name:       "node_dmcache_read_hit_percent",
+			attr:       attr,
+			value:      readHits / readTotal * 100,
+			metricType: "counter",
+		})
+	}
+
+	metrics = append(metrics, metric{
+		name:       "node_flashcache_write_hits",
+		attr:       attr,
+		value:      writeHits,
+		help:       "Number of times a WRITE bio has been mapped to the cache",
+		metricType: "counter",
+	})
+	metrics = append(metrics, metric{
+		name:       "node_dmcache_write_hit_total",
+		attr:       attr,
+		value:      writeHits,
+		help:       "Number of times a WRITE bio has been mapped to the cache",
+		metricType: "counter",
+	})
+	metrics = append(metrics, metric{
+		name:       "node_flashcache_writes",
+		attr:       attr,
+		value:      writeTotal,
+		help:       "Number of times a WRITE bio has ocurred",
+		metricType: "counter",
+	})
+	metrics = append(metrics, metric{
+		name:       "node_dmcache_write_total",
+		attr:       attr,
+		value:      writeTotal,
+		help:       "Number of times a WRITE bio has ocurred",
+		metricType: "counter",
+	})
+	if writeTotal > 0 {
+		metrics = append(metrics, metric{
+			name:       "node_flashcache_write_hit_percent",
+			attr:       attr,
+			value:      writeHits / writeTotal * 100,
+			metricType: "counter",
+		})
+		metrics = append(metrics, metric{
+			name:       "node_dmcache_write_hit_percent",
+			attr:       attr,
+			value:      writeHits / writeTotal * 100,
+			metricType: "counter",
+		})
 	}
 
 	return metrics, nil

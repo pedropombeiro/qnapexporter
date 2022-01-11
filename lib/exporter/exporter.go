@@ -24,5 +24,6 @@ type Status struct {
 	Volumes           []string
 	Enclosures        []string
 	DmCaches          []string
+	DmCacheDevice     string
 	Docker            string
 }

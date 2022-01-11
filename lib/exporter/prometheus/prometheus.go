@@ -17,9 +17,10 @@ import (
 )
 
 const (
-	devDir              = "/dev"
-	netDir              = "/sys/class/net"
-	flashcacheStatsPath = "/proc/flashcache/CG0/flashcache_stats"
+	devDir                     = "/dev"
+	netDir                     = "/sys/class/net"
+	flashcacheStatsPath        = "/proc/flashcache/CG0/flashcache_stats"
+	dmCacheStatsFilePathFormat = "/sys/block/%s/dm/cache/curr_stats"
 
 	envValidity    = time.Duration(5 * time.Minute)
 	volumeValidity = time.Duration(1 * time.Minute)
@@ -57,7 +58,8 @@ type promExporter struct {
 	volumes         []volumeInfo
 	volumeLastFetch time.Time
 
-	dmCacheClients []string
+	dmCacheClients           []string
+	dmCacheDeviceMinorNumber string
 
 	fns     []fetchMetricFn
 	fetchMu sync.Mutex
@@ -303,6 +305,16 @@ func (e *promExporter) readEnvironment() {
 			}
 		}
 		e.Logger.Printf("Found cache clients: %v", e.dmCacheClients)
+
+		table, err = utils.ExecCommand("dmsetup", "ls")
+		if err == nil {
+			cacheDevices := utils.FindMatchingLines("vg256-lv256\t", table)
+			e.Logger.Printf("Found cache volumes: %v", cacheDevices)
+			if len(cacheDevices) == 1 {
+				e.dmCacheDeviceMinorNumber = strings.Split(cacheDevices[0], ":")[1]
+				e.dmCacheDeviceMinorNumber = strings.TrimRight(e.dmCacheDeviceMinorNumber, ")")
+			}
+		}
 	}
 
 	e.envExpiry = e.envExpiry.Add(envValidity)
@@ -311,6 +323,11 @@ func (e *promExporter) readEnvironment() {
 		e.status.Devices = e.devices
 		e.status.Interfaces = e.ifaces
 		e.status.DmCaches = e.dmCacheClients
+		if e.dmCacheDeviceMinorNumber != "" {
+			e.status.DmCacheDevice = fmt.Sprintf("dm-%s", e.dmCacheDeviceMinorNumber)
+		} else {
+			e.status.DmCacheDevice = ""
+		}
 	}
 }
 

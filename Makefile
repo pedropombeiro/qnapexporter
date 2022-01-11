@@ -12,7 +12,7 @@ GO_LDFLAGS ?= -X $(VERSION_PKG).REVISION=$(REVISION) -X $(VERSION_PKG).BUILT=$(B
 .PHONY: build
 build:
 	@ mkdir -p ./bin
-	go build -ldflags "$(GO_LDFLAGS)" -o bin/qnapexporter .
+	go build -mod=readonly -ldflags "$(GO_LDFLAGS)" -o bin/qnapexporter .
 
 .PHONY: test
 test:

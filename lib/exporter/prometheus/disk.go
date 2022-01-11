@@ -115,7 +115,7 @@ func (e *promExporter) getDmCacheStatsMetrics() ([]metric, error) {
 }
 
 func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, error) {
-	if e.dmCacheDeviceMinorNumber != "" {
+	if e.dmCacheDeviceMinorNumber == "" {
 		return metrics, nil
 	}
 

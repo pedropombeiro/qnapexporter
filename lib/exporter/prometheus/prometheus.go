@@ -146,7 +146,7 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 
 				var timestamp string
 				if !m.timestamp.IsZero() {
-					//timestamp = strconv.Itoa(int(m.timestamp.UnixNano() / 1000000))
+					timestamp = strconv.Itoa(int(m.timestamp.UnixNano() / 1000000))
 				}
 				_, _ = fmt.Fprintf(w, "%s %g %s\n", e.getMetricFullName(m), m.value, timestamp)
 			}

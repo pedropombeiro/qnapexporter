@@ -2,7 +2,7 @@ package prometheus
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"log"
 	"testing"
 	"time"
@@ -15,7 +15,7 @@ import (
 func TestNewExporter(t *testing.T) {
 	config := ExporterConfig{
 		PingTarget: "1.1.1.1",
-		Logger:     log.New(ioutil.Discard, "", 0),
+		Logger:     log.New(io.Discard, "", 0),
 	}
 	e := NewExporter(config, nil)
 
@@ -28,7 +28,7 @@ func TestWriteMetrics(t *testing.T) {
 	startTime := time.Now()
 	config := ExporterConfig{
 		PingTarget: "8.8.8.8",
-		Logger:     log.New(ioutil.Discard, "", 0),
+		Logger:     log.New(io.Discard, "", 0),
 	}
 	e := NewExporter(config, &s)
 	b := new(bytes.Buffer)
@@ -49,7 +49,7 @@ func TestWriteMetrics(t *testing.T) {
 func BenchmarkWriteMetrics(b *testing.B) {
 	config := ExporterConfig{
 		PingTarget: "8.8.8.8",
-		Logger:     log.New(ioutil.Discard, "", 0),
+		Logger:     log.New(io.Discard, "", 0),
 	}
 	e := NewExporter(config, nil)
 	defer e.Close()

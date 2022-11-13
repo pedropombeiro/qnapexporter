@@ -1,47 +1,54 @@
 module gitlab.com/pedropombeiro/qnapexporter
 
-// +heroku goVersion go1.17
-go 1.17
+// +heroku goVersion go1.19
+go 1.19
 
 require (
-	github.com/docker/docker v20.10.12+incompatible
-	github.com/dustin/go-humanize v1.0.0
-	github.com/go-ping/ping v0.0.0-20211130115550-779d1e919534
-	github.com/robbiet480/go.nut v0.0.0-20211005235800-e810489c32db
-	github.com/shirou/gopsutil/v3 v3.21.1
-	github.com/stretchr/testify v1.7.0
+	github.com/docker/docker v23.0.0+incompatible
+	github.com/dustin/go-humanize v1.0.1
+	github.com/go-ping/ping v1.1.0
+	github.com/robbiet480/go.nut v0.0.0-20220219091450-bd8f121e1fa1
+	github.com/shirou/gopsutil/v3 v3.23.1
+	github.com/stretchr/testify v1.8.1
 )
 
 require (
-	github.com/Microsoft/go-winio v0.4.16 // indirect
-	github.com/StackExchange/wmi v0.0.0-20190523213315-cbe66965904d // indirect
-	github.com/containerd/containerd v1.4.3 // indirect
+	github.com/Microsoft/go-winio v0.6.0 // indirect
+	github.com/StackExchange/wmi v1.2.1 // indirect
+	github.com/containerd/containerd v1.6.16 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/docker/distribution v2.7.1+incompatible // indirect
+	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
-	github.com/docker/go-units v0.4.0 // indirect
-	github.com/go-ole/go-ole v1.2.4 // indirect
+	github.com/docker/go-units v0.5.0 // indirect
+	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/lufia/plan9stats v0.0.0-20230110061619-bbe2e5e100de // indirect
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/opencontainers/image-spec v1.1.0-rc2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sirupsen/logrus v1.7.0 // indirect
-	github.com/stretchr/objx v0.3.0 // indirect
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	golang.org/x/time v0.0.0-20201208040808-7e3f01d25324 // indirect
-	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
-	google.golang.org/grpc v1.35.0 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
+	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
+	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/tklauser/go-sysconf v0.3.11 // indirect
+	github.com/tklauser/numcpus v0.6.0 // indirect
+	github.com/yusufpapurcu/wmi v1.2.2 // indirect
+	golang.org/x/mod v0.7.0 // indirect
+	golang.org/x/net v0.5.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
+	golang.org/x/tools v0.5.0 // indirect
+	google.golang.org/genproto v0.0.0-20230202175211-008b39050e57 // indirect
+	google.golang.org/grpc v1.52.3 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.0.3 // indirect
 )

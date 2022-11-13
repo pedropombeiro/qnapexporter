@@ -3,7 +3,6 @@ package prometheus
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -263,7 +262,7 @@ func (e *promExporter) readEnvironment() {
 	}
 
 	e.Logger.Printf("Retrieving network interfaces in %q...", netDir)
-	info, _ := ioutil.ReadDir(netDir)
+	info, _ := os.ReadDir(netDir)
 	e.ifaces = make([]string, 0, len(info))
 	for _, d := range info {
 		iface := d.Name()
@@ -275,7 +274,7 @@ func (e *promExporter) readEnvironment() {
 	}
 
 	e.Logger.Printf("Retrieving devices in %q...", devDir)
-	info, _ = ioutil.ReadDir(devDir)
+	info, _ = os.ReadDir(devDir)
 	e.devices = make([]string, 0, len(info))
 	for _, d := range info {
 		dev := d.Name()

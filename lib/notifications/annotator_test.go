@@ -2,7 +2,7 @@ package notifications
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -23,7 +23,7 @@ func TestNewAnnotator(t *testing.T) {
 		new(tagextractor.MockTagExtractor),
 		new(MockRegionMatcher),
 		new(mockHttpClient),
-		log.New(ioutil.Discard, "", 0),
+		log.New(io.Discard, "", 0),
 	)
 
 	require.NotNil(t, a)
@@ -239,7 +239,7 @@ func TestPostAnnotation(t *testing.T) {
 				tagExtractorMock,
 				cacheMock,
 				clientMock,
-				log.New(ioutil.Discard, "", 0),
+				log.New(io.Discard, "", 0),
 			)
 
 			id, err := a.Post(tc.notification, time.Date(2020, 1, 1, 12, 0, 0, 0, time.UTC))
@@ -260,7 +260,7 @@ func readBody(req *http.Request) string {
 		return err.Error()
 	}
 
-	b, err := ioutil.ReadAll(body)
+	b, err := io.ReadAll(body)
 	if err != nil {
 		return err.Error()
 	}
@@ -269,7 +269,7 @@ func readBody(req *http.Request) string {
 }
 
 func responseWithBody(body string) *http.Response {
-	return &http.Response{Body: ioutil.NopCloser(strings.NewReader(body))}
+	return &http.Response{Body: io.NopCloser(strings.NewReader(body))}
 }
 
 func TestMergeTags(t *testing.T) {

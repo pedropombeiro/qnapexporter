@@ -27,3 +27,5 @@ mocks:
 vendor:
 	go mod tidy
 	go mod vendor
+
+.PHONY: all clean

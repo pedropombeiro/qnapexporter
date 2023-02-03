@@ -12,7 +12,7 @@ variables:
   # Package version can only contain numbers (0-9), and dots (.).
   # Must be in the format of X.Y.Z, i.e. should match /\A\d+\.\d+\.\d+\z/ regular expresion.
   # See https://docs.gitlab.com/ee/user/packages/generic_packages/#publish-a-package-file
-  PACKAGE_VERSION: "1.0.3"
+  PACKAGE_VERSION: "1.0.4"
   LINUX_AMD64_BINARY: "qnapexporter"
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/qnapexporter/${PACKAGE_VERSION}"
 

@@ -127,13 +127,11 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 				name:      "node_volume_avail_bytes",
 				attr:      attr,
 				value:     v.freeSizeBytes,
-				timestamp: e.volumeLastFetch,
 			},
 			{
 				name:      "node_volume_size_bytes",
 				attr:      attr,
 				value:     v.totalSizeBytes,
-				timestamp: e.volumeLastFetch,
 			},
 		}
 		metrics = append(metrics, newMetrics...)

@@ -1,3 +1,9 @@
+# Change log
+
+## Release v1.0.4
+
+- Remove timestamps, to avoid "Error on ingesting samples with different value but same timestamp"
+
 ## Release v1.0.3
 
 - Update go to 1.19.5

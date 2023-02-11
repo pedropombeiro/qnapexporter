@@ -1,4 +1,4 @@
-[![pipeline status](https://gitlab.com/pedropombeiro/qnapexporter/badges/master/pipeline.svg)](https://gitlab.com/pedropombeiro/qnapexporter/-/commits/master)
+[![Build](https://github.com/pedropombeiro/qnapexporter/actions/workflows/main.yml/badge.svg)](https://github.com/pedropombeiro/qnapexporter/actions/workflows/main.yml)
 
 # qnapexporter
 
@@ -15,7 +15,7 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 
 ## Installation
 
-1. Download the latest qnapexporter executable from the [Releases page](https://gitlab.com/pedropombeiro/qnapexporter/-/releases)
+1. Download the latest qnapexporter executable from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)
 1. Run `qnapexporter`
 
     ```shell

@@ -1,0 +1,38 @@
+---
+name: Build qnapexporter
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Test
+        run: |
+          make test
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v3
+        id: go
+        with:
+          go-version: 1.19
+
+      - name: Build
+        run: |
+          make build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: qnapexporter
+          path: bin/qnapexporter
+          retention-days: 30

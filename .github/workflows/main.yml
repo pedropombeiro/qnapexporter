@@ -1,7 +1,7 @@
 ---
 name: Build qnapexporter
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - master
@@ -31,7 +31,7 @@ jobs:
           make build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v3
         with:
           name: qnapexporter
           path: bin/qnapexporter

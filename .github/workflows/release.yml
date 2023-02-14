@@ -23,7 +23,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: linux
           goarch: amd64
-          build_command: make build
+          build_command: make build PACKAGE_VERSION="$GITHUB_REF_NAME"
           binary_name: bin/qnapexporter
           asset_name: qnapexporter
           overwrite: true

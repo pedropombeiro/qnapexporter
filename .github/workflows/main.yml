@@ -16,7 +16,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Test
+      - name: Run tests
         run: |
           make test
 

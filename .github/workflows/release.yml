@@ -18,6 +18,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Retrieve version from tag
+        run: |
+          export PACKAGE_VERSION="${{ github.event.release.tag_name }}"
+          echo "version=$PACKAGE_VERSION"
+
       - uses: wangyoucao577/go-release-action@v1.35
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

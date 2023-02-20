@@ -113,25 +113,26 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 			if err != nil {
 				return nil, err
 			}
-			v.freeSizeBytes, err = parseVolSize(freesizeStr)
+			freeSizeBytes, err := parseVolSize(freesizeStr)
 			if err != nil {
 				return nil, err
 			}
 
+			v.freeSizeBytes = freeSizeBytes
 			e.volumes[idx] = v
 		}
 
 		attr := fmt.Sprintf("volume=%q,filesystem=%q,status=%q", v.description, v.fileSystem, v.status)
 		newMetrics := []metric{
 			{
-				name:      "node_volume_avail_bytes",
-				attr:      attr,
-				value:     v.freeSizeBytes,
+				name:  "node_volume_avail_bytes",
+				attr:  attr,
+				value: v.freeSizeBytes,
 			},
 			{
-				name:      "node_volume_size_bytes",
-				attr:      attr,
-				value:     v.totalSizeBytes,
+				name:  "node_volume_size_bytes",
+				attr:  attr,
+				value: v.totalSizeBytes,
 			},
 		}
 		metrics = append(metrics, newMetrics...)

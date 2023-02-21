@@ -108,7 +108,7 @@ func (e *promExporter) getSysInfoVolMetrics() ([]metric, error) {
 	for idx, v := range e.volumes {
 		e.status.Volumes = append(e.status.Volumes, v.description)
 
-		if expired {
+		if expired || v.freeSizeBytes == 0 {
 			freesizeStr, err := utils.ExecCommand(e.getsysinfo, "vol_freesize", v.index)
 			if err != nil {
 				return nil, err

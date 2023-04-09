@@ -125,7 +125,7 @@ func main() {
 		<-exitCh
 	}()
 
-	go handleDockerEvents(ctx, args, dockerAnnotator, &serverStatus.ExporterStatus)
+	go func() { _ = handleDockerEvents(ctx, args, dockerAnnotator, &serverStatus.ExporterStatus) }()
 
 	err := serveHTTP(ctx, args, notifCenterAnnotator, serverStatus)
 	if err != nil {
@@ -246,7 +246,11 @@ func handleHealthcheck(healthcheck string, start bool, err error) {
 		if endpoint != "" {
 			url += "/" + endpoint
 		}
-		_, err := client.Head(url)
+		if err != nil {
+			_, err = client.Post(url, "text/plain", strings.NewReader(err.Error()))
+		} else {
+			_, err = client.Head(url)
+		}
 		log.Printf("Sent %s healthcheck ping to %s: %v\n", endpoint, url, err)
 	}
 

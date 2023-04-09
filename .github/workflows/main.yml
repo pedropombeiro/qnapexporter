@@ -20,9 +20,9 @@ jobs:
         run: |
           make test
 
-      - name: Set up Go environment
+      - id: go
+        name: Set up Go environment
         uses: actions/setup-go@v3
-        id: go
         with:
           go-version: 1.19
 

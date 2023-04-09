@@ -77,22 +77,22 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 		envExpiry:      now,
 	}
 	e.fns = []fetchMetricFn{
-		e.getVersionMetrics,         // #1
-		getUptimeMetrics,            // #2
-		getLoadAvgMetrics,           // #3
-		getCpuRatioMetrics,          // #4
-		getMemInfoMetrics,           // #5
-		e.getUpsStatsMetrics,        // #6
-		e.getSysInfoTempMetrics,     // #7
-		e.getSysInfoFanMetrics,      // #8
-		e.getEnclosureFanMetrics,    // #9
-		e.getSysInfoHdMetrics,       // #10
-		e.getSysInfoVolMetrics,      // #11
-		e.getDiskStatsMetrics,       // #12
-		e.getFlashCacheStatsMetrics, // #13
-		e.getDmCacheStatsMetrics,    // #14
-		e.getNetworkStatsMetrics,    // #15
-		e.getPingMetrics,            // #16
+		e.getVersionMetrics,           // #1
+		getUptimeMetrics,              // #2
+		getLoadAvgMetrics,             // #3
+		getCpuRatioMetrics,            // #4
+		getMemInfoMetrics,             // #5
+		e.getUpsStatsMetricsWithRetry, // #6
+		e.getSysInfoTempMetrics,       // #7
+		e.getSysInfoFanMetrics,        // #8
+		e.getEnclosureFanMetrics,      // #9
+		e.getSysInfoHdMetrics,         // #10
+		e.getSysInfoVolMetrics,        // #11
+		e.getDiskStatsMetrics,         // #12
+		e.getFlashCacheStatsMetrics,   // #13
+		e.getDmCacheStatsMetrics,      // #14
+		e.getNetworkStatsMetrics,      // #15
+		e.getPingMetrics,              // #16
 	}
 
 	if status != nil {

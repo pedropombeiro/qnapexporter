@@ -22,6 +22,18 @@ type upsState struct {
 	upsList             *[]nut.UPS
 }
 
+func (e *promExporter) getUpsStatsMetricsWithRetry() ([]metric, error) {
+	metrics, err := e.getUpsStatsMetrics()
+	var syscallErr *os.SyscallError
+	if errors.As(err, &syscallErr) {
+		switch syscallErr.Err {
+		case syscall.ECONNRESET, syscall.EPIPE:
+			metrics, err = e.getUpsStatsMetrics()
+		}
+	}
+	return metrics, err
+}
+
 func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 	e.upsState.upsLock.Lock()
 	defer e.upsState.upsLock.Unlock()

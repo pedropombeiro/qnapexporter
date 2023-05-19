@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
@@ -26,14 +26,6 @@ type grafanaAnnotation struct {
 
 type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
-}
-
-type simpleAnnotator struct {
-	grafanaURL       string
-	grafanaAuthToken string
-	tags             []string
-	client           httpClient
-	logger           *log.Logger
 }
 
 func NewSimpleAnnotator(
@@ -128,7 +120,7 @@ func (a *regionMatchingAnnotator) Post(annotation string, time time.Time) (int, 
 	resp, err := a.client.Do(req)
 	if err == nil {
 		if resp.StatusCode < 300 {
-			body, readErr := ioutil.ReadAll(resp.Body)
+			body, readErr := io.ReadAll(resp.Body)
 			if readErr != nil {
 				return -1, fmt.Errorf("reading response body: %w", readErr)
 			}

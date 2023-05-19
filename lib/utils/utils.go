@@ -1,14 +1,14 @@
 package utils
 
 import (
-	"io/ioutil"
+	"os"
 	"os/exec"
 	"strings"
 )
 
 // ReadFile reads the entire contents of a file as a string
 func ReadFile(f string) (string, error) {
-	contents, err := ioutil.ReadFile(f)
+	contents, err := os.ReadFile(f)
 	if err != nil {
 		return "", err
 	}

@@ -1,4 +1,4 @@
-module gitlab.com/pedropombeiro/qnapexporter
+module github.com/pedropombeiro/qnapexporter
 
 // +heroku goVersion go1.19
 go 1.19

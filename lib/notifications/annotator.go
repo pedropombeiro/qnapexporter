@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
+	"github.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
 )
 
 type Annotator interface {

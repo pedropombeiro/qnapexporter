@@ -6,9 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pedropombeiro/qnapexporter/lib/utils"
 	"github.com/shirou/gopsutil/v3/disk"
-
-	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 func (e *promExporter) getSysInfoHdMetrics() ([]metric, error) {

@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
+	"github.com/pedropombeiro/qnapexporter/lib/exporter"
+	"github.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 const (

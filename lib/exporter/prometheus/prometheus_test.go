@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pedropombeiro/qnapexporter/lib/exporter"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
 )
 
 func TestNewExporter(t *testing.T) {

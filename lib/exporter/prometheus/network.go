@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-ping/ping"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
+	"github.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 func (e *promExporter) getNetworkStatsMetrics() ([]metric, error) {

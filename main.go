@@ -14,12 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/status"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
+	"github.com/pedropombeiro/qnapexporter/lib/exporter"
+	"github.com/pedropombeiro/qnapexporter/lib/exporter/prometheus"
+	"github.com/pedropombeiro/qnapexporter/lib/notifications"
+	"github.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
+	"github.com/pedropombeiro/qnapexporter/lib/status"
+	"github.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 const (

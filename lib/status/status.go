@@ -7,7 +7,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 	"github.com/dustin/go-humanize/english"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
+	"github.com/pedropombeiro/qnapexporter/lib/exporter"
 )
 
 const (

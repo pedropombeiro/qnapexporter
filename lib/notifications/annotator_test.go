@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
 )
 
 func TestNewAnnotator(t *testing.T) {

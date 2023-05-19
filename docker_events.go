@@ -10,8 +10,8 @@ import (
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/exporter"
-	"gitlab.com/pedropombeiro/qnapexporter/lib/notifications"
+	"github.com/pedropombeiro/qnapexporter/lib/exporter"
+	"github.com/pedropombeiro/qnapexporter/lib/notifications"
 )
 
 func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator notifications.Annotator, exporterStatus *exporter.Status) error {

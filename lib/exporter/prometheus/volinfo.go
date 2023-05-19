@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"gitlab.com/pedropombeiro/qnapexporter/lib/utils"
+	"github.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 type volumeInfo struct {

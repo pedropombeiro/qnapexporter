@@ -100,8 +100,13 @@ func (e *promExporter) getDmCacheStatsMetrics() ([]metric, error) {
 	for index, line := range lines {
 		tokens := strings.SplitN(line, " ", 13)
 		cache := e.dmCacheClients[index]
-		allocationRatioStr := strings.TrimSpace(tokens[3])
-		allocationTokens := strings.SplitN(allocationRatioStr, "/", 2)
+		var allocationTokens []string
+		for _, t := range tokens {
+			if strings.Contains(t, "/") {
+				allocationTokens = strings.SplitN(t, "/", 2)
+				break
+			}
+		}
 		attr := fmt.Sprintf("device=%q", cache)
 
 		metrics = appendFloatMetric(metrics, "node_flashcache_cached_blocks", allocationTokens[0], 1, "", "")

@@ -8,6 +8,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/dustin/go-humanize/english"
 	"github.com/pedropombeiro/qnapexporter/lib/exporter"
+	"github.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
 const (
@@ -84,6 +85,8 @@ func (s *Status) WriteHTML(w io.Writer) error {
 	ms := endpointStatus{
 		Path: s.MetricsEndpoint,
 		Properties: map[string]string{
+			"Version":       utils.VERSION,
+			"Revision":       utils.REVISION,
 			"Uptime":        humanizeTime(e.Uptime),
 			"Last fetch":    humanizeTime(e.LastFetch),
 			"Last duration": e.LastFetchDuration.String(),

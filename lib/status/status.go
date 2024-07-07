@@ -86,7 +86,7 @@ func (s *Status) WriteHTML(w io.Writer) error {
 		Path: s.MetricsEndpoint,
 		Properties: map[string]string{
 			"Version":       utils.VERSION,
-			"Revision":       utils.REVISION,
+			"Revision":      utils.REVISION,
 			"Uptime":        humanizeTime(e.Uptime),
 			"Last fetch":    humanizeTime(e.LastFetch),
 			"Last duration": e.LastFetchDuration.String(),

@@ -1,7 +1,7 @@
 module github.com/pedropombeiro/qnapexporter
 
-// +heroku goVersion go1.19
-go 1.19
+// +heroku goVersion go1.21
+go 1.21
 
 require (
 	github.com/docker/docker v23.0.3+incompatible

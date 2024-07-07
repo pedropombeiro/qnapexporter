@@ -4,7 +4,7 @@ module github.com/pedropombeiro/qnapexporter
 go 1.21
 
 require (
-	github.com/docker/docker v23.0.3+incompatible
+	github.com/docker/docker v24.0.9+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-ping/ping v1.1.0
 	github.com/robbiet480/go.nut v0.0.0-20220219091450-bd8f121e1fa1

@@ -1,7 +1,7 @@
 ---
 name: Release qnapexporter
 
-on:  # yamllint disable-line rule:truthy
+on: # yamllint disable-line rule:truthy
   release:
     types: [created]
 
@@ -10,11 +10,11 @@ jobs:
     name: release linux/amd64
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # for wangyoucao577/go-release-action to upload assets
+      contents: write # for wangyoucao577/go-release-action to upload assets
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

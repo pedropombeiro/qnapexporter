@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -44,7 +43,7 @@ func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator noti
 			}
 		case msg := <-msgs:
 			t := time.Unix(0, msg.TimeNano)
-			m := strings.Join([]string{msg.Type, msg.Action, msg.Actor.ID, formatDockerActorAttributes(msg.Actor.Attributes)}, " ")
+			m := strings.Join([]string{string(msg.Type), string(msg.Action), msg.Actor.ID, formatDockerActorAttributes(msg.Actor.Attributes)}, " ")
 			exporterStatus.Docker = m
 			args.logger.Printf("%v: %s\n", t, m)
 			_, _ = annotator.Post(m, t)
@@ -56,7 +55,7 @@ func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator noti
 }
 
 func dockerEvents(ctx context.Context, cli *client.Client, exporterStatus *exporter.Status) (<-chan events.Message, <-chan error) {
-	opts := types.EventsOptions{
+	opts := events.ListOptions{
 		Since: "1h",
 		Filters: filters.NewArgs(
 			// Containers

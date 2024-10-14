@@ -60,7 +60,7 @@ type promExporter struct {
 	dmCacheClients           []string
 	dmCacheDeviceMinorNumber string
 
-	fns     []fetchMetricFn
+	fns     map[string]fetchMetricFn
 	fetchMu sync.Mutex
 }
 
@@ -76,23 +76,23 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 		status:         status,
 		envExpiry:      now,
 	}
-	e.fns = []fetchMetricFn{
-		e.getVersionMetrics,           // #1
-		getUptimeMetrics,              // #2
-		getLoadAvgMetrics,             // #3
-		getCpuRatioMetrics,            // #4
-		getMemInfoMetrics,             // #5
-		e.getUpsStatsMetricsWithRetry, // #6
-		e.getSysInfoTempMetrics,       // #7
-		e.getSysInfoFanMetrics,        // #8
-		e.getEnclosureFanMetrics,      // #9
-		e.getSysInfoHdMetrics,         // #10
-		e.getSysInfoVolMetrics,        // #11
-		e.getDiskStatsMetrics,         // #12
-		e.getFlashCacheStatsMetrics,   // #13
-		e.getDmCacheStatsMetrics,      // #14
-		e.getNetworkStatsMetrics,      // #15
-		e.getPingMetrics,              // #16
+	e.fns = map[string]fetchMetricFn{
+		"version":         e.getVersionMetrics,
+		"uptime":          getUptimeMetrics,
+		"loadAvg":         getLoadAvgMetrics,
+		"CpuRatio":        getCpuRatioMetrics,
+		"MemInfo":         getMemInfoMetrics,
+		"UpsStats":        e.getUpsStatsMetricsWithRetry,
+		"SysInfoTemp":     e.getSysInfoTempMetrics,
+		"SysInfoFan":      e.getSysInfoFanMetrics,
+		"EnclosureFan":    e.getEnclosureFanMetrics,
+		"SysInfoHd":       e.getSysInfoHdMetrics,
+		"SysInfoVol":      e.getSysInfoVolMetrics,
+		"DiskStats":       e.getDiskStatsMetrics,
+		"FlashCacheStats": e.getFlashCacheStatsMetrics,
+		"DmCacheStats":    e.getDmCacheStatsMetrics,
+		"NetworkStats":    e.getNetworkStatsMetrics,
+		"Ping":            e.getPingMetrics,
 	}
 
 	if status != nil {
@@ -120,10 +120,10 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 
 	var wg sync.WaitGroup
 	metricsCh := make(chan interface{}, 4)
-	for idx, fn := range e.fns {
+	for name, fn := range e.fns {
 		wg.Add(1)
 
-		go fetchMetricsWorker(&wg, metricsCh, idx, fn)
+		go fetchMetricsWorker(&wg, metricsCh, name, fn)
 	}
 
 	go func() {
@@ -160,12 +160,12 @@ func (e *promExporter) WriteMetrics(w io.Writer) error {
 	return err
 }
 
-func fetchMetricsWorker(wg *sync.WaitGroup, metricsCh chan<- interface{}, idx int, fetchMetricsFn fetchMetricFn) {
+func fetchMetricsWorker(wg *sync.WaitGroup, metricsCh chan<- interface{}, name string, fetchMetricsFn fetchMetricFn) {
 	defer wg.Done()
 
 	metrics, err := fetchMetricsFn()
 	if err != nil {
-		metricsCh <- fmt.Errorf("retrieve metric #%d: %w", 1+idx, err)
+		metricsCh <- fmt.Errorf("retrieve '#%s' metric: %w", name, err)
 		return
 	}
 

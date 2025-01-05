@@ -6,6 +6,32 @@ on: # yamllint disable-line rule:truthy
     types: [created]
 
 jobs:
+
+  build-image-qdk:
+    runs-on: ubuntu-latest
+
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build docker image with QDK
+        uses: docker/build-push-action@v6
+        with:
+          file: qpkg/Dockerfile
+          tags: qdk-image:latest
+          outputs: type=docker,dest=/tmp/qdk-image.tar
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qdk-image.tar
+          path: /tmp/qdk-image.tar
+
   release-qnapexporter:
     name: release qnapexporter
     runs-on: ubuntu-latest
@@ -30,4 +56,63 @@ jobs:
           build_command: make build PACKAGE_VERSION="$GITHUB_REF_NAME"
           binary_name: bin/qnapexporter
           asset_name: qnapexporter-${{ matrix.goos }}-${{ matrix.goarch }}
+          overwrite: true
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: qnapexporter-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: bin/qnapexporter
+          retention-days: 30
+
+  release-qpkg:
+    name: release qpkg
+    runs-on: ubuntu-latest
+    needs: [build-image-qdk, release-qnapexporter]
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [amd64, arm64]
+    permissions:
+      contents: write # for wangyoucao577/go-release-action to upload assets
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download qnapexporter artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: qnapexporter-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: qpkg/shared/
+
+      - name: Download qdk-image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: qdk-image.tar
+          path: /tmp
+      
+      - name: Prepare QPKG build
+        run: |
+          sed -i 's/QPKG_VER="0.0.0"/QPKG_VER="${{ github.ref_name }}"/g' ./qpkg/qpkg.cfg
+          chmod 755 qpkg/shared/qnapexporter
+          docker load --input /tmp/qdk-image.tar
+
+      - name: Build qpkg for qnapexporter
+        uses: addnab/docker-run-action@v3
+        with:
+          image: qdk-image:latest
+          options: -v ${{ github.workspace }}:/work
+          run: /usr/share/QDK/bin/qbuild --root /work/qpkg/
+
+      - name: Release qpkg
+        uses: svenstaro/upload-release-action@2.9.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          file: qpkg/build/QNAPExporter_${{ github.ref_name }}.qpkg
+          asset_name: QNAPExporter_${{ github.ref_name }}_${{ matrix.goarch }}.qpkg
           overwrite: true

@@ -13,7 +13,7 @@ The data produced by this exporter can be used to create Grafana dashboards such
 
 The Grafana dashboard sources are in the `/dashboards` directory.
 
-## Installation
+## Installation (from binaries)
 
 1. Download the latest qnapexporter executable from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)
 1. Run `qnapexporter`
@@ -25,7 +25,14 @@ The Grafana dashboard sources are in the `/dashboards` directory.
     Normally it should be run as a background task. Unfortunately this is not easy on a QNAP NAS.
     See for example [this forum post](https://forum.qnap.com/viewtopic.php?t=44743#p198192) for ideas on how to achieve it.
 
-1. Add target to `scrape_configs` section of `prometheus.ini`
+## Installation (alternative, from qpkg)
+
+1. Download the latest qnapexporter qpkg package from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)
+1. Via web ui in QNAP, use manual installation in App Center. Please note that the installation will issue a warning because the QPKG package is not signed. When the binary is installed via QPKG, it will automatically start as background task and can be also stopped/started via App Center.
+
+## Prometheus configuration
+
+Add target to `scrape_configs` section of `prometheus.ini`
 
     ```yaml
     - job_name: 'qnap'

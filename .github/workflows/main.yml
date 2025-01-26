@@ -7,6 +7,7 @@ on:  # yamllint disable-line rule:truthy
       - master
 
 jobs:
+
   build:
     runs-on: ubuntu-latest
 
@@ -31,8 +32,79 @@ jobs:
           make build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: qnapexporter
           path: bin/qnapexporter
+          retention-days: 30
+
+  build-image-qdk:
+    runs-on: ubuntu-latest
+
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build docker image with QDK
+        uses: docker/build-push-action@v6
+        with:
+          file: qpkg/Dockerfile
+          tags: qdk-image:latest
+          outputs: type=docker,dest=/tmp/qdk-image.tar
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qdk-image.tar
+          path: /tmp/qdk-image.tar
+
+  build-qpkg:
+    runs-on: ubuntu-latest
+    needs: [build, build-image-qdk]
+
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download qnapexporter artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: qnapexporter
+          path: qpkg/shared/
+      
+      - name: Download qdk-image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: qdk-image.tar
+          path: /tmp
+
+      - name: Set git sha_short
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Prepare QPKG build
+        run: |
+          sed -i 's/QPKG_VER="0.0.0"/QPKG_VER="${{ steps.vars.outputs.sha_short }}"/g' ./qpkg/qpkg.cfg
+          chmod 755 qpkg/shared/qnapexporter
+          docker load --input /tmp/qdk-image.tar
+
+      - name: Build qpkg for qnapexporter
+        uses: addnab/docker-run-action@v3
+        with:
+          image: qdk-image:latest
+          options: -v ${{ github.workspace }}:/work
+          run: /usr/share/QDK/bin/qbuild --root /work/qpkg/
+
+      - name: Upload qpkg artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg
+          path: qpkg/build/QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg
           retention-days: 30

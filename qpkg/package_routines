@@ -123,8 +123,19 @@
 # Define any package specific requirement checks that shall be
 # performed before the package is installed.
 ######################################################################
-#pkg_check_requirement(){
-#}
+pkg_check_requirement(){
+	err_log() {
+		local write_msg="$CMD_LOG_TOOL -t2 -uSystem -p127.0.0.1 -mlocalhost -a"
+		[ -n "$1" ] && $CMD_ECHO "$1" && $write_msg "$1"
+	}
+
+	result=$(/usr/sbin/lsof -i :9094)
+	if [ -n "$result"  ] ;then
+		err_log "[App Center] QNAPExporter installation failed. Port 9094 occupied"
+		set_progress_fail
+		exit 1
+	fi
+}
 #
 ######################################################################
 # Define any package specific operations that shall be performed when

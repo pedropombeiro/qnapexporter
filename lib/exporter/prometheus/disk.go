@@ -109,8 +109,8 @@ func (e *promExporter) getDmCacheStatsMetrics() ([]metric, error) {
 		}
 		attr := fmt.Sprintf("device=%q", cache)
 
-		metrics = appendFloatMetric(metrics, "node_flashcache_cached_blocks", allocationTokens[0], 1, "", "")
-		metrics = appendFloatMetric(metrics, "node_flashcache_total_blocks", allocationTokens[1], 1, "", "")
+		metrics = appendFloatMetric(metrics, "node_flashcache_cached_blocks", allocationTokens[0], 1, attr, "Number of blocks resident in the cache")
+		metrics = appendFloatMetric(metrics, "node_flashcache_total_blocks", allocationTokens[1], 1, attr, "Total number of cache blocks")
 		metrics = appendFloatMetric(metrics, "node_dmcache_used_bytes_total", allocationTokens[0], 1024*1024, attr, "Number of blocks resident in the cache")
 		metrics = appendFloatMetric(metrics, "node_dmcache_bytes_total", allocationTokens[1], 1024*1024, attr, "Total number of cache blocks")
 	}

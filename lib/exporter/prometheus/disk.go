@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/pedropombeiro/qnapexporter/lib/utils"
-	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v4/disk"
 )
 
 func (e *promExporter) getSysInfoHdMetrics() ([]metric, error) {

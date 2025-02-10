@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/pedropombeiro/qnapexporter/lib/utils"
-	"github.com/shirou/gopsutil/v3/host"
-	"github.com/shirou/gopsutil/v3/load"
+	"github.com/shirou/gopsutil/v4/host"
+	"github.com/shirou/gopsutil/v4/load"
 )
 
 var fanRpmRe = regexp.MustCompile(`(?m)fan = (\d+) rpm`)

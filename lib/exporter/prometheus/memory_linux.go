@@ -1,6 +1,6 @@
 package prometheus
 
-import "github.com/shirou/gopsutil/v3/mem"
+import "github.com/shirou/gopsutil/v4/mem"
 
 func getMemInfoMetrics() ([]metric, error) {
 	s, err := mem.VirtualMemory()

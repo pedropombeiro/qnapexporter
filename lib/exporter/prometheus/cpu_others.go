@@ -3,7 +3,7 @@
 package prometheus
 
 import (
-	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v4/cpu"
 )
 
 func getCpuRatioMetrics() ([]metric, error) {

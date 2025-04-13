@@ -39,7 +39,7 @@ jobs:
       matrix:
         # build and publish in parallel: linux/386, linux/amd64, linux/arm64, windows/386, windows/amd64, darwin/amd64, darwin/arm64
         goos: [linux]
-        goarch: [amd64, arm64]
+        goarch: [amd64, arm, arm64]
     permissions:
       contents: write # for wangyoucao577/go-release-action to upload assets
     steps:
@@ -72,7 +72,7 @@ jobs:
     strategy:
       matrix:
         goos: [linux]
-        goarch: [amd64, arm64]
+        goarch: [amd64, arm, arm64]
     permissions:
       contents: write # for wangyoucao577/go-release-action to upload assets
 

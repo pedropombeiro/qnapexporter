@@ -93,7 +93,7 @@ jobs:
       - name: Download qnapexporter artifact
         uses: actions/download-artifact@v4
         with:
-          name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
+          name: qnapexporter-${{ github.ref_name }}-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           path: qpkg/shared/
 
       - name: Download qdk-image artifact

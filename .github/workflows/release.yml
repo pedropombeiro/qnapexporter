@@ -59,13 +59,13 @@ jobs:
           goarm: ${{ matrix.goarm }}
           build_command: make build PACKAGE_VERSION="$GITHUB_REF_NAME"
           binary_name: bin/qnapexporter
-          asset_name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
+          asset_name: qnapexporter-${{ github.ref_name }}-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           overwrite: true
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
+          name: qnapexporter-${{ github.ref_name }}-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           path: bin/qnapexporter
           retention-days: 30
 

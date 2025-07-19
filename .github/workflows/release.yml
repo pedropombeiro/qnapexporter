@@ -10,7 +10,7 @@ jobs:
   build-image-qdk:
     runs-on: ubuntu-latest
 
-    steps: 
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -25,7 +25,7 @@ jobs:
           file: qpkg/Dockerfile
           tags: qdk-image:latest
           outputs: type=docker,dest=/tmp/qdk-image.tar
-      
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -50,7 +50,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-            
+
       - uses: wangyoucao577/go-release-action@v1.53
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -59,13 +59,13 @@ jobs:
           goarm: ${{ matrix.goarm }}
           build_command: make build PACKAGE_VERSION="$GITHUB_REF_NAME"
           binary_name: bin/qnapexporter
-          asset_name: qnapexporter-${{ github.ref_name }}-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
+          asset_name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           overwrite: true
-      
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: qnapexporter-${{ github.ref_name }}-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
+          name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           path: bin/qnapexporter
           retention-days: 30
 
@@ -93,7 +93,7 @@ jobs:
       - name: Download qnapexporter artifact
         uses: actions/download-artifact@v4
         with:
-          name: qnapexporter-${{ github.ref_name }}-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
+          name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           path: qpkg/shared/
 
       - name: Download qdk-image artifact
@@ -101,7 +101,7 @@ jobs:
         with:
           name: qdk-image.tar
           path: /tmp
-      
+
       - name: Prepare QPKG build
         run: |
           sed -i 's/QPKG_VER="0.0.0"/QPKG_VER="${{ github.ref_name }}"/g' ./qpkg/qpkg.cfg

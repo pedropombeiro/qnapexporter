@@ -6,7 +6,7 @@ go 1.23.0
 toolchain go1.23.8
 
 require (
-	github.com/docker/docker v27.5.1+incompatible
+	github.com/docker/docker v28.0.0+incompatible
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-ping/ping v1.2.0
 	github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53

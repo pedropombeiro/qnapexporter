@@ -104,7 +104,12 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 				statusHelp = v.Description
 				continue
 			case "ups.firmware":
-				firmware = v.Value.(string)
+				switch val := v.Value.(type) {
+				case string:
+					firmware = val
+				default:
+					firmware = fmt.Sprintf("%v", val)
+				}
 				continue
 			}
 

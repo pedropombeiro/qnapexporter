@@ -18,9 +18,9 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 1. Download the latest qnapexporter executable from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)
 1. Run `qnapexporter`
 
-    ```shell
-    ./qnapexporter
-    ```
+```shell
+./qnapexporter
+```
 
     Normally it should be run as a background task. Unfortunately this is not easy on a QNAP NAS.
     See for example [this forum post](https://forum.qnap.com/viewtopic.php?t=44743#p198192) for ideas on how to achieve it.
@@ -34,13 +34,13 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 
 Add target to `scrape_configs` section of `prometheus.ini`
 
-    ```yaml
-    - job_name: 'qnap'
-      scrape_interval: 10s
-      honor_labels: true
-      static_configs:
-      - targets: ['localhost:9094']
-    ```
+```yaml
+- job_name: 'qnap'
+  scrape_interval: 10s
+  honor_labels: true
+  static_configs:
+  - targets: ['localhost:9094']
+```
 
 ## Customization
 

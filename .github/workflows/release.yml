@@ -116,7 +116,7 @@ jobs:
           run: /usr/share/QDK/bin/qbuild --root /work/qpkg/
 
       - name: Release qpkg
-        uses: svenstaro/upload-release-action@2.11.2
+        uses: svenstaro/upload-release-action@2.11.3
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}

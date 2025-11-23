@@ -34,13 +34,13 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 
 Add target to `scrape_configs` section of `prometheus.ini`
 
-    ```yaml
-    - job_name: 'qnap'
-      scrape_interval: 10s
-      honor_labels: true
-      static_configs:
-      - targets: ['localhost:9094']
-    ```
+```yaml
+- job_name: 'qnap'
+  scrape_interval: 10s
+  honor_labels: true
+  static_configs:
+  - targets: ['localhost:9094']
+```
 
 ## Customization
 

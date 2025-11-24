@@ -11,7 +11,7 @@ require (
 	github.com/go-ping/ping v1.2.0
 	github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
 	github.com/shirou/gopsutil/v4 v4.25.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 )
 
 require (

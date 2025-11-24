@@ -23,7 +23,7 @@ jobs:
 
       - id: go
         name: Set up Go environment
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v6
         with:
           go-version: 1.25
 

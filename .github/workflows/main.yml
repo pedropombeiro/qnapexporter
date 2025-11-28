@@ -32,7 +32,7 @@ jobs:
           make build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: qnapexporter
           path: bin/qnapexporter
@@ -58,7 +58,7 @@ jobs:
           outputs: type=docker,dest=/tmp/qdk-image.tar
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: qdk-image.tar
           path: /tmp/qdk-image.tar
@@ -74,13 +74,13 @@ jobs:
           fetch-depth: 0
 
       - name: Download qnapexporter artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: qnapexporter
           path: qpkg/shared/
 
       - name: Download qdk-image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: qdk-image.tar
           path: /tmp
@@ -103,7 +103,7 @@ jobs:
           run: /usr/share/QDK/bin/qbuild --root /work/qpkg/
 
       - name: Upload qpkg artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg
           path: qpkg/build/QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg

@@ -27,7 +27,7 @@ jobs:
           outputs: type=docker,dest=/tmp/qdk-image.tar
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: qdk-image.tar
           path: /tmp/qdk-image.tar
@@ -63,7 +63,7 @@ jobs:
           overwrite: true
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           path: bin/qnapexporter
@@ -91,13 +91,13 @@ jobs:
           fetch-depth: 0
 
       - name: Download qnapexporter artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           path: qpkg/shared/
 
       - name: Download qdk-image artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: qdk-image.tar
           path: /tmp

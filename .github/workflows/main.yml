@@ -6,13 +6,10 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - master
   pull_request:
-    paths:
-      - 'qpkg/Dockerfile'
 
 jobs:
 
   build:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -46,6 +43,7 @@ jobs:
           retention-days: 30
 
   build-image-qdk:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:

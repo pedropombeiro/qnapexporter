@@ -47,7 +47,7 @@ fix:
 build:
     @echo "Building qnapexporter..."
     @mkdir -p ./bin
-    go build -mod=readonly -ldflags "{{GO_LDFLAGS}}" -o {{BIN_PATH}} .
+    CGO_ENABLED=0 go build -mod=readonly -ldflags "{{GO_LDFLAGS}}" -o {{BIN_PATH}} .
     @echo "Build complete: {{BIN_PATH}}"
 
 # Generate test mocks

@@ -30,6 +30,47 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 1. Download the latest qnapexporter qpkg package from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)
 1. Via web ui in QNAP, use manual installation in App Center. Please note that the installation will issue a warning because the QPKG package is not signed. When the binary is installed via QPKG, it will automatically start as background task and can be also stopped/started via App Center.
 
+## Building from source
+
+### Prerequisites
+
+- [Go](https://golang.org/) 1.25+
+- [mise](https://mise.jdx.sh/) (version management)
+- [just](https://just.systems/) (task automation)
+- [pre-commit](https://pre-commit.com/) (optional, for development)
+- [golangci-lint](https://golangci-lint.run/) (optional, for linting)
+
+### Setup
+
+Install dependencies:
+```bash
+just install
+```
+
+This will run `mise install` to set up Go 1.25.5.
+
+### Development Commands
+
+- `just build` - Build the binary (output: `./bin/qnapexporter`)
+- `just test` - Run all tests
+- `just test -v -cover` - Run tests with verbose output and coverage
+- `just lint` - Run golangci-lint checks
+- `just fix` - Run formatters and auto-fixable linters
+- `just mocks` - Generate test mocks
+- `just vendor` - Update vendored dependencies
+- `just clean` - Remove build artifacts
+- `just info` - Display build metadata
+- `just` - List all available commands
+
+### Pre-commit Hooks
+
+Install pre-commit hooks:
+```bash
+pre-commit install
+```
+
+Hooks will run automatically on `git commit`, or manually with `just fix`.
+
 ## Prometheus configuration
 
 Add target to `scrape_configs` section of `prometheus.ini`

@@ -153,7 +153,7 @@
         "/^\\.github/workflows/.*\\.ya?ml$/"
       ],
       "matchStrings": [
-        "go-version:\\s+(?<currentValue>\\d+\\.\\d+)\\n"
+        "go-version:\\s+(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"
       ],
       "datasourceTemplate": "golang-version",
       "depNameTemplate": "golang"

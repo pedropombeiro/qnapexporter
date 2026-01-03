@@ -1,0 +1,103 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":automergeRequireAllStatusChecks",
+    ":enablePreCommit",
+    ":pinSkipCi",
+    ":prImmediately",
+    ":separateMultipleMajorReleases",
+    "schedule:automergeNonOfficeHours"
+  ],
+  "automergeType": "pr",
+  "automergeStrategy": "squash",
+  "enabledManagers": ["gomod", "github-actions", "dockerfile", "custom.regex"],
+  "lockFileMaintenance": { "enabled": true },
+  "packageRules": [
+    {
+      "description": "Disable digest-only updates for Docker and GitHub Actions updates",
+      "matchDatasources": ["docker", "github-actions"],
+      "digest": {
+        "enabled": false
+      }
+    },
+    {
+      "description": "Auto-merge patch Go version updates (.tool-versions, go.mod toolchain, GitHub Actions) into a single PR",
+      "matchDatasources": ["golang-version", "go"],
+      "matchPackageNames": ["go", "golang"],
+      "matchUpdateTypes": ["patch"],
+      "groupName": "Go version",
+      "automerge": true
+    },
+    {
+      "description": "Require manual review for minor and major Go version updates",
+      "matchDatasources": ["golang-version", "go"],
+      "matchPackageNames": ["go", "golang"],
+      "matchUpdateTypes": ["minor", "major"],
+      "automerge": false
+    },
+    {
+      "description": "Auto-merge non-breaking GitHub Actions updates (patch and minor versions only) as a grouped PR",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "automerge": true,
+      "groupName": "GitHub Actions"
+    },
+    {
+      "description": "Auto-merge linter and test framework package updates directly to branch without creating a PR",
+      "automerge": true,
+      "automergeType": "branch",
+      "extends": ["packages:linters", "packages:test"]
+    },
+    {
+      "description": "Group Docker base image updates",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "Docker images",
+      "automerge": true
+    },
+    {
+      "description": "Group all Go module updates (direct and indirect dependencies) into a single PR",
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "matchDepTypes": ["indirect", "require"],
+      "groupName": "Go modules",
+      "automerge": true
+    },
+    {
+      "description": "Separate major Go module updates into individual PRs for review",
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "Ensure Go module files are updated properly",
+      "matchManagers": ["gomod"],
+      "rangeStrategy": "bump",
+      "lockFileMaintenance": {
+        "enabled": true
+      }
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update Go version in .tool-versions",
+      "fileMatch": ["^\\.tool-versions$"],
+      "matchStrings": ["golang\\s+(?<currentValue>.*?)\\n"],
+      "datasourceTemplate": "golang-version",
+      "depNameTemplate": "golang"
+    },
+    {
+      "customType": "regex",
+      "description": "Update Go version in GitHub Actions workflows",
+      "fileMatch": ["^\\.github/workflows/.*\\.ya?ml$"],
+      "matchStrings": ["go-version:\\s+(?<currentValue>\\d+\\.\\d+)\\n"],
+      "datasourceTemplate": "golang-version",
+      "depNameTemplate": "golang"
+    }
+  ],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 0,
+  "platformAutomerge": true
+}

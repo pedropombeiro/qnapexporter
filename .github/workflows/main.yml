@@ -23,7 +23,7 @@ jobs:
 
       - name: Run tests
         run: |
-          make test
+          just test
 
       - id: go
         name: Set up Go environment
@@ -33,7 +33,7 @@ jobs:
 
       - name: Build
         run: |
-          make build
+          just build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6

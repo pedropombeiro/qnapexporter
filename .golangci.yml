@@ -1,0 +1,35 @@
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - typecheck
+    - misspell
+    - gocyclo
+    - godot
+    - goimports
+    - revive
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+  godot:
+    scope: declarations
+  revive:
+    rules:
+      - name: exported
+        disabled: false
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

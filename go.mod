@@ -1,6 +1,5 @@
 module github.com/pedropombeiro/qnapexporter
 
-// +heroku goVersion go1.24
 go 1.25.5
 
 require (

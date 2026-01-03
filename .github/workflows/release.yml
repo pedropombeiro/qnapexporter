@@ -60,7 +60,7 @@ jobs:
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
           goarm: ${{ matrix.goarm }}
-          build_command: PACKAGE_VERSION="$GITHUB_REF_NAME" just build
+          build_command: sh -c 'PACKAGE_VERSION="$GITHUB_REF_NAME" just build'
           binary_name: bin/qnapexporter
           asset_name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           overwrite: true

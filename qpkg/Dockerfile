@@ -1,6 +1,6 @@
 FROM ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214
 
-ARG QDK_VER=2.3.14
+ARG QDK_VER=2.4.0
 
 # install wget
 RUN apt-get update \

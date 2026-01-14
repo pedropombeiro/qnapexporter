@@ -167,6 +167,19 @@
       ],
       "datasourceTemplate": "golang-version",
       "depNameTemplate": "golang"
+    },
+    {
+      "customType": "regex",
+      "description": "Update QDK version in Dockerfile",
+      "fileMatch": [
+        "^qpkg/Dockerfile$"
+      ],
+      "matchStrings": [
+        "ARG QDK_VER=(?<currentValue>.*?)\\n"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "qnap-dev/QDK",
+      "extractVersionTemplate": "^v(?<version>.*)$"
     }
   ],
   "prConcurrentLimit": 10,

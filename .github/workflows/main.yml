@@ -43,7 +43,6 @@ jobs:
           retention-days: 30
 
   build-image-qdk:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -63,14 +62,12 @@ jobs:
           outputs: type=docker,dest=/tmp/qdk-image.tar
 
       - name: Upload artifact
-        if: github.event_name == 'push'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: qdk-image.tar
           path: /tmp/qdk-image.tar
 
   build-qpkg:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: [build, build-image-qdk]
 
@@ -109,7 +106,22 @@ jobs:
           options: -v ${{ github.workspace }}:/work
           run: /usr/share/QDK/bin/qbuild --root /work/qpkg/
 
+      - name: Validate qpkg file size
+        run: |
+          QPKG_FILE="qpkg/build/QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg"
+          if [ ! -f "$QPKG_FILE" ]; then
+            echo "::error::QPKG file not found: $QPKG_FILE"
+            exit 1
+          fi
+          SIZE=$(stat -c%s "$QPKG_FILE")
+          echo "QPKG file size: $SIZE bytes"
+          if [ "$SIZE" -lt 1000000 ]; then
+            echo "::error::QPKG file is too small ($SIZE bytes). Expected at least 1MB. Build likely failed."
+            exit 1
+          fi
+
       - name: Upload qpkg artifact
+        if: github.event_name == 'push'
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg

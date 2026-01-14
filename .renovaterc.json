@@ -85,6 +85,16 @@
       ]
     },
     {
+      "description": "Pin Ubuntu to 20.x for QDK compatibility",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "ubuntu"
+      ],
+      "allowedVersions": "/^20\\./"
+    },
+    {
       "description": "Group Docker base image updates",
       "matchManagers": [
         "dockerfile"

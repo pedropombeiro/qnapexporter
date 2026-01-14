@@ -135,6 +135,20 @@ jobs:
           options: -v ${{ github.workspace }}:/work
           run: /usr/share/QDK/bin/qbuild --root /work/qpkg/
 
+      - name: Validate qpkg file size
+        run: |
+          QPKG_FILE="qpkg/build/QNAPExporter_${{ github.ref_name }}.qpkg"
+          if [ ! -f "$QPKG_FILE" ]; then
+            echo "::error::QPKG file not found: $QPKG_FILE"
+            exit 1
+          fi
+          SIZE=$(stat -c%s "$QPKG_FILE")
+          echo "QPKG file size: $SIZE bytes"
+          if [ "$SIZE" -lt 1000000 ]; then
+            echo "::error::QPKG file is too small ($SIZE bytes). Expected at least 1MB. Build likely failed."
+            exit 1
+          fi
+
       - name: Release qpkg
         uses: svenstaro/upload-release-action@6b7fa9f267e90b50a19fef07b3596790bb941741 # 2.11.3
         with:

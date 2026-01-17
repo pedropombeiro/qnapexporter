@@ -11,7 +11,7 @@ func getCpuRatioMetrics() ([]metric, error) {
 	}
 	s := a[0]
 
-	counts, err := cpu.Counts(false)
+	counts, err := cpu.Counts(true)
 	if err != nil {
 		return nil, err
 	}

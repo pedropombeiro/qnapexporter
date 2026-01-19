@@ -8,6 +8,14 @@ PID_FILE=/var/run/qnapexporter.pid
 # see https://github.com/pedropombeiro/qnapexporter for customization options
 EXTRA_ARGS=""
 
+# Source environment file if it exists (for auth tokens and other config)
+ENV_FILE="$QPKG_DIR/.env"
+if [ -f "$ENV_FILE" ]; then
+    set -a
+    . "$ENV_FILE"
+    set +a
+fi
+
 case "$1" in
   start)
     ENABLED=$(getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)

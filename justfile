@@ -34,23 +34,23 @@ test *args:
     @go test {{args}} ./...
 
 # Run comprehensive linters
+[script]
 lint *FILES='':
-    #!/usr/bin/env bash
     echo "Running linters..."
-    if [ -n "{{FILES}}" ]; then \
-        golangci-lint run {{FILES}}; \
-    else \
-        golangci-lint run; \
+    if [ -n "{{FILES}}" ]; then
+        golangci-lint run {{FILES}}
+    else
+        golangci-lint run
     fi
 
 # Run formatters and auto-fixable linters
+[script]
 fix *FILES='':
-    #!/usr/bin/env bash
     echo "Running pre-commit hooks..."
-    if [ -n "{{FILES}}" ]; then \
-        pre-commit run --files {{FILES}}; \
-    else \
-        pre-commit run --all-files; \
+    if [ -n "{{FILES}}" ]; then
+        pre-commit run --files {{FILES}}
+    else
+        pre-commit run --all-files
     fi
 
 # Build binary with version embedding

@@ -15,7 +15,8 @@
     "gomod",
     "github-actions",
     "dockerfile",
-    "custom.regex"
+    "custom.regex",
+    "pre-commit"
   ],
   "lockFileMaintenance": {
     "enabled": true

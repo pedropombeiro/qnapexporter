@@ -101,7 +101,7 @@ func (e *promExporter) getSysInfoFanMetrics() ([]metric, error) {
 }
 
 func (e *promExporter) getEnclosureFanMetrics() ([]metric, error) {
-	if e.hal_app == "" {
+	if e.halApp == "" {
 		return nil, nil
 	}
 
@@ -109,7 +109,7 @@ func (e *promExporter) getEnclosureFanMetrics() ([]metric, error) {
 
 	for _, enc := range e.enclosures {
 		for fanNum := 0; fanNum < enc.fanCount; fanNum++ {
-			fanOutput, err := utils.ExecCommand(e.hal_app, "--se_sys_get_fan", fmt.Sprintf("enc_sys_id=%s,obj_index=%d", enc.id, fanNum))
+			fanOutput, err := utils.ExecCommand(e.halApp, "--se_sys_get_fan", fmt.Sprintf("enc_sys_id=%s,obj_index=%d", enc.id, fanNum))
 			if err != nil {
 				return nil, err
 			}

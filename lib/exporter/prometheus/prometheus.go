@@ -45,14 +45,16 @@ type promExporter struct {
 
 	upsState upsState
 
-	getsysinfo string
-	syshdnum   int
-	sysfannum  int
-	ifaces     []string
-	devices    []string
-	hal_app    string
-	enclosures []qnapEnclosure
-	envExpiry  time.Time
+	getsysinfo  string
+	syshdnum    int
+	sysfannum   int
+	ifaces      []string
+	devices     []string
+	nvmePath    string
+	nvmeDevices []string
+	halApp      string
+	enclosures  []qnapEnclosure
+	envExpiry   time.Time
 
 	volumes         []volumeInfo
 	volumeLastFetch time.Time
@@ -93,6 +95,7 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 		"DmCacheStats":    e.getDmCacheStatsMetrics,
 		"NetworkStats":    e.getNetworkStatsMetrics,
 		"Ping":            e.getPingMetrics,
+		"NvmeSmart":       e.getNvmeSmartMetrics,
 	}
 
 	if status != nil {
@@ -228,18 +231,18 @@ func (e *promExporter) readEnvironment() {
 		e.Logger.Printf("Retrieved sysvolinfo")
 	}
 
-	if e.hal_app == "" {
-		e.hal_app, _ = exec.LookPath("hal_app")
+	if e.halApp == "" {
+		e.halApp, _ = exec.LookPath("hal_app")
 		if err != nil {
 			e.Logger.Printf("Failed to find hal_app: %v", err)
 		}
-		e.Logger.Printf("Retrieved hal_app path: %q", e.hal_app)
+		e.Logger.Printf("Retrieved hal_app path: %q", e.halApp)
 	}
 	e.enclosures = nil
 	e.status.Enclosures = nil
-	if e.hal_app != "" {
+	if e.halApp != "" {
 		e.Logger.Println("Retrieving QM2 enclosures")
-		seEnumOutput, err := utils.ExecCommand(e.hal_app, "--se_enum")
+		seEnumOutput, err := utils.ExecCommand(e.halApp, "--se_enum")
 		if err == nil {
 			lines := utils.FindMatchingLines("qm2_", seEnumOutput)
 			if len(lines) != 0 {
@@ -276,6 +279,7 @@ func (e *promExporter) readEnvironment() {
 	e.Logger.Printf("Retrieving devices in %q...", devDir)
 	info, _ = os.ReadDir(devDir)
 	e.devices = make([]string, 0, len(info))
+	e.nvmeDevices = make([]string, 0)
 	for _, d := range info {
 		dev := d.Name()
 		if d.IsDir() || !strings.HasPrefix(dev, "nvme") && !strings.HasPrefix(dev, "sd") {
@@ -289,8 +293,22 @@ func (e *promExporter) readEnvironment() {
 		}
 
 		e.devices = append(e.devices, dev)
+		if strings.HasPrefix(dev, "nvme") {
+			e.nvmeDevices = append(e.nvmeDevices, dev)
+		}
 	}
 	e.Logger.Printf("Found devices: %v", e.devices)
+	e.Logger.Printf("Found NVMe devices: %v", e.nvmeDevices)
+
+	// Look up nvme command path for NVMe SMART metrics
+	if e.nvmePath == "" && len(e.nvmeDevices) > 0 {
+		e.nvmePath, _ = exec.LookPath("nvme")
+		if e.nvmePath != "" {
+			e.Logger.Printf("Retrieved nvme path: %q", e.nvmePath)
+		} else {
+			e.Logger.Println("nvme command not found, NVMe SMART metrics will not be available")
+		}
+	}
 
 	e.dmCacheClients = []string{}
 	if e.kernelVersion >= 5 {
@@ -320,6 +338,7 @@ func (e *promExporter) readEnvironment() {
 
 	if e.status != nil {
 		e.status.Devices = e.devices
+		e.status.NvmeDevices = e.nvmeDevices
 		e.status.Interfaces = e.ifaces
 		e.status.DmCaches = e.dmCacheClients
 		if e.dmCacheDeviceMinorNumber != "" {

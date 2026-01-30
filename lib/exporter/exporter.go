@@ -21,6 +21,7 @@ type Status struct {
 	Ups               []string
 	Interfaces        []string
 	Devices           []string
+	NvmeDevices       []string
 	Volumes           []string
 	Enclosures        []string
 	DmCaches          []string

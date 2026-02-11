@@ -33,7 +33,7 @@
       }
     },
     {
-      "description": "Auto-merge patch Go version updates (.tool-versions, go.mod toolchain, GitHub Actions) into a single PR",
+      "description": "Auto-merge patch Go version updates (.tool-versions, go.mod) into a single PR",
       "matchDatasources": [
         "golang-version",
         "go"
@@ -153,18 +153,6 @@
       ],
       "matchStrings": [
         "golang\\s+(?<currentValue>.*?)\\n"
-      ],
-      "datasourceTemplate": "golang-version",
-      "depNameTemplate": "golang"
-    },
-    {
-      "customType": "regex",
-      "description": "Update Go version in GitHub Actions workflows",
-      "managerFilePatterns": [
-        "/^\\.github/workflows/.*\\.ya?ml$/"
-      ],
-      "matchStrings": [
-        "go-version:\\s+(?<currentValue>\\d+\\.\\d+\\.\\d+)\\n"
       ],
       "datasourceTemplate": "golang-version",
       "depNameTemplate": "golang"

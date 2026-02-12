@@ -100,11 +100,7 @@ jobs:
           docker load --input /tmp/qdk-image.tar
 
       - name: Build qpkg for qnapexporter
-        uses: addnab/docker-run-action@4f65fabd2431ebc8d299f8e5a018d79a769ae185 # v3
-        with:
-          image: qdk-image:latest
-          options: -v ${{ github.workspace }}:/work
-          run: /usr/share/QDK/bin/qbuild --root /work/qpkg/
+        run: docker run --rm -v ${{ github.workspace }}:/work qdk-image:latest /usr/share/QDK/bin/qbuild --root /work/qpkg/
 
       - name: Validate qpkg file size
         run: |

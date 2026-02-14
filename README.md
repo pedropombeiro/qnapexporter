@@ -18,12 +18,12 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 1. Download the latest qnapexporter executable from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)
 1. Run `qnapexporter`
 
-    ```shell
-    ./qnapexporter
-    ```
+   ```shell
+   ./qnapexporter
+   ```
 
-    Normally it should be run as a background task. Unfortunately this is not easy on a QNAP NAS.
-    See for example [this forum post](https://forum.qnap.com/viewtopic.php?t=44743#p198192) for ideas on how to achieve it.
+   Normally it should be run as a background task. Unfortunately this is not easy on a QNAP NAS.
+   See for example [this forum post](https://forum.qnap.com/viewtopic.php?t=44743#p198192) for ideas on how to achieve it.
 
 ## Installation (alternative, from qpkg)
 
@@ -35,67 +35,68 @@ The Grafana dashboard sources are in the `/dashboards` directory.
 ### Prerequisites
 
 - [Go](https://golang.org/) 1.25+
-- [mise](https://mise.jdx.sh/) (version management)
-- [just](https://just.systems/) (task automation)
+- [mise](https://mise.jdx.dev/) (version management & task automation)
 - [pre-commit](https://pre-commit.com/) (optional, for development)
 - [golangci-lint](https://golangci-lint.run/) (optional, for linting)
 
 ### Setup
 
 Install dependencies:
+
 ```bash
-just install
+mise run install
 ```
 
-This will run `mise install` to set up Go 1.25.5.
+This will run `mise install` to set up Go and project dependencies.
 
 ### Development Commands
 
-- `just build` - Build the binary (output: `./bin/qnapexporter`)
-- `just test` - Run all tests
-- `just test -v -cover` - Run tests with verbose output and coverage
-- `just lint` - Run golangci-lint checks
-- `just fix` - Run formatters and auto-fixable linters
-- `just mocks` - Generate test mocks
-- `just vendor` - Update vendored dependencies
-- `just clean` - Remove build artifacts
-- `just info` - Display build metadata
-- `just` - List all available commands
+- `mise run build` - Build the binary (output: `./bin/qnapexporter`)
+- `mise run test` - Run all tests
+- `mise run test -- -v -cover` - Run tests with verbose output and coverage
+- `mise run lint` - Run golangci-lint checks
+- `mise run fix` - Run formatters and auto-fixable linters
+- `mise run mocks` - Generate test mocks
+- `mise run vendor` - Update vendored dependencies
+- `mise run clean` - Remove build artifacts
+- `mise run info` - Display build metadata
+- `mise tasks` - List all available commands
 
 ### Pre-commit Hooks
 
 Install pre-commit hooks:
+
 ```bash
 pre-commit install
 ```
 
-Hooks will run automatically on `git commit`, or manually with `just fix`.
+Hooks will run automatically on `git commit`, or manually with `mise run fix`.
 
 ## Prometheus configuration
 
 Add target to `scrape_configs` section of `prometheus.ini`
 
 ```yaml
-- job_name: 'qnap'
+- job_name: "qnap"
   scrape_interval: 10s
   honor_labels: true
   static_configs:
-  - targets: ['localhost:9094']
+    - targets: ["localhost:9094"]
 ```
 
 ## Customization
 
 qnapexporter supports the following command line flags:
 
-| Flag                    | Default value | Description |
-|-------------------------|---------------|-------------|
-| `--port`                | `:9094`       | Address/port where to serve the metrics  |
-| `--ping-target`         | `1.1.1.1`     | Host to periodically ping                |
-| `--healthcheck`         | N/A           | Healthcheck service to ping every 5 minutes (currently supported: `healthchecks.io:<check-id>`)  |
-| `--grafana-url`         | N/A           | Grafana host (e.g.: https://grafana.example.com), also settable through `GRAFANA_URL` environment variable  |
-| `--grafana-auth-token`  | N/A           | Grafana API token for annotations, also settable through `GRAFANA_AUTH_TOKEN` environment variable  |
-| `--grafana-tags`        | `nas`         | List of Grafana tags for annotations, also settable through `GRAFANA_TAGS` environment variable  |
-| `--log`                 | N/A           | Path to log file (defaults to standard output)  |
+| Flag                   | Default value | Description                                                                                                |
+| ---------------------- | ------------- | ---------------------------------------------------------------------------------------------------------- |
+| `--port`               | `:9094`       | Address/port where to serve the metrics                                                                    |
+| `--ping-target`        | `1.1.1.1`     | Host to periodically ping                                                                                  |
+| `--healthcheck`        | N/A           | Healthcheck service to ping every 5 minutes (currently supported: `healthchecks.io:<check-id>`)            |
+| `--grafana-url`        | N/A           | Grafana host (e.g.: https://grafana.example.com), also settable through `GRAFANA_URL` environment variable |
+| `--grafana-auth-token` | N/A           | Grafana API token for annotations, also settable through `GRAFANA_AUTH_TOKEN` environment variable         |
+| `--grafana-tags`       | `nas`         | List of Grafana tags for annotations, also settable through `GRAFANA_TAGS` environment variable            |
+| `--log`                | N/A           | Path to log file (defaults to standard output)                                                             |
 
 ### Configuring support for QNAP events as Grafana annotations
 

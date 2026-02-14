@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#MISE description="Run comprehensive linters"
+#USAGE arg "[files]" var help="Specific files to lint (default: all files)"
+
+set -euo pipefail
+
+echo "Running linters..."
+# shellcheck disable=SC2154
+eval "files=(${usage_files:-})"
+# shellcheck disable=SC2154
+if [ ${#files[@]} -gt 0 ]; then
+  golangci-lint run "${files[@]}"
+else
+  golangci-lint run
+fi

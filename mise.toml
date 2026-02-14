@@ -1,0 +1,89 @@
+[tools]
+go = "1.26.0"
+
+[vars]
+pkg = "github.com/pedropombeiro/qnapexporter"
+version_pkg = "github.com/pedropombeiro/qnapexporter/lib/utils"
+bin_path = "bin/qnapexporter"
+
+# Setup
+
+[tasks.default]
+hide = true
+run = "mise tasks"
+
+[tasks.install]
+description = "Install mise and dependencies"
+run = ["mise install", "pre-commit install"]
+
+[tasks.update]
+description = "Update Go module dependencies"
+run = ["go mod tidy", "go mod vendor"]
+
+# Development
+
+[tasks.test]
+description = "Run tests with optional parameters"
+alias = "t"
+usage = 'arg "[args]" var=#true help="Additional arguments to pass to go test"'
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+eval "args=(${usage_args:-})"
+go test "${args[@]:+${args[@]}}" ./...
+"""
+
+[tasks.mocks]
+description = "Generate test mocks"
+run = ["find . -name mock_*.go -delete", "mockery --dir=. --recursive --all --inpackage"]
+
+[tasks.vendor]
+description = "Vendor management (alias to update)"
+alias = "v"
+depends = ["update"]
+
+# Build
+
+[tasks.build]
+description = "Build binary with version embedding"
+alias = "b"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+PACKAGE_VERSION="${PACKAGE_VERSION:-dev}"
+REVISION="$(git rev-parse --short=8 HEAD || echo unknown)"
+BRANCH="$(git show-ref | grep "$(git rev-parse --short=8 HEAD || echo unknown)" | grep -v HEAD | awk '{print $2}' | sed 's|refs/remotes/origin/||' | sed 's|refs/heads/||' | sort | head -n 1)"
+BUILT="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
+
+GO_LDFLAGS="-X {{vars.version_pkg}}.REVISION=${REVISION} -X {{vars.version_pkg}}.BUILT=${BUILT} -X {{vars.version_pkg}}.BRANCH=${BRANCH} -X {{vars.version_pkg}}.VERSION=${PACKAGE_VERSION} -s -w"
+
+echo "Building qnapexporter..."
+mkdir -p ./bin
+CGO_ENABLED=0 go build -mod=readonly -ldflags "${GO_LDFLAGS}" -o {{vars.bin_path}} .
+echo "Build complete: {{vars.bin_path}}"
+"""
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "rm -rf ./bin"
+
+[tasks.info]
+description = "Show build metadata"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+PACKAGE_VERSION="${PACKAGE_VERSION:-dev}"
+REVISION="$(git rev-parse --short=8 HEAD || echo unknown)"
+BRANCH="$(git show-ref | grep "$(git rev-parse --short=8 HEAD || echo unknown)" | grep -v HEAD | awk '{print $2}' | sed 's|refs/remotes/origin/||' | sed 's|refs/heads/||' | sort | head -n 1)"
+BUILT="$(date -u +%Y-%m-%dT%H:%M:%S%z)"
+
+echo "Build Information:"
+echo "  Package: {{vars.pkg}}"
+echo "  Version: ${PACKAGE_VERSION}"
+echo "  Revision: ${REVISION}"
+echo "  Branch: ${BRANCH}"
+echo "  Built: ${BUILT}"
+"""

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+#MISE description="Run formatters and auto-fixable linters"
+#USAGE arg "[files]" var help="Specific files to fix (default: all files)"
+
+set -euo pipefail
+
+echo "Running pre-commit hooks..."
+# shellcheck disable=SC2154
+eval "files=(${usage_files:-})"
+# shellcheck disable=SC2154
+if [ ${#files[@]} -gt 0 ]; then
+  pre-commit run --files "${files[@]}"
+else
+  pre-commit run --all-files
+fi

@@ -47,7 +47,7 @@
       ],
       "groupName": "Go version",
       "automerge": true,
-      "commitMessagePrefix": "`AUTOMERGE`: "
+      "commitMessageSuffix": "- `AUTOMERGE`"
     },
     {
       "description": "Require manual review for minor and major Go version updates",
@@ -76,13 +76,13 @@
       ],
       "automerge": true,
       "groupName": "GitHub Actions",
-      "commitMessagePrefix": "`AUTOMERGE`: "
+      "commitMessageSuffix": "- `AUTOMERGE`"
     },
     {
       "description": "Auto-merge linter and test framework package updates directly to branch without creating a PR",
       "automerge": true,
       "automergeType": "branch",
-      "commitMessagePrefix": "`AUTOMERGE`: ",
+      "commitMessageSuffix": "- `AUTOMERGE`",
       "extends": [
         "packages:linters",
         "packages:test"
@@ -109,7 +109,7 @@
       ],
       "groupName": "Docker images",
       "automerge": true,
-      "commitMessagePrefix": "AUTOMERGE: "
+      "commitMessageSuffix": "- `AUTOMERGE`"
     },
     {
       "description": "Group all Go module updates (direct and indirect dependencies) into a single PR",
@@ -126,7 +126,7 @@
       ],
       "groupName": "Go modules",
       "automerge": true,
-      "commitMessagePrefix": "AUTOMERGE: "
+      "commitMessageSuffix": "- `AUTOMERGE`"
     },
     {
       "description": "Separate major Go module updates into individual PRs for review",

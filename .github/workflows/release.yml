@@ -68,7 +68,7 @@ jobs:
           md5sum qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}.tar.gz > qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}.tar.gz.md5
 
       - name: Upload release assets
-        uses: svenstaro/upload-release-action@6b7fa9f267e90b50a19fef07b3596790bb941741 # 2.11.3
+        uses: svenstaro/upload-release-action@b98a3b12e86552593f3e4e577ca8a62aa2f3f22b # 2.11.4
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: bin/qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}.tar.gz*
@@ -140,7 +140,7 @@ jobs:
           fi
 
       - name: Release qpkg
-        uses: svenstaro/upload-release-action@6b7fa9f267e90b50a19fef07b3596790bb941741 # 2.11.3
+        uses: svenstaro/upload-release-action@b98a3b12e86552593f3e4e577ca8a62aa2f3f22b # 2.11.4
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}

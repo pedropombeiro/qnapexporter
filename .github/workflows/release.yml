@@ -105,13 +105,13 @@ jobs:
           fetch-depth: 0
 
       - name: Download qnapexporter artifact
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: qnapexporter-${{ matrix.goarch == 'arm' && format('{0}-{1}v{2}', matrix.goos, matrix.goarch, matrix.goarm) || format('{0}-{1}', matrix.goos, matrix.goarch) }}
           path: qpkg/shared/
 
       - name: Download qdk-image artifact
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: qdk-image.tar
           path: /tmp

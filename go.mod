@@ -1,6 +1,6 @@
 module github.com/pedropombeiro/qnapexporter
 
-go 1.26.0
+go 1.26.1
 
 require (
 	github.com/docker/docker v28.5.2+incompatible

@@ -48,6 +48,7 @@ jobs:
       - name: Build docker image with QDK
         uses: docker/build-push-action@d08e5c354a6adb9ed34480a06d141179aa583294 # v7
         with:
+          context: .
           file: qpkg/Dockerfile
           tags: qdk-image:latest
           outputs: type=docker,dest=/tmp/qdk-image.tar

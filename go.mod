@@ -7,7 +7,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/go-ping/ping v1.2.0
 	github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
-	github.com/shirou/gopsutil/v4 v4.26.2
+	github.com/shirou/gopsutil/v4 v4.26.3
 	github.com/stretchr/testify v1.11.1
 )
 

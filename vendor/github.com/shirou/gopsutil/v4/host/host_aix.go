@@ -5,7 +5,6 @@ package host
 
 import (
 	"context"
-	"strconv"
 	"strings"
 
 	"github.com/shirou/gopsutil/v4/internal/common"
@@ -24,10 +23,6 @@ func HostIDWithContext(ctx context.Context) (string, error) {
 
 	// The command always returns an extra newline, so we make use of Split() to get only the first line
 	return strings.Split(string(out), "\n")[0], nil
-}
-
-func numProcs(_ context.Context) (uint64, error) {
-	return 0, common.ErrNotImplementedError
 }
 
 func BootTimeWithContext(ctx context.Context) (btime uint64, err error) {
@@ -54,20 +49,19 @@ func UsersWithContext(ctx context.Context) ([]UserStat, error) {
 	hf := strings.Fields(lines[1]) // headers
 	for l := 2; l < len(lines); l++ {
 		v := strings.Fields(lines[l]) // values
+		if len(v) == 0 || v[0] == "-" {
+			continue
+		}
 		us := &UserStat{}
 		for i, header := range hf {
-			// We're done in any of these use cases
-			if i >= len(v) || v[0] == "-" {
+			if i >= len(v) {
 				break
 			}
-
-			if t, err := strconv.ParseFloat(v[i], 64); err == nil {
-				switch header {
-				case `User`:
-					us.User = strconv.FormatFloat(t, 'f', 1, 64)
-				case `tty`:
-					us.Terminal = strconv.FormatFloat(t, 'f', 1, 64)
-				}
+			switch header {
+			case "User":
+				us.User = v[i]
+			case "tty":
+				us.Terminal = v[i]
 			}
 		}
 

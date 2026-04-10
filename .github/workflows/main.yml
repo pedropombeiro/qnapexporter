@@ -27,7 +27,7 @@ jobs:
         run: mise run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: qnapexporter
           path: bin/qnapexporter
@@ -54,7 +54,7 @@ jobs:
           outputs: type=docker,dest=/tmp/qdk-image.tar
 
       - name: Upload artifact
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: qdk-image.tar
           path: /tmp/qdk-image.tar
@@ -110,7 +110,7 @@ jobs:
 
       - name: Upload qpkg artifact
         if: github.event_name == 'push'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg
           path: qpkg/build/QNAPExporter_${{ steps.vars.outputs.sha_short }}.qpkg

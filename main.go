@@ -48,7 +48,7 @@ func main() {
 	grafanaURL := flag.String("grafana-url", os.Getenv("GRAFANA_URL"), "Grafana host (e.g.: https://grafana.example.com).")
 	grafanaAuthToken := flag.String("grafana-auth-token", os.Getenv("GRAFANA_AUTH_TOKEN"), "Grafana authorization token.")
 	grafanaTags := flag.String("grafana-tags", os.Getenv("GRAFANA_TAGS"), "Grafana annotation tags, separated by quotes (default: 'nas').")
-	logFile := flag.String("log", "", "Log file path (defaults to empty, i.e. STDOUT).")
+	logFile := flag.String("log", os.Getenv("LOG_FILE"), "Log file path (defaults to empty, i.e. STDOUT). Also settable via LOG_FILE.")
 	defaultUsage := flag.Usage
 	flag.Usage = func() {
 		fmt.Fprintf(flag.CommandLine.Output(), "qnapexporter version %s (%s-%s) built on %s\n", utils.VERSION, utils.REVISION, utils.BRANCH, utils.BUILT)

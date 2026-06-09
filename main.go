@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -40,6 +41,10 @@ type httpServerArgs struct {
 }
 
 func main() {
+	os.Exit(run())
+}
+
+func run() (exitCode int) {
 	runtime.GOMAXPROCS(0)
 
 	port := flag.String("port", ":9094", "Port to serve at (e.g. :9094).")
@@ -70,6 +75,13 @@ func main() {
 		logWriter = lf
 	}
 	logger := log.New(logWriter, "", log.LstdFlags)
+
+	defer func() {
+		if r := recover(); r != nil {
+			logger.Printf("panic: %v\n\n%s", r, debug.Stack())
+			exitCode = 1
+		}
+	}()
 
 	serverStatus := &status.Status{
 		MetricsEndpoint: metricsEndpoint,
@@ -129,9 +141,10 @@ func main() {
 
 	err := serveHTTP(ctx, args, notifCenterAnnotator, serverStatus)
 	if err != nil {
-		log.Println(err.Error())
+		logger.Println(err.Error())
 	}
-	os.Exit(1)
+
+	return 1
 }
 
 func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpServerArgs) {

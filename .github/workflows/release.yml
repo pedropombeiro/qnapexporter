@@ -139,6 +139,9 @@ jobs:
             exit 1
           fi
 
+      - name: Validate qpkg trailer
+        run: ./qpkg/validate-tail.sh "qpkg/build/QNAPExporter_${{ github.ref_name }}.qpkg"
+
       - name: Release qpkg
         uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # 2.11.5
         with:

@@ -89,6 +89,16 @@
       ]
     },
     {
+      "description": "Require manual review for QDK updates; QDK 2.5.0 broke qpkg packaging (issue #103), so new versions must be verified against the qpkg trailer validation before merging",
+      "matchDatasources": [
+        "github-releases"
+      ],
+      "matchPackageNames": [
+        "qnap-dev/QDK"
+      ],
+      "automerge": false
+    },
+    {
       "description": "Pin Ubuntu to 20.x for QDK compatibility",
       "matchDatasources": [
         "docker"

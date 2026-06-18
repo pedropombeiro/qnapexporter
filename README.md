@@ -39,6 +39,8 @@ The easiest way to install and keep `qnapexporter` up to date is via the built-i
 
 1. Click **OK**. `QNAP Exporter` will now appear in App Center and can be installed and updated from there.
 
+> **Note:** If you previously installed `qnapexporter` manually (from a downloaded `.qpkg`), you must uninstall that copy first. App Center treats the manually-installed package and the repository package as separate entries and will not upgrade one into the other.
+
 ## Installation (alternative, from qpkg)
 
 1. Download the latest qnapexporter qpkg package from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)

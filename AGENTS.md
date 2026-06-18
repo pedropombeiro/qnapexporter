@@ -32,6 +32,15 @@ gh release view vX.Y.Z --json assets --jq '.assets[].name'
 Expect 5 `QNAPExporter_vX.Y.Z_<arch>.qpkg` assets plus the per-arch
 `qnapexporter-*.tar.gz` binaries.
 
+Once the release assets are published, `.github/workflows/qnap-repo.yml` is
+triggered automatically (on the `published` event) and regenerates
+`repo.xml` on GitHub Pages at:
+`https://pedropombeiro.github.io/qnapexporter/repo.xml`
+
+**One-time setup required**: GitHub Pages must be enabled with source set to
+"GitHub Actions" in the repo Settings → Pages before the first deploy will
+succeed. This is a manual step done once in the GitHub UI.
+
 ## Git hooks
 
 This repo uses [pre-commit](https://pre-commit.com) (`.pre-commit-config.yaml`:

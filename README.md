@@ -25,6 +25,20 @@ The Grafana dashboard sources are in the `/dashboards` directory.
    Normally it should be run as a background task. Unfortunately this is not easy on a QNAP NAS.
    See for example [this forum post](https://forum.qnap.com/viewtopic.php?t=44743#p198192) for ideas on how to achieve it.
 
+## Installation (via QNAP App Center repository)
+
+The easiest way to install and keep `qnapexporter` up to date is via the built-in App Center repository support:
+
+1. In the QNAP web UI, open **App Center**.
+1. Click the settings/gear icon and select **App Repository**.
+1. Click **Add** and enter the following URL:
+
+   ```
+   https://pedropombeiro.github.io/qnapexporter/repo.xml
+   ```
+
+1. Click **OK**. `QNAP Exporter` will now appear in App Center and can be installed and updated from there.
+
 ## Installation (alternative, from qpkg)
 
 1. Download the latest qnapexporter qpkg package from the [Releases page](https://github.com/pedropombeiro/qnapexporter/releases)
@@ -96,7 +110,7 @@ qnapexporter supports the following command line flags:
 | `--grafana-url`        | N/A           | Grafana host (e.g.: https://grafana.example.com), also settable through `GRAFANA_URL` environment variable |
 | `--grafana-auth-token` | N/A           | Grafana API token for annotations, also settable through `GRAFANA_AUTH_TOKEN` environment variable         |
 | `--grafana-tags`       | `nas`         | List of Grafana tags for annotations, also settable through `GRAFANA_TAGS` environment variable            |
-| `--log`                | N/A           | Path to log file (defaults to standard output), also settable through `LOG_FILE` environment variable     |
+| `--log`                | N/A           | Path to log file (defaults to standard output), also settable through `LOG_FILE` environment variable      |
 
 ### Configuring support for QNAP events as Grafana annotations
 

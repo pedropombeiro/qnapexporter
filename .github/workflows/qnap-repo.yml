@@ -1,0 +1,135 @@
+---
+name: Publish QNAP App Center repository
+
+on: # yamllint disable-line rule:truthy
+  release:
+    types: [published]
+  workflow_dispatch:
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish-repo-xml:
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+      contents: read
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Resolve release info
+        id: release
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RELEASE_JSON=$(gh release view --repo "${{ github.repository }}" --json tagName,publishedAt,assets)
+          else
+            RELEASE_JSON='${{ toJson(github.event.release) }}'
+          fi
+
+          TAG=$(echo "$RELEASE_JSON" | jq -r '.tagName // .tag_name')
+          PUBLISHED=$(echo "$RELEASE_JSON" | jq -r '.publishedAt // .published_at')
+          DATE=$(date -u -d "$PUBLISHED" +"%Y-%m-%d %H:%M:%S" 2>/dev/null || date -u -jf "%Y-%m-%dT%H:%M:%SZ" "$PUBLISHED" +"%Y-%m-%d %H:%M:%S")
+
+          BASE="https://github.com/${{ github.repository }}/releases/download/${TAG}"
+          ASSETS=$(echo "$RELEASE_JSON" | jq -r '[.assets[] | {(.name): .browser_download_url}] | add // {}')
+
+          get_url() {
+            local name="$1"
+            local fallback="$2"
+            echo "$ASSETS" | jq -r --arg n "$name" '.[$n] // $fallback'
+          }
+
+          URL_AMD64=$(get_url    "QNAPExporter_${TAG}_amd64.qpkg"  "${BASE}/QNAPExporter_${TAG}_amd64.qpkg")
+          URL_ARM64=$(get_url    "QNAPExporter_${TAG}_arm64.qpkg"  "${BASE}/QNAPExporter_${TAG}_arm64.qpkg")
+          URL_ARMV7=$(get_url    "QNAPExporter_${TAG}_armv7.qpkg"  "${BASE}/QNAPExporter_${TAG}_armv7.qpkg")
+          URL_ARMV6=$(get_url    "QNAPExporter_${TAG}_armv6.qpkg"  "${BASE}/QNAPExporter_${TAG}_armv6.qpkg")
+          URL_ARMV5=$(get_url    "QNAPExporter_${TAG}_armv5.qpkg"  "${BASE}/QNAPExporter_${TAG}_armv5.qpkg")
+
+          echo "tag=${TAG}"              >> "$GITHUB_OUTPUT"
+          echo "date=${DATE}"            >> "$GITHUB_OUTPUT"
+          echo "url_amd64=${URL_AMD64}"  >> "$GITHUB_OUTPUT"
+          echo "url_arm64=${URL_ARM64}"  >> "$GITHUB_OUTPUT"
+          echo "url_armv7=${URL_ARMV7}"  >> "$GITHUB_OUTPUT"
+          echo "url_armv6=${URL_ARMV6}"  >> "$GITHUB_OUTPUT"
+          echo "url_armv5=${URL_ARMV5}"  >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate repo.xml
+        env:
+          URL_AMD64: ${{ steps.release.outputs.url_amd64 }}
+          URL_ARM64: ${{ steps.release.outputs.url_arm64 }}
+          URL_ARMV7: ${{ steps.release.outputs.url_armv7 }}
+          URL_ARMV6: ${{ steps.release.outputs.url_armv6 }}
+          URL_ARMV5: ${{ steps.release.outputs.url_armv5 }}
+          PUB_DATE: ${{ steps.release.outputs.date }}
+          REPO: ${{ github.repository }}
+        run: |
+          mkdir -p pages
+          CACHECHK=$(date -u +"%Y%m%d%H%M")
+          TAG="${{ steps.release.outputs.tag }}"
+          VERSION="${TAG#v}"
+
+          p() { printf '    <platform>\n      <platformID>%s</platformID>\n      <location>%s</location>\n    </platform>\n' "$1" "$2"; }
+
+          DESC="Prometheus exporter for QNAP NAS appliances, written in Go."
+          DESC="$DESC Exports metrics for disk health, volume usage, network"
+          DESC="$DESC interfaces, system temperature, and more."
+
+          {
+            printf '<?xml version="1.0" encoding="utf-8"?>\n'
+            printf '<plugins>\n'
+            printf '  <cachechk>%s</cachechk>\n' "$CACHECHK"
+            printf '  <item>\n'
+            printf '    <name>QNAP Exporter</name>\n'
+            printf '    <internalName>QNAPExporter</internalName>\n'
+            printf '    <changeLog>https://github.com/%s/releases</changeLog>\n' "$REPO"
+            printf '    <category>Utilities</category>\n'
+            printf '    <type>Utilities</type>\n'
+            printf '    <description><![CDATA[%s]]></description>\n' "$DESC"
+            printf '    <version>%s</version>\n' "$VERSION"
+            p "TS-NASX86"    "$URL_AMD64"
+            p "TS-NASARM_64" "$URL_ARM64"
+            p "TS-X16"       "$URL_ARM64"
+            p "TS-X28A"      "$URL_ARM64"
+            p "TS-X32"       "$URL_ARM64"
+            p "TS-X32U"      "$URL_ARM64"
+            p "TS-X33"       "$URL_ARM64"
+            p "TS-X33EU"     "$URL_ARM64"
+            p "TS-X33U"      "$URL_ARM64"
+            p "TS-X35"       "$URL_ARM64"
+            p "TS-X35A"      "$URL_ARM64"
+            p "TS-X35EU"     "$URL_ARM64"
+            p "TS-X42"       "$URL_ARM64"
+            p "TS-XA28A"     "$URL_ARM64"
+            p "TS-ARM-X19"   "$URL_ARMV7"
+            p "TS-ARM-X09"   "$URL_ARMV7"
+            p "TS-X41"       "$URL_ARMV7"
+            p "TS-X31P2"     "$URL_ARMV7"
+            p "TS-X31P3"     "$URL_ARMV7"
+            p "TS-X31X"      "$URL_ARMV7"
+            p "TS-X31XU"     "$URL_ARMV7"
+            p "TS-531P"      "$URL_ARMV7"
+            p "TS-ARM-X31"   "$URL_ARMV6"
+            p "TS-X31"       "$URL_ARMV5"
+            printf '    <publishedDate>%s</publishedDate>\n' "$PUB_DATE"
+            printf '    <maintainer><![CDATA[pedropombeiro]]></maintainer>\n'
+            printf '    <developer><![CDATA[pedropombeiro]]></developer>\n'
+            printf '    <language><![CDATA[English]]></language>\n'
+            printf '  </item>\n'
+            printf '</plugins>\n'
+          } > pages/repo.xml
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
+        with:
+          path: pages/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

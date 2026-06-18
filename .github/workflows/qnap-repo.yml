@@ -41,7 +41,7 @@ jobs:
           get_url() {
             local name="$1"
             local fallback="$2"
-            echo "$ASSETS" | jq -r --arg n "$name" '.[$n] // $fallback'
+            echo "$ASSETS" | jq -r --arg n "$name" --arg f "$fallback" '.[$n] // $f'
           }
 
           URL_AMD64=$(get_url    "QNAPExporter_${TAG}_amd64.qpkg"  "${BASE}/QNAPExporter_${TAG}_amd64.qpkg")

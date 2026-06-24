@@ -1,3 +1,5 @@
+// Package utils provides small helpers for reading files, running commands,
+// and extracting matching lines from command output.
 package utils
 
 import (
@@ -52,6 +54,7 @@ func ExecCommandGetLines(cmd string, args ...string) ([]string, error) {
 	return strings.Split(output, "\n"), nil
 }
 
+// FindMatchingLines returns the lines of output that contain the given token.
 func FindMatchingLines(token string, output string) []string {
 	lines := strings.Split(output, "\n")
 

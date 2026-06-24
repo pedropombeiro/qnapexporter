@@ -15,7 +15,7 @@ import (
 func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator notifications.Annotator, exporterStatus *exporter.Status) error {
 	exporterStatus.Docker = "Connecting..."
 
-	cli, err := client.NewClientWithOpts(client.WithAPIVersionNegotiation())
+	cli, err := client.New()
 	if err != nil {
 		exporterStatus.Docker = err.Error()
 		args.logger.Println(err)

@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-ping/ping"
+	"github.com/go-ping/ping" //nolint:staticcheck // go-ping/ping has no maintained replacement
 	"github.com/pedropombeiro/qnapexporter/lib/utils"
 )
 

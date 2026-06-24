@@ -1,3 +1,5 @@
+// Package status renders the HTML status page served by the exporter,
+// summarizing endpoint configuration and the latest exporter state.
 package status
 
 import (
@@ -12,7 +14,7 @@ import (
 )
 
 const (
-	statusHtmlTemplate = `
+	statusHTMLTemplate = `
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 	<style>
@@ -73,6 +75,8 @@ type endpointStatus struct {
 	Properties map[string]string
 }
 
+// Status holds the data rendered on the exporter's HTML status page,
+// including the configured endpoints and the most recent exporter state.
 type Status struct {
 	MetricsEndpoint      string
 	NotificationEndpoint string
@@ -80,6 +84,7 @@ type Status struct {
 	LastNotification     time.Time
 }
 
+// WriteHTML renders the status page as HTML to the provided writer.
 func (s *Status) WriteHTML(w io.Writer) error {
 	e := s.ExporterStatus
 	ms := endpointStatus{
@@ -109,7 +114,7 @@ func (s *Status) WriteHTML(w io.Writer) error {
 		},
 	})
 
-	tmpl, err := template.New("html").Parse(statusHtmlTemplate)
+	tmpl, err := template.New("html").Parse(statusHTMLTemplate)
 	if err == nil {
 		err = tmpl.Execute(w, endpoints)
 		if err == nil {

@@ -248,15 +248,6 @@ func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, erro
 	return metrics, nil
 }
 
-func getTokenValue(token string) float64 {
-	token = strings.TrimSpace(token)
-	value, err := strconv.ParseFloat(token, 64)
-	if err != nil {
-		return 0.0
-	}
-	return value
-}
-
 func appendFloatMetric(metrics []metric, metricName string, valueStr string, factor float64, attr string, help string) []metric {
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {

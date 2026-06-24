@@ -1,3 +1,5 @@
+// Package notifications posts annotations to Grafana, optionally matching them
+// to regions and extracting tags from notification text.
 package notifications
 
 import (
@@ -12,12 +14,14 @@ import (
 	"github.com/pedropombeiro/qnapexporter/lib/notifications/tagextractor"
 )
 
+// Annotator posts an annotation to a backend at the given time, returning the
+// created annotation's identifier.
 type Annotator interface {
 	Post(annotation string, time time.Time) (int, error)
 }
 
 type grafanaAnnotation struct {
-	Id      int      `json:"id,omitempty"`
+	ID      int      `json:"id,omitempty"`
 	Tags    []string `json:"tags,omitempty"`
 	Time    int64    `json:"time,omitempty"`
 	TimeEnd int64    `json:"timeEnd,omitempty"`
@@ -28,6 +32,8 @@ type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+// NewSimpleAnnotator returns an Annotator that posts each annotation to Grafana
+// without region matching or tag extraction.
 func NewSimpleAnnotator(
 	grafanaURL, grafanaAuthToken string,
 	tags []string,
@@ -59,6 +65,9 @@ type regionMatchingAnnotator struct {
 	logger           *log.Logger
 }
 
+// NewRegionMatchingAnnotator returns an Annotator that extracts tags and matches
+// annotations to regions, allowing related notifications to update a single
+// Grafana region annotation.
 func NewRegionMatchingAnnotator(
 	grafanaURL, grafanaAuthToken string,
 	tags []string,
@@ -126,7 +135,7 @@ func (a *regionMatchingAnnotator) Post(annotation string, time time.Time) (int, 
 			}
 
 			var response struct {
-				Id      int    `json:"id"`
+				ID      int    `json:"id"`
 				Message string `json:"message"`
 			}
 			err = json.Unmarshal(body, &response)
@@ -135,11 +144,11 @@ func (a *regionMatchingAnnotator) Post(annotation string, time time.Time) (int, 
 			}
 
 			if id == -1 {
-				a.cache.Add(response.Id, annotation)
+				a.cache.Add(response.ID, annotation)
 			}
 
-			a.logger.Printf("%s (status: %q), ID: %d\n", response.Message, resp.Status, response.Id)
-			return response.Id, nil
+			a.logger.Printf("%s (status: %q), ID: %d\n", response.Message, resp.Status, response.ID)
+			return response.ID, nil
 		}
 
 		a.logger.Printf("Error creating Grafana annotation at %s: HTTP %d %q\n", url, resp.StatusCode, resp.Status)

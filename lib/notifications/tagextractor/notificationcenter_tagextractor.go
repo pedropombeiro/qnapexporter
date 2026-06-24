@@ -5,6 +5,9 @@ import "strings"
 type notificationCenterTagExtractor struct {
 }
 
+// NewNotificationCenterTagExtractor returns a TagExtractor that parses QNAP
+// Notification Center messages, extracting their leading bracketed component as
+// a tag.
 func NewNotificationCenterTagExtractor() TagExtractor {
 	return new(notificationCenterTagExtractor)
 }

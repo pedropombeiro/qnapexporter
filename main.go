@@ -1,3 +1,5 @@
+// Package main implements the qnapexporter binary, a Prometheus exporter for
+// QNAP NAS devices that also forwards notifications to Grafana annotations.
 package main
 
 import (
@@ -30,7 +32,7 @@ const (
 
 var (
 	healthCheckExpiry   time.Time
-	healthCheckValidity time.Duration = time.Duration(5 * time.Minute)
+	healthCheckValidity = 5 * time.Minute
 )
 
 type httpServerArgs struct {
@@ -56,8 +58,8 @@ func run() (exitCode int) {
 	logFile := flag.String("log", os.Getenv("LOG_FILE"), "Log file path (defaults to empty, i.e. STDOUT). Also settable via LOG_FILE.")
 	defaultUsage := flag.Usage
 	flag.Usage = func() {
-		fmt.Fprintf(flag.CommandLine.Output(), "qnapexporter version %s (%s-%s) built on %s\n", utils.VERSION, utils.REVISION, utils.BRANCH, utils.BUILT)
-		fmt.Fprintln(flag.CommandLine.Output(), "")
+		_, _ = fmt.Fprintf(flag.CommandLine.Output(), "qnapexporter version %s (%s-%s) built on %s\n", utils.VERSION, utils.REVISION, utils.BRANCH, utils.BUILT)
+		_, _ = fmt.Fprintln(flag.CommandLine.Output(), "")
 		defaultUsage()
 	}
 	flag.Parse()
@@ -70,7 +72,7 @@ func run() (exitCode int) {
 		if err != nil {
 			log.Fatalf("Error creating log file: %v\n", err)
 		}
-		defer lf.Close()
+		defer func() { _ = lf.Close() }()
 
 		logWriter = lf
 	}
@@ -147,7 +149,7 @@ func run() (exitCode int) {
 	return 1
 }
 
-func handleMetricsHTTPRequest(w http.ResponseWriter, r *http.Request, args httpServerArgs) {
+func handleMetricsHTTPRequest(w http.ResponseWriter, _ *http.Request, args httpServerArgs) {
 	w.Header().Add("Content-Type", "text/plain")
 
 	handleHealthcheckStart(args.healthcheck)
@@ -171,7 +173,7 @@ func handleNotificationHTTPRequest(w http.ResponseWriter, r *http.Request, annot
 	_, _ = annotator.Post(notification, time.Now())
 }
 
-func handleRootHTTPRequest(w http.ResponseWriter, r *http.Request, serverStatus *status.Status, logger *log.Logger) {
+func handleRootHTTPRequest(w http.ResponseWriter, _ *http.Request, serverStatus *status.Status, logger *log.Logger) {
 	w.Header().Add("Content-Type", "text/html")
 	w.Header().Add("Cache-Control", "no-cache")
 

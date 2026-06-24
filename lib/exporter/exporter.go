@@ -1,3 +1,5 @@
+// Package exporter defines the Exporter interface and the runtime status shared
+// across metric exporter implementations.
 package exporter
 
 import (
@@ -11,6 +13,8 @@ type Exporter interface {
 	Close()
 }
 
+// Status captures the runtime state of an exporter, including build metadata
+// and the inventory of devices discovered during metric collection.
 type Status struct {
 	Branch, Revision, Built, Version string
 

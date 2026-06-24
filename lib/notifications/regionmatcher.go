@@ -2,6 +2,8 @@ package notifications
 
 import "regexp"
 
+// RegionMatcher tracks recent annotations so that an end event can be matched
+// back to its corresponding start event, forming a Grafana region annotation.
 type RegionMatcher interface {
 	Add(id int, annotation string)
 	Match(annotation string) int
@@ -10,14 +12,16 @@ type RegionMatcher interface {
 type noOpRegionMatcher struct {
 }
 
+// NewNoOpRegionMatcher returns a RegionMatcher that never matches and discards
+// added annotations.
 func NewNoOpRegionMatcher() RegionMatcher {
 	return new(noOpRegionMatcher)
 }
 
-func (c *noOpRegionMatcher) Add(id int, annotation string) {
+func (c *noOpRegionMatcher) Add(_ int, _ string) {
 }
 
-func (c *noOpRegionMatcher) Match(annotation string) int {
+func (c *noOpRegionMatcher) Match(_ string) int {
 	return -1
 }
 
@@ -50,6 +54,8 @@ type regionMatcher struct {
 	cache     []cacheEntry
 }
 
+// NewRegionMatcher returns a RegionMatcher that remembers up to cacheSize recent
+// annotations for matching end events to their start events.
 func NewRegionMatcher(cacheSize int) RegionMatcher {
 	return &regionMatcher{
 		cacheSize: cacheSize,

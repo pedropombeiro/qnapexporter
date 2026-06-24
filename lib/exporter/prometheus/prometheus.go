@@ -1,3 +1,5 @@
+// Package prometheus implements an Exporter that collects QNAP NAS metrics and
+// writes them in the Prometheus text exposition format.
 package prometheus
 
 import (
@@ -66,11 +68,14 @@ type promExporter struct {
 	fetchMu sync.Mutex
 }
 
+// ExporterConfig holds the configuration options for the Prometheus exporter.
 type ExporterConfig struct {
 	PingTarget string
 	Logger     *log.Logger
 }
 
+// NewExporter creates a Prometheus exporter using the given configuration and
+// optional shared status, registering all supported metric collectors.
 func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Exporter {
 	now := time.Now()
 	e := &promExporter{
@@ -82,7 +87,7 @@ func NewExporter(config ExporterConfig, status *exporter.Status) exporter.Export
 		"version":         e.getVersionMetrics,
 		"uptime":          getUptimeMetrics,
 		"loadAvg":         getLoadAvgMetrics,
-		"CpuRatio":        getCpuRatioMetrics,
+		"CpuRatio":        getCPURatioMetrics,
 		"MemInfo":         getMemInfoMetrics,
 		"UpsStats":        e.getUpsStatsMetricsWithRetry,
 		"SysInfoTemp":     e.getSysInfoTempMetrics,
@@ -186,6 +191,20 @@ func (e *promExporter) Close() {
 func (e *promExporter) readEnvironment() {
 	e.Logger.Println("Reading environment...")
 
+	e.readHostInfo()
+	e.readSysInfo()
+	e.readEnclosures()
+	e.readNetworkInterfaces()
+	e.readDevices()
+	e.readNvmePath()
+	e.readDmCacheDevices()
+
+	e.envExpiry = e.envExpiry.Add(envValidity)
+
+	e.updateStatusEnvironment()
+}
+
+func (e *promExporter) readHostInfo() {
 	var err error
 	e.hostname = os.Getenv("HOSTNAME")
 	if e.hostname == "" {
@@ -201,38 +220,46 @@ func (e *promExporter) readEnvironment() {
 	if err != nil {
 		e.kernelVersion = 4
 	}
+}
 
+func (e *promExporter) readSysInfo() {
 	if e.getsysinfo == "" {
-		e.getsysinfo, _ = exec.LookPath("getsysinfo")
+		var err error
+		e.getsysinfo, err = exec.LookPath("getsysinfo")
 		if err == nil {
 			e.Logger.Printf("Retrieved getsysinfo path: %q", e.getsysinfo)
 		} else {
 			e.Logger.Printf("Failed to find getsysinfo: %v", err)
 		}
 	}
-	if e.getsysinfo != "" {
-		hdnumOutput, err := utils.ExecCommand(e.getsysinfo, "hdnum")
-		if err == nil {
-			e.syshdnum, _ = strconv.Atoi(hdnumOutput)
-		} else {
-			e.syshdnum = -1
-		}
-		e.Logger.Printf("Retrieved sysdhnum: %d", e.syshdnum)
-
-		sysfannumOutput, err := utils.ExecCommand(e.getsysinfo, "sysfannum")
-		if err == nil {
-			e.sysfannum, _ = strconv.Atoi(sysfannumOutput)
-		} else {
-			e.sysfannum = -1
-		}
-		e.Logger.Printf("Retrieved sysfannum: %d", e.sysfannum)
-
-		e.readSysVolInfo()
-		e.Logger.Printf("Retrieved sysvolinfo")
+	if e.getsysinfo == "" {
+		return
 	}
 
+	hdnumOutput, err := utils.ExecCommand(e.getsysinfo, "hdnum")
+	if err == nil {
+		e.syshdnum, _ = strconv.Atoi(hdnumOutput)
+	} else {
+		e.syshdnum = -1
+	}
+	e.Logger.Printf("Retrieved sysdhnum: %d", e.syshdnum)
+
+	sysfannumOutput, err := utils.ExecCommand(e.getsysinfo, "sysfannum")
+	if err == nil {
+		e.sysfannum, _ = strconv.Atoi(sysfannumOutput)
+	} else {
+		e.sysfannum = -1
+	}
+	e.Logger.Printf("Retrieved sysfannum: %d", e.sysfannum)
+
+	e.readSysVolInfo()
+	e.Logger.Printf("Retrieved sysvolinfo")
+}
+
+func (e *promExporter) readEnclosures() {
 	if e.halApp == "" {
-		e.halApp, _ = exec.LookPath("hal_app")
+		var err error
+		e.halApp, err = exec.LookPath("hal_app")
 		if err != nil {
 			e.Logger.Printf("Failed to find hal_app: %v", err)
 		}
@@ -240,30 +267,33 @@ func (e *promExporter) readEnvironment() {
 	}
 	e.enclosures = nil
 	e.status.Enclosures = nil
-	if e.halApp != "" {
-		e.Logger.Println("Retrieving QM2 enclosures")
-		seEnumOutput, err := utils.ExecCommand(e.halApp, "--se_enum")
-		if err == nil {
-			lines := utils.FindMatchingLines("qm2_", seEnumOutput)
-			if len(lines) != 0 {
-				for _, line := range lines {
-					fields := strings.Fields(line)
-					enc := qnapEnclosure{
-						id:   fields[2],
-						name: fields[4],
-					}
-					enc.diskCount, _ = strconv.Atoi(fields[7])
-					enc.fanCount, _ = strconv.Atoi(fields[8])
-					enc.tempCount, _ = strconv.Atoi(fields[10])
-					if enc.fanCount != 0 {
-						e.enclosures = append(e.enclosures, enc)
-						e.status.Enclosures = append(e.status.Enclosures, enc.name)
-					}
-				}
-			}
-		}
+	if e.halApp == "" {
+		return
 	}
 
+	e.Logger.Println("Retrieving QM2 enclosures")
+	seEnumOutput, err := utils.ExecCommand(e.halApp, "--se_enum")
+	if err != nil {
+		return
+	}
+
+	for _, line := range utils.FindMatchingLines("qm2_", seEnumOutput) {
+		fields := strings.Fields(line)
+		enc := qnapEnclosure{
+			id:   fields[2],
+			name: fields[4],
+		}
+		enc.diskCount, _ = strconv.Atoi(fields[7])
+		enc.fanCount, _ = strconv.Atoi(fields[8])
+		enc.tempCount, _ = strconv.Atoi(fields[10])
+		if enc.fanCount != 0 {
+			e.enclosures = append(e.enclosures, enc)
+			e.status.Enclosures = append(e.status.Enclosures, enc.name)
+		}
+	}
+}
+
+func (e *promExporter) readNetworkInterfaces() {
 	e.Logger.Printf("Retrieving network interfaces in %q...", netDir)
 	info, _ := os.ReadDir(netDir)
 	e.ifaces = make([]string, 0, len(info))
@@ -275,9 +305,11 @@ func (e *promExporter) readEnvironment() {
 
 		e.ifaces = append(e.ifaces, iface)
 	}
+}
 
+func (e *promExporter) readDevices() {
 	e.Logger.Printf("Retrieving devices in %q...", devDir)
-	info, _ = os.ReadDir(devDir)
+	info, _ := os.ReadDir(devDir)
 	e.devices = make([]string, 0, len(info))
 	e.nvmeDevices = make([]string, 0)
 	for _, d := range info {
@@ -299,7 +331,9 @@ func (e *promExporter) readEnvironment() {
 	}
 	e.Logger.Printf("Found devices: %v", e.devices)
 	e.Logger.Printf("Found NVMe devices: %v", e.nvmeDevices)
+}
 
+func (e *promExporter) readNvmePath() {
 	// Look up nvme command path for NVMe SMART metrics
 	if e.nvmePath == "" && len(e.nvmeDevices) > 0 {
 		e.nvmePath, _ = exec.LookPath("nvme")
@@ -309,43 +343,49 @@ func (e *promExporter) readEnvironment() {
 			e.Logger.Println("nvme command not found, NVMe SMART metrics will not be available")
 		}
 	}
+}
 
+func (e *promExporter) readDmCacheDevices() {
 	e.dmCacheClients = []string{}
-	if e.kernelVersion >= 5 {
-		e.Logger.Print("Retrieving dm-cache devices...")
-
-		table, err := utils.ExecCommand("dmsetup", "table")
-		if err == nil {
-			cacheClients := utils.FindMatchingLines("cache_client", table)
-			for _, cacheClient := range cacheClients {
-				e.dmCacheClients = append(e.dmCacheClients, strings.SplitN(cacheClient, ":", 2)[0])
-			}
-		}
-		e.Logger.Printf("Found cache clients: %v", e.dmCacheClients)
-
-		table, err = utils.ExecCommand("dmsetup", "ls")
-		if err == nil {
-			cacheDevices := utils.FindMatchingLines("vg256-lv256\t", table)
-			e.Logger.Printf("Found cache volumes: %v", cacheDevices)
-			if len(cacheDevices) == 1 {
-				e.dmCacheDeviceMinorNumber = strings.Split(cacheDevices[0], ":")[1]
-				e.dmCacheDeviceMinorNumber = strings.TrimRight(e.dmCacheDeviceMinorNumber, ")")
-			}
-		}
+	if e.kernelVersion < 5 {
+		return
 	}
 
-	e.envExpiry = e.envExpiry.Add(envValidity)
+	e.Logger.Print("Retrieving dm-cache devices...")
 
-	if e.status != nil {
-		e.status.Devices = e.devices
-		e.status.NvmeDevices = e.nvmeDevices
-		e.status.Interfaces = e.ifaces
-		e.status.DmCaches = e.dmCacheClients
-		if e.dmCacheDeviceMinorNumber != "" {
-			e.status.DmCacheDevice = fmt.Sprintf("dm-%s", e.dmCacheDeviceMinorNumber)
-		} else {
-			e.status.DmCacheDevice = ""
+	table, err := utils.ExecCommand("dmsetup", "table")
+	if err == nil {
+		cacheClients := utils.FindMatchingLines("cache_client", table)
+		for _, cacheClient := range cacheClients {
+			e.dmCacheClients = append(e.dmCacheClients, strings.SplitN(cacheClient, ":", 2)[0])
 		}
+	}
+	e.Logger.Printf("Found cache clients: %v", e.dmCacheClients)
+
+	table, err = utils.ExecCommand("dmsetup", "ls")
+	if err == nil {
+		cacheDevices := utils.FindMatchingLines("vg256-lv256\t", table)
+		e.Logger.Printf("Found cache volumes: %v", cacheDevices)
+		if len(cacheDevices) == 1 {
+			e.dmCacheDeviceMinorNumber = strings.Split(cacheDevices[0], ":")[1]
+			e.dmCacheDeviceMinorNumber = strings.TrimRight(e.dmCacheDeviceMinorNumber, ")")
+		}
+	}
+}
+
+func (e *promExporter) updateStatusEnvironment() {
+	if e.status == nil {
+		return
+	}
+
+	e.status.Devices = e.devices
+	e.status.NvmeDevices = e.nvmeDevices
+	e.status.Interfaces = e.ifaces
+	e.status.DmCaches = e.dmCacheClients
+	if e.dmCacheDeviceMinorNumber != "" {
+		e.status.DmCacheDevice = fmt.Sprintf("dm-%s", e.dmCacheDeviceMinorNumber)
+	} else {
+		e.status.DmCacheDevice = ""
 	}
 }
 
@@ -359,9 +399,9 @@ func (e *promExporter) getMetricFullName(m metric) string {
 
 func writeMetricMetadata(w io.Writer, m metric) {
 	if m.help != "" {
-		fmt.Fprintln(w, "# HELP "+m.name+" "+m.help)
+		_, _ = fmt.Fprintln(w, "# HELP "+m.name+" "+m.help)
 	}
 	if m.metricType != "" {
-		fmt.Fprintln(w, "# TYPE "+m.name+" "+m.metricType)
+		_, _ = fmt.Fprintln(w, "# TYPE "+m.name+" "+m.metricType)
 	}
 }

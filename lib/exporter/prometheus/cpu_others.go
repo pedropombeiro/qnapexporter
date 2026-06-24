@@ -7,7 +7,7 @@ import (
 	"github.com/shirou/gopsutil/v4/cpu"
 )
 
-func getCpuRatioMetrics() ([]metric, error) {
+func getCPURatioMetrics() ([]metric, error) {
 	a, err := cpu.Times(false)
 	if err != nil {
 		return nil, err

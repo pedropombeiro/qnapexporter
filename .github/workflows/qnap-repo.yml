@@ -24,12 +24,14 @@ jobs:
     steps:
       - name: Resolve release info
         id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            RELEASE_JSON=$(gh release view --repo "${{ github.repository }}" --json tagName,publishedAt,assets)
-          else
-            RELEASE_JSON='${{ toJson(github.event.release) }}'
-          fi
+          # Always fetch the release via the API rather than embedding the
+          # release event JSON inline, which breaks the shell when release
+          # notes contain quotes or parentheses.
+          RELEASE_JSON=$(gh release view "${RELEASE_TAG}" --repo "${{ github.repository }}" --json tagName,publishedAt,assets)
 
           TAG=$(echo "$RELEASE_JSON" | jq -r '.tagName // .tag_name')
           PUBLISHED=$(echo "$RELEASE_JSON" | jq -r '.publishedAt // .published_at')
@@ -57,8 +59,6 @@ jobs:
           echo "url_armv7=${URL_ARMV7}"  >> "$GITHUB_OUTPUT"
           echo "url_armv6=${URL_ARMV6}"  >> "$GITHUB_OUTPUT"
           echo "url_armv5=${URL_ARMV5}"  >> "$GITHUB_OUTPUT"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate repo.xml
         env:

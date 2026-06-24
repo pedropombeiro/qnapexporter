@@ -17,7 +17,7 @@ local commonSteps = new Mapping<String, Step> {
         exclude = List("go.sum")
     }
     ["gitleaks"] {
-        check = "scripts/quiet-on-success.sh gitleaks git --staged --no-banner --redact --log-level=error"
+        check = "scripts/gitleaks.sh"
     }
     ["go-fmt"] = (Builtins.go_fmt) {}
     ["go-vet"] = (Builtins.go_vet) {}

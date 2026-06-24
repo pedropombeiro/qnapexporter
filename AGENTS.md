@@ -43,8 +43,14 @@ succeed. This is a manual step done once in the GitHub UI.
 
 ## Git hooks
 
-This repo uses [pre-commit](https://pre-commit.com) (`.pre-commit-config.yaml`:
-go-fmt, go-vet, go-mod-tidy, golangci-lint). A global hk hook layer may also
-run from the user's dotfiles; it is not part of this repo and can be bypassed
-with `HK=0` for individual commits when it produces false positives (e.g.
-editorconfig-checker flagging Go tabs, or shfmt reformatting shell scripts).
+This repo uses [hk](https://hk.jdx.dev) (`hk.pkl`) as its git hook manager,
+running on staged files: trailing-whitespace, newlines, check-merge-conflict,
+check-added-large-files, yamllint, typos, gitleaks, go-fmt, go-vet,
+go-mod-tidy, and golangci-lint. The `vendor/` and `bin/` directories are
+excluded via `hk.pkl`'s `exclude` setting, and YAML rules are relaxed for
+GitHub Actions workflows in `.yamllint.yml`.
+
+Hooks are wired through the tracked `.hk-hooks/pre-commit` wrapper; run
+`mise run install` (which sets `core.hooksPath` to `.hk-hooks`) to enable them.
+`hk` and the other tools are provided by `mise.toml`. Bypass the hooks for an
+individual commit with `HK=0` when needed.

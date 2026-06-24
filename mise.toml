@@ -1,5 +1,8 @@
 [tools]
 go = "1.26.0"
+hk = "latest"
+pkl = "latest"
+golangci-lint = "latest"
 
 [vars]
 pkg = "github.com/pedropombeiro/qnapexporter"
@@ -14,7 +17,7 @@ run = "mise tasks"
 
 [tasks.install]
 description = "Install mise and dependencies"
-run = ["mise install", "pre-commit install"]
+run = ["mise install", "git config --local core.hooksPath .hk-hooks"]
 
 [tasks.update]
 description = "Update Go module dependencies"

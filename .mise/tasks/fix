@@ -4,12 +4,12 @@
 
 set -euo pipefail
 
-echo "Running pre-commit hooks..."
+echo "Running hk hooks..."
 # shellcheck disable=SC2154
 eval "files=(${usage_files:-})"
 # shellcheck disable=SC2154
 if [ ${#files[@]} -gt 0 ]; then
-  pre-commit run --files "${files[@]}"
+  hk fix "${files[@]}"
 else
-  pre-commit run --all-files
+  hk fix --all
 fi

@@ -52,8 +52,8 @@ The easiest way to install and keep `qnapexporter` up to date is via the built-i
 
 - [Go](https://golang.org/) 1.25+
 - [mise](https://mise.jdx.dev/) (version management & task automation)
-- [pre-commit](https://pre-commit.com/) (optional, for development)
-- [golangci-lint](https://golangci-lint.run/) (optional, for linting)
+- [hk](https://hk.jdx.dev/) (git hook manager, provided via mise)
+- [golangci-lint](https://golangci-lint.run/) (linting, provided via mise)
 
 ### Setup
 
@@ -78,15 +78,17 @@ This will run `mise install` to set up Go and project dependencies.
 - `mise run info` - Display build metadata
 - `mise tasks` - List all available commands
 
-### Pre-commit Hooks
+### Git Hooks
 
-Install pre-commit hooks:
+This repo uses [hk](https://hk.jdx.dev/) as its git hook manager. Enable the
+hooks with:
 
 ```bash
-pre-commit install
+mise run install
 ```
 
-Hooks will run automatically on `git commit`, or manually with `mise run fix`.
+This sets `core.hooksPath` to the tracked `.hk-hooks/` directory. Hooks then
+run automatically on `git commit`, or manually with `mise run fix`.
 
 ## Prometheus configuration
 

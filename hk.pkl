@@ -1,0 +1,42 @@
+// hk configuration - https://hk.jdx.dev/
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+exclude = List("vendor", "bin")
+
+display_skip_reasons = List()
+terminal_progress = false
+
+local commonSteps = new Mapping<String, Step> {
+    ["trailing-whitespace"] = (Builtins.trailing_whitespace) {}
+    ["newlines"] = (Builtins.newlines) {}
+    ["check-merge-conflict"] = (Builtins.check_merge_conflict) {}
+    ["check-added-large-files"] = (Builtins.check_added_large_files) {}
+    ["yamllint"] = (Builtins.yamllint) {}
+    ["typos"] = (Builtins.typos) {
+        exclude = List("go.sum")
+    }
+    ["gitleaks"] {
+        check = "scripts/quiet-on-success.sh gitleaks git --staged --no-banner --redact --log-level=error"
+    }
+    ["go-fmt"] = (Builtins.go_fmt) {}
+    ["go-vet"] = (Builtins.go_vet) {}
+    ["go-mod-tidy"] = (Builtins.gomod_tidy) {}
+    ["golangci-lint"] = (Builtins.golangci_lint) {}
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = commonSteps
+    }
+    ["fix"] {
+        fix = true
+        stash = "git"
+        steps = commonSteps
+    }
+    ["check"] {
+        steps = commonSteps
+    }
+}

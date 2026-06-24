@@ -177,14 +177,14 @@ func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, erro
 		name:       "node_flashcache_reads",
 		attr:       attr,
 		value:      readTotal,
-		help:       "Number of times a READ bio has ocurred",
+		help:       "Number of times a READ bio has occurred",
 		metricType: "counter",
 	})
 	metrics = append(metrics, metric{
 		name:       "node_dmcache_read_total",
 		attr:       attr,
 		value:      readTotal,
-		help:       "Number of times a READ bio has ocurred",
+		help:       "Number of times a READ bio has occurred",
 		metricType: "counter",
 	})
 	if readTotal > 0 {
@@ -220,14 +220,14 @@ func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, erro
 		name:       "node_flashcache_writes",
 		attr:       attr,
 		value:      writeTotal,
-		help:       "Number of times a WRITE bio has ocurred",
+		help:       "Number of times a WRITE bio has occurred",
 		metricType: "counter",
 	})
 	metrics = append(metrics, metric{
 		name:       "node_dmcache_write_total",
 		attr:       attr,
 		value:      writeTotal,
-		help:       "Number of times a WRITE bio has ocurred",
+		help:       "Number of times a WRITE bio has occurred",
 		metricType: "counter",
 	})
 	if writeTotal > 0 {

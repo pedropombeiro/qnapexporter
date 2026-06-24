@@ -1,0 +1,9 @@
+#!/bin/sh
+# hk pre-commit hook — silent on success, minimal on failure
+if [ -n "$CI" ]; then
+  exec hk run pre-commit "$@"
+fi
+output=$(hk run pre-commit "$@" 2>&1)
+code=$?
+[ $code -ne 0 ] && printf '%s\n' "$output"
+exit $code

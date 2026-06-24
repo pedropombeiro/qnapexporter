@@ -117,8 +117,14 @@ jobs:
           path: /tmp
 
       - name: Prepare QPKG build
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          sed -i 's/QPKG_VER="0.0.0"/QPKG_VER="${{ github.ref_name }}"/g' ./qpkg/qpkg.cfg
+          # QNAP App Center requires a numeric QPKG_VER (e.g. 1.3.2); strip the
+          # leading "v" from the tag so it matches the version advertised in
+          # repo.xml and the App Center can detect updates.
+          QPKG_VER="${REF_NAME#v}"
+          sed -i "s/QPKG_VER=\"0.0.0\"/QPKG_VER=\"${QPKG_VER}\"/g" ./qpkg/qpkg.cfg
           chmod 755 qpkg/shared/qnapexporter
           docker load --input /tmp/qdk-image.tar
 

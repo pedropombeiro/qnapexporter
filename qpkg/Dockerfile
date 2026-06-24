@@ -2,10 +2,11 @@ FROM ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2faf
 
 ARG QDK_VER=2.5.2
 
-# install curl
+# install curl (ca-certificates is required for TLS and is otherwise pulled in
+# as a recommended package, which --no-install-recommends excludes)
 # hadolint ignore=DL3008
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
+    && apt-get install -y --no-install-recommends ca-certificates curl \
     && rm -rf /var/lib/apt/lists/*
 
 # download QDK

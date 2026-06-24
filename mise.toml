@@ -3,6 +3,9 @@ go = "1.26.0"
 hk = "latest"
 pkl = "latest"
 golangci-lint = "latest"
+gitleaks = "latest"
+typos = "latest"
+yamllint = "latest"
 
 [vars]
 pkg = "github.com/pedropombeiro/qnapexporter"

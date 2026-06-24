@@ -6,9 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/docker/docker/api/types/events"
-	"github.com/docker/docker/api/types/filters"
-	"github.com/docker/docker/client"
+	"github.com/moby/moby/api/types/events"
+	"github.com/moby/moby/client"
 	"github.com/pedropombeiro/qnapexporter/lib/exporter"
 	"github.com/pedropombeiro/qnapexporter/lib/notifications"
 )
@@ -55,33 +54,33 @@ func handleDockerEvents(ctx context.Context, args httpServerArgs, annotator noti
 }
 
 func dockerEvents(ctx context.Context, cli *client.Client, exporterStatus *exporter.Status) (<-chan events.Message, <-chan error) {
-	opts := events.ListOptions{
+	opts := client.EventsListOptions{
 		Since: "1h",
-		Filters: filters.NewArgs(
+		Filters: make(client.Filters).Add("event",
 			// Containers
-			filters.Arg("event", "health_status"),
-			filters.Arg("event", "kill"),
-			filters.Arg("event", "restart"),
-			filters.Arg("event", "start"),
-			filters.Arg("event", "stop"),
-			filters.Arg("event", "update"),
+			"health_status",
+			"kill",
+			"restart",
+			"start",
+			"stop",
+			"update",
 			// Images
-			filters.Arg("event", "delete"),
-			filters.Arg("event", "import"),
-			filters.Arg("event", "load"),
-			filters.Arg("event", "prune"),
+			"delete",
+			"import",
+			"load",
+			"prune",
 			// Plugins
-			filters.Arg("event", "install"),
-			filters.Arg("event", "remove"),
+			"install",
+			"remove",
 			// Volumes
-			filters.Arg("event", "create"),
-			filters.Arg("event", "destroy"),
+			"create",
+			"destroy",
 		),
 	}
-	msgs, errs := cli.Events(ctx, opts)
+	result := cli.Events(ctx, opts)
 	exporterStatus.Docker = "Waiting for events"
 
-	return msgs, errs
+	return result.Messages, result.Err
 }
 
 func formatDockerActorAttributes(attr map[string]string) string {

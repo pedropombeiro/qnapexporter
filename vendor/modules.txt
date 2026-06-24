@@ -53,9 +53,6 @@ github.com/go-logr/stdr
 ## explicit; go 1.12
 github.com/go-ole/go-ole
 github.com/go-ole/go-ole/oleutil
-# github.com/go-ping/ping v1.2.0
-## explicit; go 1.14
-github.com/go-ping/ping
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
@@ -104,6 +101,9 @@ github.com/pmezard/go-difflib/difflib
 # github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55
 ## explicit; go 1.14
 github.com/power-devops/perfstat
+# github.com/prometheus-community/pro-bing v0.9.0
+## explicit; go 1.25.0
+github.com/prometheus-community/pro-bing
 # github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
 ## explicit
 github.com/robbiet480/go.nut

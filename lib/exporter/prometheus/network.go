@@ -7,7 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-ping/ping" //nolint:staticcheck // go-ping/ping has no maintained replacement
+	probing "github.com/prometheus-community/pro-bing"
+
 	"github.com/pedropombeiro/qnapexporter/lib/utils"
 )
 
@@ -55,7 +56,7 @@ func (e *promExporter) getPingMetrics() ([]metric, error) {
 		return nil, nil
 	}
 
-	pinger, err := ping.NewPinger(e.PingTarget)
+	pinger, err := probing.NewPinger(e.PingTarget)
 	if err != nil {
 		return nil, err
 	}

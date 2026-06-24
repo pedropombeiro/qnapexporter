@@ -98,7 +98,7 @@ jobs:
 
       - name: Set git sha_short
         id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Prepare QPKG build
         run: |

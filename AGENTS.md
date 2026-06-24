@@ -45,10 +45,11 @@ succeed. This is a manual step done once in the GitHub UI.
 
 This repo uses [hk](https://hk.jdx.dev) (`hk.pkl`) as its git hook manager,
 running on staged files: trailing-whitespace, newlines, check-merge-conflict,
-check-added-large-files, yamllint, typos, gitleaks, go-fmt, go-vet,
-go-mod-tidy, and golangci-lint. The `vendor/` and `bin/` directories are
-excluded via `hk.pkl`'s `exclude` setting, and YAML rules are relaxed for
-GitHub Actions workflows in `.yamllint.yml`.
+check-added-large-files, yamllint, typos, gitleaks, actionlint, hadolint,
+shellcheck, shfmt, go-fmt, go-vet, go-mod-tidy, and golangci-lint. The
+`vendor/` and `bin/` directories are excluded via `hk.pkl`'s `exclude`
+setting, and YAML rules are relaxed for GitHub Actions workflows in
+`.yamllint.yml`.
 
 Hooks are wired through the tracked `.hk-hooks/pre-commit` wrapper; run
 `mise run install` (which sets `core.hooksPath` to `.hk-hooks`) to enable them.

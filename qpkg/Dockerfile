@@ -2,9 +2,10 @@ FROM ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2faf
 
 ARG QDK_VER=2.5.2
 
-# install wget
+# install curl
+# hadolint ignore=DL3008
 RUN apt-get update \
-    && apt-get install -y curl \
+    && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
 # download QDK
@@ -21,6 +22,7 @@ RUN mkdir qdk \
 # (see https://github.com/pedropombeiro/qnapexporter/issues/103). Install the
 # compiled binary into /usr/local/bin so it is always on PATH (QDK 2.4.0
 # installed it to /bin for the same reason).
+# hadolint ignore=DL3003
 RUN cd qdk \
     && tar xvfz v${QDK_VER}.tar.gz \
     && cd QDK-${QDK_VER} \

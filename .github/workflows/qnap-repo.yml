@@ -52,13 +52,15 @@ jobs:
           URL_ARMV6=$(get_url    "QNAPExporter_${TAG}_armv6.qpkg"  "${BASE}/QNAPExporter_${TAG}_armv6.qpkg")
           URL_ARMV5=$(get_url    "QNAPExporter_${TAG}_armv5.qpkg"  "${BASE}/QNAPExporter_${TAG}_armv5.qpkg")
 
-          echo "tag=${TAG}"              >> "$GITHUB_OUTPUT"
-          echo "date=${DATE}"            >> "$GITHUB_OUTPUT"
-          echo "url_amd64=${URL_AMD64}"  >> "$GITHUB_OUTPUT"
-          echo "url_arm64=${URL_ARM64}"  >> "$GITHUB_OUTPUT"
-          echo "url_armv7=${URL_ARMV7}"  >> "$GITHUB_OUTPUT"
-          echo "url_armv6=${URL_ARMV6}"  >> "$GITHUB_OUTPUT"
-          echo "url_armv5=${URL_ARMV5}"  >> "$GITHUB_OUTPUT"
+          {
+            echo "tag=${TAG}"
+            echo "date=${DATE}"
+            echo "url_amd64=${URL_AMD64}"
+            echo "url_arm64=${URL_ARM64}"
+            echo "url_armv7=${URL_ARMV7}"
+            echo "url_armv6=${URL_ARMV6}"
+            echo "url_armv5=${URL_ARMV5}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Generate repo.xml
         env:

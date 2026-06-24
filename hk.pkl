@@ -17,6 +17,10 @@ local commonSteps = new Mapping<String, Step> {
         exclude = List("go.sum")
     }
     ["gitleaks"] = (Builtins.gitleaks) {}
+    ["actionlint"] = (Builtins.actionlint) {}
+    ["hadolint"] = (Builtins.hadolint) {}
+    ["shellcheck"] = (Builtins.shellcheck) {}
+    ["shfmt"] = (Builtins.shfmt) {}
     ["go-fmt"] = (Builtins.go_fmt) {}
     ["go-vet"] = (Builtins.go_vet) {}
     ["go-mod-tidy"] = (Builtins.gomod_tidy) {}

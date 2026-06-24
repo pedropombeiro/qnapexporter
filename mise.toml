@@ -6,6 +6,10 @@ golangci-lint = "latest"
 gitleaks = "latest"
 typos = "latest"
 yamllint = "latest"
+actionlint = "latest"
+hadolint = "latest"
+shellcheck = "latest"
+shfmt = "latest"
 
 [vars]
 pkg = "github.com/pedropombeiro/qnapexporter"

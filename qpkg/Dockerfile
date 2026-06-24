@@ -1,6 +1,6 @@
 FROM ubuntu:20.04@sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214
 
-ARG QDK_VER=2.5.2
+ARG QDK_VER=2.5.3
 
 # install curl (ca-certificates is required for TLS and is otherwise pulled in
 # as a recommended package, which --no-install-recommends excludes)

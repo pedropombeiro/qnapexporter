@@ -15,18 +15,16 @@ RUN mkdir qdk \
 
 # install QDK
 #
-# As of QDK 2.5.0, InstallToUbuntu.sh compiles qpkg_encrypt into src/bin/ but
-# only copies shared/ to /usr/share/QDK, so qpkg_encrypt is missing from PATH.
-# qbuild invokes qpkg_encrypt as a bare command (relying on PATH); without it
-# the encryption step silently no-ops and leaves the qpkg trailer checksum
-# field blank, which QTS rejects with a "file format error"
-# (see https://github.com/pedropombeiro/qnapexporter/issues/103). Install the
-# compiled binary into /usr/local/bin so it is always on PATH (QDK 2.4.0
-# installed it to /bin for the same reason).
+# InstallToUbuntu.sh compiles qpkg_encrypt and installs it to /bin (on PATH),
+# where qbuild finds it as a bare command. qbuild's encryption step populates
+# the qpkg trailer checksum; if qpkg_encrypt were missing the checksum would be
+# left blank and QTS would reject the package with a "file format error" (see
+# https://github.com/pedropombeiro/qnapexporter/issues/103, which affected QDK
+# 2.5.0 where the /bin copy was dropped; it was restored in 2.5.1). The
+# validate-tail.sh build/release check guards against a regression.
 # hadolint ignore=DL3003
 RUN cd qdk \
     && tar xvfz v${QDK_VER}.tar.gz \
     && cd QDK-${QDK_VER} \
     && ./InstallToUbuntu.sh install \
-    && cp src/bin/qpkg_encrypt /usr/local/bin/qpkg_encrypt \
     && rm -rf /var/lib/apt/lists/*

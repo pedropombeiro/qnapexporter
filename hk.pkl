@@ -16,9 +16,7 @@ local commonSteps = new Mapping<String, Step> {
     ["typos"] = (Builtins.typos) {
         exclude = List("go.sum")
     }
-    ["gitleaks"] {
-        check = "scripts/gitleaks.sh"
-    }
+    ["gitleaks"] = (Builtins.gitleaks) {}
     ["go-fmt"] = (Builtins.go_fmt) {}
     ["go-vet"] = (Builtins.go_vet) {}
     ["go-mod-tidy"] = (Builtins.gomod_tidy) {}

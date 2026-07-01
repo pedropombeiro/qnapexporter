@@ -154,6 +154,10 @@
         "gomod"
       ],
       "rangeStrategy": "bump",
+      "postUpdateOptions": [
+        "gomodTidy",
+        "gomodUpdateImportPaths"
+      ],
       "lockFileMaintenance": {
         "enabled": true
       }

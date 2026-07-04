@@ -101,13 +101,13 @@ github.com/pmezard/go-difflib/difflib
 # github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55
 ## explicit; go 1.14
 github.com/power-devops/perfstat
-# github.com/prometheus-community/pro-bing v0.9.0
+# github.com/prometheus-community/pro-bing v0.9.1
 ## explicit; go 1.25.0
 github.com/prometheus-community/pro-bing
 # github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
 ## explicit
 github.com/robbiet480/go.nut
-# github.com/shirou/gopsutil/v4 v4.26.5
+# github.com/shirou/gopsutil/v4 v4.26.6
 ## explicit; go 1.24.0
 github.com/shirou/gopsutil/v4/common
 github.com/shirou/gopsutil/v4/cpu

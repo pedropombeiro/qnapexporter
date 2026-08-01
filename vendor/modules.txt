@@ -32,7 +32,7 @@ github.com/docker/go-units
 ## explicit; go 1.16
 github.com/dustin/go-humanize
 github.com/dustin/go-humanize/english
-# github.com/ebitengine/purego v0.10.1
+# github.com/ebitengine/purego v0.10.2
 ## explicit; go 1.18
 github.com/ebitengine/purego
 github.com/ebitengine/purego/internal/cgo
@@ -107,7 +107,7 @@ github.com/prometheus-community/pro-bing
 # github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
 ## explicit
 github.com/robbiet480/go.nut
-# github.com/shirou/gopsutil/v4 v4.26.6
+# github.com/shirou/gopsutil/v4 v4.26.7
 ## explicit; go 1.24.0
 github.com/shirou/gopsutil/v4/common
 github.com/shirou/gopsutil/v4/cpu

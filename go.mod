@@ -8,7 +8,7 @@ require (
 	github.com/moby/moby/client v0.5.1
 	github.com/prometheus-community/pro-bing v0.9.1
 	github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
-	github.com/shirou/gopsutil/v4 v4.26.6
+	github.com/shirou/gopsutil/v4 v4.26.7
 	github.com/stretchr/testify v1.11.1
 )
 
@@ -21,7 +21,7 @@ require (
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/docker/go-connections v0.7.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/ebitengine/purego v0.10.1 // indirect
+	github.com/ebitengine/purego v0.10.2 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

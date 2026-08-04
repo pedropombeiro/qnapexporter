@@ -1185,7 +1185,7 @@
       "pluginVersion": "7.5.3",
       "targets": [
         {
-          "expr": "node_memory_MemTotal_bytes{job='qnap',node='$node'}-node_memory_MemAvailable_bytes{job='qnap',node='$node'}",
+          "expr": "node_memory_MemTotal_bytes{job='qnap',node='$node'}-node_memory_MemAvailable_bytes{job='qnap',node='$node'}-node_memory_SwapCached_bytes{job='qnap',node='$node'}",
           "instant": true,
           "interval": "",
           "legendFormat": "Used",
@@ -1301,10 +1301,16 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "node_memory_MemTotal_bytes{job='qnap'}-node_memory_MemAvailable_bytes{job='qnap'}",
+          "expr": "node_memory_MemTotal_bytes{job='qnap'}-node_memory_MemAvailable_bytes{job='qnap'}-node_memory_SwapCached_bytes{job='qnap'}",
           "interval": "",
           "legendFormat": "Used",
           "refId": "D"
+        },
+        {
+          "expr": "node_memory_SwapCached_bytes{job='qnap',node='nas'}",
+          "interval": "",
+          "legendFormat": "Swap cached",
+          "refId": "C"
         },
         {
           "expr": "node_memory_MemAvailable_bytes{job='qnap',node='nas'}",
@@ -1313,7 +1319,7 @@
           "refId": "B"
         },
         {
-          "expr": "avg_over_time((node_memory_MemTotal_bytes{job='qnap',node='nas'}-node_memory_MemAvailable_bytes{job='qnap',node='nas'})[24h:])",
+          "expr": "avg_over_time((node_memory_MemTotal_bytes{job='qnap',node='nas'}-node_memory_MemAvailable_bytes{job='qnap',node='nas'}-node_memory_SwapCached_bytes{job='qnap',node='nas'})[24h:])",
           "interval": "",
           "legendFormat": "24h average",
           "refId": "A"

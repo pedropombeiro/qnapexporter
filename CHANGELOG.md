@@ -1,5 +1,10 @@
 # Change log
 
+## Release v1.4.0
+
+- Add node_memory_SwapCached_bytes, node_memory_SReclaimable_bytes and node_memory_PageTables_bytes metrics
+- Fix "Used RAM" dashboard panels counting reclaimable swap cache as used
+
 ## Release v1.0.28
 
 - Bump github.com/docker/docker from 27.5.1+incompatible to 28.0.0+incompatible

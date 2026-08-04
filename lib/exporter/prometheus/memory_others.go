@@ -13,6 +13,7 @@ func getMemInfoMetrics() ([]metric, error) {
 		return nil, err
 	}
 
+	// SwapCached, SReclaimable, and PageTables are only populated by Linux.
 	metrics := []metric{
 		{name: "node_memory_MemTotal_bytes", value: float64(s.Total)},
 		{name: "node_memory_MemFree_bytes", value: float64(s.Free)},
@@ -21,6 +22,7 @@ func getMemInfoMetrics() ([]metric, error) {
 		{name: "node_memory_Inactive_bytes", value: float64(s.Inactive)},
 		{name: "node_memory_SwapTotal_bytes", value: float64(s.SwapTotal)},
 		{name: "node_memory_SwapFree_bytes", value: float64(s.SwapFree)},
+		{name: "node_memory_MemAvailable_bytes", value: float64(s.Available)},
 	}
 
 	return metrics, nil

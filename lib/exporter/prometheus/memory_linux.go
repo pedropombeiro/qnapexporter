@@ -17,6 +17,9 @@ func getMemInfoMetrics() ([]metric, error) {
 		{name: "node_memory_SwapTotal_bytes", value: float64(s.SwapTotal)},
 		{name: "node_memory_SwapFree_bytes", value: float64(s.SwapFree)},
 		{name: "node_memory_MemAvailable_bytes", value: float64(s.Available)},
+		{name: "node_memory_SwapCached_bytes", value: float64(s.SwapCached)},
+		{name: "node_memory_SReclaimable_bytes", value: float64(s.Sreclaimable)},
+		{name: "node_memory_PageTables_bytes", value: float64(s.PageTables)},
 	}
 
 	return metrics, nil

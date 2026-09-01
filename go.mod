@@ -8,7 +8,7 @@ require (
 	github.com/moby/moby/client v0.5.1
 	github.com/prometheus-community/pro-bing v0.9.1
 	github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
-	github.com/shirou/gopsutil/v4 v4.26.7
+	github.com/shirou/gopsutil/v4 v4.26.8
 	github.com/stretchr/testify v1.12.1
 )
 

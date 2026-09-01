@@ -1,4 +1,4 @@
-version: 2
+version: "2"
 
 run:
   timeout: 5m
@@ -18,14 +18,13 @@ linters:
     - misspell
     - gocyclo
     - revive
-
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-  revive:
-    rules:
-      - name: exported
-        disabled: false
+  settings:
+    gocyclo:
+      min-complexity: 15
+    revive:
+      rules:
+        - name: exported
+          disabled: false
 
 issues:
   max-issues-per-linter: 0

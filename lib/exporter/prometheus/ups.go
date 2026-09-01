@@ -37,35 +37,11 @@ func (e *promExporter) getUpsStatsMetricsWithRetry() ([]metric, error) {
 func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 	e.upsState.upsLock.Lock()
 	defer e.upsState.upsLock.Unlock()
-
-	defer func() {
-		if err == nil {
-			return
-		}
-
-		var syscallErr *os.SyscallError
-		if errors.As(err, &syscallErr) {
-			switch syscallErr.Err {
-			case syscall.ECONNRESET, syscall.EPIPE:
-				_, _ = e.upsState.upsClient.Disconnect()
-				e.upsState.upsClient.ProtocolVersion = ""
-			}
-		}
-	}()
+	defer func() { e.disconnectUpsOnConnectionError(err) }()
 
 	if e.upsState.upsClient.ProtocolVersion == "" {
-		if e.upsState.upsConnAttempts >= 10 && time.Since(e.upsState.upsConnErrTimestamp) >= 1*time.Hour {
-			e.upsState.upsConnAttempts = 0
-		}
-		if e.upsState.upsConnAttempts < 10 {
-			e.Logger.Println("Connecting to UPS daemon")
-
-			e.upsState.upsConnAttempts++
-			e.upsState.upsClient, e.upsState.upsConnErr = nut.Connect("127.0.0.1")
-		}
-		if e.upsState.upsConnErr != nil {
-			e.upsState.upsConnErrTimestamp = time.Now()
-			return nil, fmt.Errorf("%w (attempt %d)", e.upsState.upsConnErr, e.upsState.upsConnAttempts)
+		if err := e.connectUps(); err != nil {
+			return nil, err
 		}
 	}
 
@@ -113,13 +89,8 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 				continue
 			}
 
-			var value float64
-			switch v.Type {
-			case "INTEGER":
-				value = float64(v.Value.(int64))
-			case "FLOAT_64":
-				value = v.Value.(float64)
-			default:
+			value, ok := upsVariableValue(v)
+			if !ok {
 				continue
 			}
 
@@ -139,6 +110,48 @@ func (e *promExporter) getUpsStatsMetrics() (metrics []metric, err error) {
 	}
 
 	return metrics, nil
+}
+
+func (e *promExporter) disconnectUpsOnConnectionError(err error) {
+	var syscallErr *os.SyscallError
+	if !errors.As(err, &syscallErr) {
+		return
+	}
+
+	switch syscallErr.Err {
+	case syscall.ECONNRESET, syscall.EPIPE:
+		_, _ = e.upsState.upsClient.Disconnect()
+		e.upsState.upsClient.ProtocolVersion = ""
+	}
+}
+
+func (e *promExporter) connectUps() error {
+	if e.upsState.upsConnAttempts >= 10 && time.Since(e.upsState.upsConnErrTimestamp) >= time.Hour {
+		e.upsState.upsConnAttempts = 0
+	}
+	if e.upsState.upsConnAttempts < 10 {
+		e.Logger.Println("Connecting to UPS daemon")
+
+		e.upsState.upsConnAttempts++
+		e.upsState.upsClient, e.upsState.upsConnErr = nut.Connect("127.0.0.1")
+	}
+	if e.upsState.upsConnErr != nil {
+		e.upsState.upsConnErrTimestamp = time.Now()
+		return fmt.Errorf("%w (attempt %d)", e.upsState.upsConnErr, e.upsState.upsConnAttempts)
+	}
+
+	return nil
+}
+
+func upsVariableValue(variable nut.Variable) (float64, bool) {
+	switch variable.Type {
+	case "INTEGER":
+		return float64(variable.Value.(int64)), true
+	case "FLOAT_64":
+		return variable.Value.(float64), true
+	default:
+		return 0, false
+	}
 }
 
 func getUpsStatus(status string) float64 {

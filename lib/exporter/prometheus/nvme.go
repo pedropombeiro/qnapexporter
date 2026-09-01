@@ -37,63 +37,42 @@ type nvmeSmartData struct {
 func parseNvmeSmartLog(output string) (*nvmeSmartData, error) {
 	data := &nvmeSmartData{}
 
-	// Parse temperature
-	if matches := nvmeTemperatureRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := strconv.ParseFloat(matches[1], 64); err == nil {
-			data.Temperature = val
-		}
+	if value, ok := parseNvmeValue(output, nvmeTemperatureRe, 1); ok {
+		data.Temperature = value
 	}
-
-	// Parse available spare (convert percentage to ratio)
-	if matches := nvmeAvailableSpareRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := strconv.ParseFloat(matches[1], 64); err == nil {
-			data.AvailableSpare = val / 100.0
-		}
+	if value, ok := parseNvmeValue(output, nvmeAvailableSpareRe, 100); ok {
+		data.AvailableSpare = value
 	}
-
-	// Parse available spare threshold (convert percentage to ratio)
-	if matches := nvmeSpareThresholdRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := strconv.ParseFloat(matches[1], 64); err == nil {
-			data.AvailableSpareThreshold = val / 100.0
-		}
+	if value, ok := parseNvmeValue(output, nvmeSpareThresholdRe, 100); ok {
+		data.AvailableSpareThreshold = value
 	}
-
-	// Parse percentage used (convert percentage to ratio)
-	if matches := nvmePercentageUsedRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := strconv.ParseFloat(matches[1], 64); err == nil {
-			data.PercentageUsed = val / 100.0
-		}
+	if value, ok := parseNvmeValue(output, nvmePercentageUsedRe, 100); ok {
+		data.PercentageUsed = value
 	}
-
-	// Parse power on hours (remove commas from number)
-	if matches := nvmePowerOnHoursRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := parseNumberWithCommas(matches[1]); err == nil {
-			data.PowerOnHours = val
-		}
+	if value, ok := parseNvmeValue(output, nvmePowerOnHoursRe, 1); ok {
+		data.PowerOnHours = value
 	}
-
-	// Parse power cycles
-	if matches := nvmePowerCyclesRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := parseNumberWithCommas(matches[1]); err == nil {
-			data.PowerCycles = val
-		}
+	if value, ok := parseNvmeValue(output, nvmePowerCyclesRe, 1); ok {
+		data.PowerCycles = value
 	}
-
-	// Parse unsafe shutdowns
-	if matches := nvmeUnsafeShutdownsRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := parseNumberWithCommas(matches[1]); err == nil {
-			data.UnsafeShutdowns = val
-		}
+	if value, ok := parseNvmeValue(output, nvmeUnsafeShutdownsRe, 1); ok {
+		data.UnsafeShutdowns = value
 	}
-
-	// Parse media errors
-	if matches := nvmeMediaErrorsRe.FindStringSubmatch(output); len(matches) >= 2 {
-		if val, err := parseNumberWithCommas(matches[1]); err == nil {
-			data.MediaErrors = val
-		}
+	if value, ok := parseNvmeValue(output, nvmeMediaErrorsRe, 1); ok {
+		data.MediaErrors = value
 	}
 
 	return data, nil
+}
+
+func parseNvmeValue(output string, pattern *regexp.Regexp, divisor float64) (float64, bool) {
+	matches := pattern.FindStringSubmatch(output)
+	if len(matches) < 2 {
+		return 0, false
+	}
+
+	value, err := parseNumberWithCommas(matches[1])
+	return value / divisor, err == nil
 }
 
 // parseNumberWithCommas parses a number string that may contain commas as thousand separators

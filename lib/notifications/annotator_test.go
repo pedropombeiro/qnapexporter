@@ -32,6 +32,7 @@ func TestNewAnnotator(t *testing.T) {
 	assert.Empty(t, c.tags)
 }
 
+//nolint:gocyclo // Table-driven mock callbacks are counted as part of the test's complexity.
 func TestPostAnnotation(t *testing.T) {
 	testCases := map[string]struct {
 		testURL               string

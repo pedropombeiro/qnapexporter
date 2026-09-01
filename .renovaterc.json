@@ -3,7 +3,6 @@
   "extends": [
     "config:best-practices",
     ":automergeRequireAllStatusChecks",
-    ":enablePreCommit",
     ":pinSkipCi",
     ":prImmediately",
     ":separateMultipleMajorReleases",
@@ -16,7 +15,7 @@
     "github-actions",
     "dockerfile",
     "custom.regex",
-    "pre-commit"
+    "mise"
   ],
   "lockFileMaintenance": {
     "enabled": true
@@ -33,14 +32,15 @@
       }
     },
     {
-      "description": "Auto-merge patch Go version updates (.tool-versions, go.mod) into a single PR",
-      "matchDatasources": [
-        "golang-version",
-        "go"
+      "description": "Auto-merge patch Go version updates (mise.toml, go.mod) into a single PR",
+      "matchManagers": [
+        "gomod",
+        "mise"
       ],
       "matchPackageNames": [
         "go",
-        "golang"
+        "golang",
+        "golang/go"
       ],
       "matchUpdateTypes": [
         "patch"
@@ -51,19 +51,36 @@
     },
     {
       "description": "Require manual review for minor and major Go version updates",
-      "matchDatasources": [
-        "golang-version",
-        "go"
+      "matchManagers": [
+        "gomod",
+        "mise"
       ],
       "matchPackageNames": [
         "go",
-        "golang"
+        "golang",
+        "golang/go"
       ],
       "matchUpdateTypes": [
         "minor",
         "major"
       ],
       "automerge": false
+    },
+    {
+      "description": "Auto-merge non-breaking golangci-lint updates",
+      "matchManagers": [
+        "mise"
+      ],
+      "matchPackageNames": [
+        "golangci/golangci-lint"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "groupName": "mise tools",
+      "automerge": true,
+      "commitMessageSuffix": "- `AUTOMERGE`"
     },
     {
       "description": "Auto-merge non-breaking GitHub Actions updates (patch and minor versions only) as a grouped PR",
@@ -164,18 +181,6 @@
     }
   ],
   "customManagers": [
-    {
-      "customType": "regex",
-      "description": "Update Go version in .tool-versions",
-      "managerFilePatterns": [
-        "/^\\.tool-versions$/"
-      ],
-      "matchStrings": [
-        "golang\\s+(?<currentValue>.*?)\\n"
-      ],
-      "datasourceTemplate": "golang-version",
-      "depNameTemplate": "golang"
-    },
     {
       "customType": "regex",
       "description": "Update QDK version in Dockerfile",

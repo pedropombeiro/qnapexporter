@@ -178,9 +178,36 @@
       "lockFileMaintenance": {
         "enabled": true
       }
+    },
+    {
+      "description": "Update the hk binary and Pkl schema together for review",
+      "matchManagers": [
+        "mise",
+        "custom.regex"
+      ],
+      "matchPackageNames": [
+        "hk",
+        "/^([a-z]+:)?(github\\.com/)?jdx/hk$/"
+      ],
+      "groupName": "hk",
+      "automerge": false
     }
   ],
   "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update hk Pkl package URLs",
+      "managerFilePatterns": [
+        "/^hk\\.pkl$/"
+      ],
+      "matchStrings": [
+        "package://github\\.com/jdx/hk/releases/download/v(?<currentValue>[0-9]+\\.[0-9]+\\.[0-9]+)/hk@[0-9]+\\.[0-9]+\\.[0-9]+"
+      ],
+      "autoReplaceStringTemplate": "package://github.com/jdx/hk/releases/download/v{{{newValue}}}/hk@{{{newValue}}}",
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "jdx/hk",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
     {
       "customType": "regex",
       "description": "Update QDK version in Dockerfile",

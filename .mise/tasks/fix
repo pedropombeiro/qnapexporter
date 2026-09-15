@@ -9,7 +9,7 @@ echo "Running hk hooks..."
 eval "files=(${usage_files:-})"
 # shellcheck disable=SC2154
 if [ ${#files[@]} -gt 0 ]; then
-  hk fix "${files[@]}"
+	hk fix "${files[@]}"
 else
-  hk fix --all
+	hk fix --all
 fi

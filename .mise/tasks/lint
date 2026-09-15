@@ -9,7 +9,7 @@ echo "Running linters..."
 eval "files=(${usage_files:-})"
 # shellcheck disable=SC2154
 if [ ${#files[@]} -gt 0 ]; then
-  golangci-lint run "${files[@]}"
+	golangci-lint run "${files[@]}"
 else
-  golangci-lint run
+	golangci-lint run
 fi

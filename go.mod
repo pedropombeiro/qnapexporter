@@ -3,7 +3,7 @@ module github.com/pedropombeiro/qnapexporter
 go 1.27.1
 
 require (
-	github.com/dustin/go-humanize v1.0.1
+	github.com/dustin/go-humanize v1.1.0
 	github.com/moby/moby/api v1.56.0
 	github.com/moby/moby/client v0.6.0
 	github.com/prometheus-community/pro-bing v0.9.1

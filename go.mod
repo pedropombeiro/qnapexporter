@@ -5,7 +5,7 @@ go 1.27.2
 require (
 	github.com/dustin/go-humanize v1.1.0
 	github.com/moby/moby/api v1.56.1
-	github.com/moby/moby/client v0.6.1
+	github.com/moby/moby/client v0.6.2
 	github.com/prometheus-community/pro-bing v0.9.1
 	github.com/robbiet480/go.nut v0.0.0-20240622015809-60e196249c53
 	github.com/shirou/gopsutil/v4 v4.26.9
@@ -18,7 +18,7 @@ require (
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
-	github.com/docker/go-connections v0.8.1 // indirect
+	github.com/docker/go-connections v0.8.2 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/ebitengine/purego v0.11.1 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect

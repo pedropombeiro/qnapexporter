@@ -1,6 +1,6 @@
 module github.com/pedropombeiro/qnapexporter
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/dustin/go-humanize v1.1.0

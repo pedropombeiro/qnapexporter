@@ -1,6 +1,6 @@
 [tools]
 go = "1.27.3"
-hk = "2.8.1"
+hk = "2.9.0"
 golangci-lint = "2.15.0"
 gitleaks = "latest"
 typos = "latest"

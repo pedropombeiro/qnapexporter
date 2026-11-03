@@ -67,12 +67,21 @@
       "automerge": false
     },
     {
-      "description": "Auto-merge non-breaking golangci-lint updates",
+      "description": "Group non-breaking linter and formatter updates from mise.toml into a single auto-merged PR",
       "matchManagers": [
         "mise"
       ],
       "matchPackageNames": [
-        "golangci/golangci-lint"
+        "golangci/golangci-lint",
+        "gitleaks/gitleaks",
+        "crate-ci/typos",
+        "adrienverge/yamllint",
+        "rhysd/actionlint",
+        "hadolint/hadolint",
+        "koalaman/shellcheck",
+        "mvdan/sh",
+        "editorconfig-checker/editorconfig-checker",
+        "markdownlint-cli2"
       ],
       "matchUpdateTypes": [
         "patch",

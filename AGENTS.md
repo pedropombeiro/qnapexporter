@@ -12,7 +12,7 @@ triggered by **creating a GitHub release** (not by pushing to `master`).
    - bug fix / dependency bump only -> patch bump (e.g. `v1.2.1` -> `v1.2.2`)
 3. Create the release, which triggers the build:
 
-   ```
+   ```sh
    gh release create vX.Y.Z --target master --title vX.Y.Z --generate-notes
    ```
 
@@ -24,7 +24,7 @@ and substituted into `qpkg/qpkg.cfg` at build time, so `QPKG_VER` stays
 
 Verify after the run completes:
 
-```
+```sh
 gh run list --workflow=release.yml --limit 1
 gh release view vX.Y.Z --json assets --jq '.assets[].name'
 ```
@@ -43,15 +43,24 @@ succeed. This is a manual step done once in the GitHub UI.
 
 ## Git hooks
 
-This repo uses [hk](https://hk.jdx.dev) (`hk.pkl`) as its git hook manager,
-running on staged files: trailing-whitespace, newlines, check-merge-conflict,
-check-added-large-files, yamllint, typos, gitleaks, actionlint, hadolint,
-shellcheck, shfmt, go-fmt, go-vet, go-mod-tidy, and golangci-lint. The
-`vendor/` and `bin/` directories are excluded via `hk.pkl`'s `exclude`
-setting, and YAML rules are relaxed for GitHub Actions workflows in
+This repo uses [hk](https://hk.jdx.dev) (`hk.pkl`) as its git hook manager. List the
+current steps with `hk check --plan`; do not mirror them here. The `linters` mapping in
+`hk.pkl` is shared by every hook:
+
+- `pre-commit`: fixes staged files and re-stages them (stashes unstaged changes).
+- `commit-msg`: requires a Conventional Commits subject
+  (`scripts/validate-conventional-commit.sh`).
+- `pre-push`: the same checks plus `go test ./...`.
+- `fix`: fixes files in place without stashing. `mise run fix [files]` and the Claude Code
+  post-edit hook (`.claude/settings.json`) use it.
+- `check`: check-only, used by `mise run lint [files]` and CI (`hk check --all`).
+
+OpenCode formats edited files with its built-in `gofmt` and `shfmt` formatters, so the
+repo has no OpenCode plugin. The `vendor/` and `bin/` directories are excluded via
+`hk.pkl`'s `exclude` setting, and YAML rules are relaxed for GitHub Actions workflows in
 `.yamllint.yml`.
 
-Hooks are wired through the tracked `.hk-hooks/pre-commit` wrapper; run
-`mise run install` (which sets `core.hooksPath` to `.hk-hooks`) to enable them.
-`hk` and the other tools are provided by `mise.toml`. Bypass the hooks for an
-individual commit with `HK=0` when needed.
+Hooks are wired through the tracked `.hk-hooks/` wrappers; run `mise run install` (which
+sets `core.hooksPath` to `.hk-hooks`) to enable them. `hk` and the other tools are
+provided by `mise.toml`. Bypass the hooks for an individual commit with `HK=0` when
+needed.

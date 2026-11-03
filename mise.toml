@@ -12,7 +12,19 @@ shfmt = "3.14.1"
 editorconfig-checker = "4.0.2"
 node = "26.13.0"
 "npm:markdownlint-cli2" = "0.24.0"
-"npm:renovate" = "44.198.0"
+# Automated dependency update bot (used only to validate .renovaterc.json)
+# Trust-policy exception: @yarnpkg/libzip@3.2.2 (transitive via @yarnpkg/core)
+# lost the npm provenance that 3.2.0/3.2.1 carried. Upstream cause: the release
+# came from a cherry-pick branch lacking `npmPublishProvenance: true`, so the
+# whole 16-package batch (fslib@3.1.3, core@4.4.4, ...) published unattested.
+# Audited in the nas repo on 2026-08-02: tarball hashes match the registry, no
+# install scripts, and the diff vs 3.2.1 is a 3-line `parentPath` fix plus type
+# churn. This is release-process drift, not a sign of tampering.
+# Upstream: https://github.com/yarnpkg/berry/issues/7182
+# REMOVE this exclusion once libzip ships a provenance-bearing release (>3.2.2).
+"npm:renovate" = { version = "44.198.0", trust_policy_excludes = [
+  "@yarnpkg/libzip@3.2.2",
+] }
 
 [vars]
 pkg = "github.com/pedropombeiro/qnapexporter"

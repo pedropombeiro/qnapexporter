@@ -1327,7 +1327,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1E-9
+          "le": 1e-09
         },
         "legend": {
           "show": true
@@ -3107,6 +3107,81 @@
           "fieldConfig": {
             "defaults": {
               "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red"
+                  },
+                  {
+                    "color": "orange",
+                    "value": 25
+                  },
+                  {
+                    "color": "green",
+                    "value": 50
+                  }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 3,
+            "x": 3,
+            "y": 20
+          },
+          "id": 86,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "text": {},
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.0.7",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "(100 * increase(node_dmcache_stats_write_hits_total{job='qnap',node='$node'}[$__range]) / increase(node_dmcache_stats_writes_total{job='qnap',node='$node'}[$__range])) or (100 * increase(node_flashcache_write_hits{job='qnap',node='$node'}[$__range]) / increase(node_flashcache_writes{job='qnap',node='$node'}[$__range]))",
+              "interval": "",
+              "legendFormat": "Write hits ",
+              "refId": "B",
+              "instant": true
+            },
+            {
+              "datasource": "Prometheus",
+              "expr": "(100 * increase(node_dmcache_stats_read_hits_total{job='qnap',node='$node'}[$__range]) / increase(node_dmcache_stats_reads_total{job='qnap',node='$node'}[$__range])) or (100 * increase(node_flashcache_read_hits{job='qnap',node='$node'}[$__range]) / increase(node_flashcache_reads{job='qnap',node='$node'}[$__range]))",
+              "interval": "",
+              "legendFormat": "Read hits",
+              "refId": "A",
+              "instant": true
+            }
+          ],
+          "title": "SSD cache hit rate over range",
+          "type": "stat",
+          "description": "All hits divided by all reads or writes over the dashboard's time range. Compare this before and after a cache change."
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
                 "mode": "palette-classic"
               },
               "custom": {
@@ -3158,8 +3233,8 @@
           },
           "gridPos": {
             "h": 7,
-            "w": 11,
-            "x": 3,
+            "w": 8,
+            "x": 6,
             "y": 20
           },
           "id": 2,
@@ -3181,14 +3256,14 @@
           "targets": [
             {
               "datasource": "Prometheus",
-              "expr": "node_flashcache_read_hit_percent{job='qnap',node='$node'}",
+              "expr": "(100 * increase(node_dmcache_stats_read_hits_total{job='qnap',node='$node'}[$__rate_interval]) / increase(node_dmcache_stats_reads_total{job='qnap',node='$node'}[$__rate_interval])) or (100 * increase(node_flashcache_read_hits{job='qnap',node='$node'}[$__rate_interval]) / increase(node_flashcache_reads{job='qnap',node='$node'}[$__rate_interval]))",
               "interval": "",
               "legendFormat": "Read hits",
               "refId": "A"
             },
             {
               "datasource": "Prometheus",
-              "expr": "node_flashcache_write_hit_percent{job='qnap',node='$node'}",
+              "expr": "(100 * increase(node_dmcache_stats_write_hits_total{job='qnap',node='$node'}[$__rate_interval]) / increase(node_dmcache_stats_writes_total{job='qnap',node='$node'}[$__rate_interval])) or (100 * increase(node_flashcache_write_hits{job='qnap',node='$node'}[$__rate_interval]) / increase(node_flashcache_writes{job='qnap',node='$node'}[$__rate_interval]))",
               "interval": "",
               "legendFormat": "Write hits",
               "refId": "B"
@@ -3294,6 +3369,97 @@
           "timeFrom": "1w",
           "title": "SSD cache usage",
           "type": "timeseries"
+        },
+        {
+          "datasource": "Prometheus",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "links": [],
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  }
+                ]
+              },
+              "unit": "ops"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 12,
+            "x": 0,
+            "y": 27
+          },
+          "id": 87,
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean"
+              ],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "9.0.7",
+          "targets": [
+            {
+              "datasource": "Prometheus",
+              "expr": "rate(node_dmcache_stats_uncached_reads_total{job='qnap',node='$node'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "Uncached reads",
+              "refId": "A"
+            },
+            {
+              "datasource": "Prometheus",
+              "expr": "rate(node_dmcache_stats_uncached_sequential_reads_total{job='qnap',node='$node'}[$__rate_interval])",
+              "interval": "",
+              "legendFormat": "Uncached sequential reads",
+              "refId": "B"
+            }
+          ],
+          "title": "SSD cache bypassed reads",
+          "type": "timeseries",
+          "description": "Reads that skipped the SSD cache, from raw_stats. In Random I/O mode, large sequential reads such as media streams and backups should show up here instead of filling the cache."
         }
       ],
       "title": "SSD cache",

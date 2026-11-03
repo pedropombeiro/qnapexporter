@@ -60,3 +60,31 @@ func TestParseDmCacheRawStatsSkipsMissingFields(t *testing.T) {
 	assert.Equal(t, "node_dmcache_stats_reads_total", metrics[0].name)
 	assert.Equal(t, 10.0, metrics[0].value)
 }
+
+func TestParseDmCacheCurrStats(t *testing.T) {
+	input := `reads : 66870
+writes : 13782
+read hit : 58033
+write hit : 12522
+dirty write hit : 12431
+read hit percent (%) : 86
+write hit percent (%) : 90`
+	readHits, readTotal, writeHits, writeTotal := parseDmCacheCurrStats(strings.Split(input, "\n"))
+
+	assert.Equal(t, 58033.0, readHits)
+	assert.Equal(t, 66870.0, readTotal)
+	assert.Equal(t, 12522.0, writeHits)
+	assert.Equal(t, 13782.0, writeTotal)
+}
+
+func TestParseDmCacheCurrStatsSkipsLinesThatDontParse(t *testing.T) {
+	// A line without ":" used to panic, and a value that isn't a number dropped every value.
+	readHits, readTotal, writeHits, writeTotal := parseDmCacheCurrStats(
+		[]string{"reads : 10", "", "no separator", "writes : n/a", "read hit : 7"},
+	)
+
+	assert.Equal(t, 7.0, readHits)
+	assert.Equal(t, 10.0, readTotal)
+	assert.Zero(t, writeHits)
+	assert.Zero(t, writeTotal)
+}

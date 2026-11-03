@@ -109,10 +109,14 @@ func (e *promExporter) getDmCacheStatsMetrics() ([]metric, error) {
 		}
 		attr := fmt.Sprintf("device=%q", cache)
 
-		metrics = appendFloatMetric(metrics, "node_flashcache_cached_blocks", allocationTokens[0], 1, attr, "Number of blocks resident in the cache")
-		metrics = appendFloatMetric(metrics, "node_flashcache_total_blocks", allocationTokens[1], 1, attr, "Total number of cache blocks")
-		metrics = appendFloatMetric(metrics, "node_dmcache_used_bytes_total", allocationTokens[0], 1024*1024, attr, "Number of blocks resident in the cache")
-		metrics = appendFloatMetric(metrics, "node_dmcache_bytes_total", allocationTokens[1], 1024*1024, attr, "Total number of cache blocks")
+		metrics = appendGaugeMetric(metrics, "node_flashcache_cached_blocks", allocationTokens[0], 1, attr, "Number of blocks resident in the cache")
+		metrics = appendGaugeMetric(metrics, "node_flashcache_total_blocks", allocationTokens[1], 1, attr, "Total number of cache blocks")
+		// QTS uses 1 MiB cache blocks (2048 sectors).
+		metrics = appendGaugeMetric(metrics, "node_dmcache_used_bytes", allocationTokens[0], 1024*1024, attr, "Bytes of the cache in use")
+		metrics = appendGaugeMetric(metrics, "node_dmcache_size_bytes", allocationTokens[1], 1024*1024, attr, "Size of the cache in bytes")
+		// Deprecated: gauges with a counter suffix. Use node_dmcache_used_bytes and node_dmcache_size_bytes.
+		metrics = appendGaugeMetric(metrics, "node_dmcache_used_bytes_total", allocationTokens[0], 1024*1024, attr, "Deprecated: use node_dmcache_used_bytes")
+		metrics = appendGaugeMetric(metrics, "node_dmcache_bytes_total", allocationTokens[1], 1024*1024, attr, "Deprecated: use node_dmcache_size_bytes")
 	}
 
 	return e.appendDmCacheHitMetrics(metrics)
@@ -136,27 +140,7 @@ func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, erro
 		return nil, err
 	}
 
-	var readHits, readTotal, writeHits, writeTotal float64
-	for _, line := range lines {
-		tokens := strings.SplitN(line, ":", 2)
-		id := strings.TrimSpace(tokens[0])
-		valueStr := strings.TrimSpace(tokens[1])
-		value, err := strconv.ParseFloat(valueStr, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		switch id {
-		case "read hit":
-			readHits = value
-		case "reads":
-			readTotal = value
-		case "write hit":
-			writeHits = value
-		case "writes":
-			writeTotal = value
-		}
-	}
+	readHits, readTotal, writeHits, writeTotal := parseDmCacheCurrStats(lines)
 
 	attr := fmt.Sprintf("device=%q", cache)
 	metrics = append(metrics, metric{
@@ -248,7 +232,8 @@ func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, erro
 	return e.appendDmCacheRawStatsMetrics(metrics, cache)
 }
 
-func appendFloatMetric(metrics []metric, metricName string, valueStr string, factor float64, attr string, help string) []metric {
+// appendGaugeMetric appends valueStr times factor as a gauge, or nothing when valueStr isn't a number.
+func appendGaugeMetric(metrics []metric, metricName string, valueStr string, factor float64, attr string, help string) []metric {
 	value, err := strconv.ParseFloat(valueStr, 64)
 	if err != nil {
 		return metrics
@@ -259,7 +244,7 @@ func appendFloatMetric(metrics []metric, metricName string, valueStr string, fac
 		attr:       attr,
 		value:      value * factor,
 		help:       help,
-		metricType: "counter",
+		metricType: "gauge",
 	})
 }
 
@@ -405,4 +390,33 @@ func parseDmCacheRawStats(lines []string, attr string) []metric {
 	}
 
 	return metrics
+}
+
+// parseDmCacheCurrStats reads the hit and access counts from the "field : value" lines of curr_stats.
+// Lines that don't parse are skipped, so one odd line doesn't drop the other values.
+func parseDmCacheCurrStats(lines []string) (readHits, readTotal, writeHits, writeTotal float64) {
+	for _, line := range lines {
+		field, valueStr, found := strings.Cut(line, ":")
+		if !found {
+			continue
+		}
+		id := strings.TrimSpace(field)
+		value, err := strconv.ParseFloat(strings.TrimSpace(valueStr), 64)
+		if err != nil {
+			continue
+		}
+
+		switch id {
+		case "read hit":
+			readHits = value
+		case "reads":
+			readTotal = value
+		case "write hit":
+			writeHits = value
+		case "writes":
+			writeTotal = value
+		}
+	}
+
+	return readHits, readTotal, writeHits, writeTotal
 }

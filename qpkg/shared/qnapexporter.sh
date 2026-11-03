@@ -7,6 +7,11 @@ PID_FILE=/var/run/qnapexporter.pid
 
 # Seconds to wait before relaunching the binary after an unexpected exit.
 RESTART_BACKOFF=5
+# The binary's output. The supervisor never writes to the stdout or stderr it was started with: when those are
+# pipes from a shell or task that has exited, the binary dies of SIGPIPE on its first log line, on every relaunch.
+LOG_FILE="$QPKG_DIR/qnapexporter.log"
+# Start the log again when a relaunch finds it larger than this, so a crash loop can't fill the disk.
+LOG_MAX_BYTES=1048576
 
 # see https://github.com/pedropombeiro/qnapexporter for customization options
 EXTRA_ARGS=""
@@ -36,19 +41,23 @@ start)
     # unexpectedly, the supervisor relaunches it after a short backoff. The
     # supervisor traps TERM so that `stop` cleanly kills both the loop and the
     # running child, without the child being respawned.
+    : >"$LOG_FILE"
     (
       CHILD_PID=""
       trap 'if [ -n "$CHILD_PID" ]; then kill "$CHILD_PID" 2>/dev/null; fi; exit 0' TERM INT
       while true; do
+        if [ "$(wc -c <"$LOG_FILE" 2>/dev/null || echo 0)" -gt "$LOG_MAX_BYTES" ]; then
+          : >"$LOG_FILE"
+        fi
         # EXTRA_ARGS is intentionally word-split to pass multiple flags.
         # shellcheck disable=SC2086
-        "$QPKG_DIR"/qnapexporter $EXTRA_ARGS &
+        "$QPKG_DIR"/qnapexporter $EXTRA_ARGS </dev/null >>"$LOG_FILE" 2>&1 &
         CHILD_PID=$!
         wait "$CHILD_PID"
         CHILD_PID=""
         sleep "$RESTART_BACKOFF"
       done
-    ) &
+    ) </dev/null >/dev/null 2>&1 &
     echo $! >$PID_FILE
   fi
   ;;

@@ -192,13 +192,13 @@ func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, erro
 			name:       "node_flashcache_read_hit_percent",
 			attr:       attr,
 			value:      readHits / readTotal * 100,
-			metricType: "counter",
+			metricType: "gauge",
 		})
 		metrics = append(metrics, metric{
 			name:       "node_dmcache_read_hit_percent",
 			attr:       attr,
 			value:      readHits / readTotal * 100,
-			metricType: "counter",
+			metricType: "gauge",
 		})
 	}
 
@@ -235,17 +235,17 @@ func (e *promExporter) appendDmCacheHitMetrics(metrics []metric) ([]metric, erro
 			name:       "node_flashcache_write_hit_percent",
 			attr:       attr,
 			value:      writeHits / writeTotal * 100,
-			metricType: "counter",
+			metricType: "gauge",
 		})
 		metrics = append(metrics, metric{
 			name:       "node_dmcache_write_hit_percent",
 			attr:       attr,
 			value:      writeHits / writeTotal * 100,
-			metricType: "counter",
+			metricType: "gauge",
 		})
 	}
 
-	return metrics, nil
+	return e.appendDmCacheRawStatsMetrics(metrics, cache)
 }
 
 func appendFloatMetric(metrics []metric, metricName string, valueStr string, factor float64, attr string, help string) []metric {
@@ -335,4 +335,74 @@ func (e *promExporter) getDiskStatsMetrics() ([]metric, error) {
 	}
 
 	return metrics, nil
+}
+
+// dmCacheRawStats maps the fields of raw_stats to the names they're exported under, with their help text.
+var dmCacheRawStats = []struct {
+	field string
+	name  string
+	help  string
+}{
+	{"reads", "reads", "Number of READ bios since boot"},
+	{"writes", "writes", "Number of WRITE bios since boot"},
+	{"read hit", "read_hits", "Number of READ bios served from the cache since boot"},
+	{"read miss", "read_misses", "Number of READ bios that missed the cache since boot"},
+	{"write hit", "write_hits", "Number of WRITE bios mapped to the cache since boot"},
+	{"write miss", "write_misses", "Number of WRITE bios that missed the cache since boot"},
+	{"dirty write hit", "dirty_write_hits", "Number of WRITE bios that hit a dirty cache block since boot"},
+	{"ssd reads", "ssd_reads", "Number of reads from the cache SSDs since boot"},
+	{"ssd writes", "ssd_writes", "Number of writes to the cache SSDs since boot"},
+	{"uncached reads", "uncached_reads", "Number of READ bios that bypassed the cache since boot"},
+	{"uncached writes", "uncached_writes", "Number of WRITE bios that bypassed the cache since boot"},
+	{"uncached seq reads", "uncached_sequential_reads", "Number of sequential READ bios that bypassed the cache since boot"},
+	{"uncached seq writes", "uncached_sequential_writes", "Number of sequential WRITE bios that bypassed the cache since boot"},
+}
+
+// appendDmCacheRawStatsMetrics adds the counters of raw_stats as node_dmcache_stats_*_total. QTS resets
+// curr_stats, the source of the other dm-cache hit metrics, about once a minute. raw_stats counts from boot,
+// so rate() and increase() see every access. A missing file is ignored, as on QTS versions without it.
+func (e *promExporter) appendDmCacheRawStatsMetrics(metrics []metric, cache string) ([]metric, error) {
+	lines, err := utils.ReadFileLines(fmt.Sprintf(dmCacheRawStatsFilePathFormat, cache))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return metrics, nil
+		}
+
+		return nil, err
+	}
+
+	return append(metrics, parseDmCacheRawStats(lines, fmt.Sprintf("device=%q", cache))...), nil
+}
+
+// parseDmCacheRawStats turns "field : value" lines into counters. Unknown fields and lines that don't parse are skipped.
+func parseDmCacheRawStats(lines []string, attr string) []metric {
+	values := make(map[string]float64, len(lines))
+	for _, line := range lines {
+		field, valueStr, found := strings.Cut(line, ":")
+		if !found {
+			continue
+		}
+		value, err := strconv.ParseFloat(strings.TrimSpace(valueStr), 64)
+		if err != nil {
+			continue
+		}
+		values[strings.TrimSpace(field)] = value
+	}
+
+	metrics := make([]metric, 0, len(dmCacheRawStats))
+	for _, stat := range dmCacheRawStats {
+		value, ok := values[stat.field]
+		if !ok {
+			continue
+		}
+		metrics = append(metrics, metric{
+			name:       "node_dmcache_stats_" + stat.name + "_total",
+			attr:       attr,
+			value:      value,
+			help:       stat.help,
+			metricType: "counter",
+		})
+	}
+
+	return metrics
 }

@@ -22,6 +22,8 @@ const (
 	netDir                     = "/sys/class/net"
 	flashcacheStatsPath        = "/proc/flashcache/CG0/flashcache_stats"
 	dmCacheStatsFilePathFormat = "/sys/block/%s/dm/cache/curr_stats"
+	// raw_stats counts from boot. curr_stats above holds the current period, which QTS resets about once a minute.
+	dmCacheRawStatsFilePathFormat = "/sys/block/%s/dm/cache/raw_stats"
 
 	envValidity    = time.Duration(5 * time.Minute)
 	volumeValidity = time.Duration(1 * time.Minute)

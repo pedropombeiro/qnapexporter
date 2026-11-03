@@ -9,6 +9,10 @@ actionlint = "latest"
 hadolint = "latest"
 shellcheck = "latest"
 shfmt = "latest"
+editorconfig-checker = "latest"
+node = "latest"
+"npm:markdownlint-cli2" = "latest"
+"npm:renovate" = "latest"
 
 [vars]
 pkg = "github.com/pedropombeiro/qnapexporter"
@@ -45,7 +49,10 @@ go test "${args[@]:+${args[@]}}" ./...
 
 [tasks.mocks]
 description = "Generate test mocks"
-run = ["find . -name mock_*.go -delete", "mockery --dir=. --recursive --all --inpackage"]
+run = [
+  "find . -name mock_*.go -delete",
+  "mockery --dir=. --recursive --all --inpackage",
+]
 
 [tasks.vendor]
 description = "Vendor management (alias to update)"

@@ -2,21 +2,32 @@
 amends "package://github.com/jdx/hk/releases/download/v2.11.0/hk@2.11.0#/Config.pkl"
 import "package://github.com/jdx/hk/releases/download/v2.11.0/hk@2.11.0#/Builtins.pkl"
 
+min_hk_version = "2.11.0"
+
 exclude = List("vendor", "bin")
 
 display_skip_reasons = List()
 terminal_progress = false
 
-steps {
-    ["trailing-whitespace"] = Builtins.trailing_whitespace
-    ["newlines"] = Builtins.newlines
+local binary_excludes = List("*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.ico")
+
+local linters = new Mapping<String, Step> {
+    ["trailing-whitespace"] = (Builtins.trailing_whitespace) {
+        exclude = binary_excludes
+    }
+    ["newlines"] = (Builtins.newlines) {
+        exclude = binary_excludes
+    }
     ["check-merge-conflict"] = Builtins.check_merge_conflict
     ["check-added-large-files"] = Builtins.check_added_large_files
-    ["yamllint"] = Builtins.yamllint
-    ["typos"] = (Builtins.typos) {
-        exclude = List("go.sum")
+    ["editorconfig-checker"] = (Builtins.editorconfig_checker) {
+        exclude = binary_excludes + List("go.sum", "dashboards/*.json")
     }
-    ["gitleaks"] = Builtins.gitleaks
+    ["yamllint"] = Builtins.yamllint
+    ["mise"] = Builtins.mise
+    ["typos"] = (Builtins.typos) {
+        exclude = binary_excludes + List("go.sum")
+    }
     ["actionlint"] = Builtins.actionlint
     ["hadolint"] = Builtins.hadolint
     ["shellcheck"] = Builtins.shellcheck
@@ -25,4 +36,69 @@ steps {
     ["go-vet"] = Builtins.go_vet
     ["go-mod-tidy"] = Builtins.gomod_tidy
     ["golangci-lint"] = Builtins.golangci_lint
+    ["markdownlint-cli2"] {
+        glob = List("**/*.md")
+        check = new CommandSpec {
+            command = "mise x npm:markdownlint-cli2 -- markdownlint-cli2 {{files}}"
+            effect = "read"
+        }
+        fix = new CommandSpec {
+            command = "mise x npm:markdownlint-cli2 -- markdownlint-cli2 --fix {{files}}"
+            effect = "write"
+        }
+    }
+    ["renovate-config-validator"] {
+        glob = List(".renovaterc.json", "renovate.json", ".renovaterc")
+        check = new CommandSpec {
+            command = "scripts/quiet-on-success.sh mise x npm:renovate -- renovate-config-validator --strict {{files}}"
+            effect = "read"
+        }
+    }
+}
+
+hooks {
+    ["commit-msg"] {
+        steps {
+            ["conventional-commit"] {
+                check = "scripts/validate-conventional-commit.sh {{commit_msg_file}}"
+            }
+        }
+    }
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = (linters) {
+            ["gitleaks"] = (Builtins.gitleaks) {
+                scan = "staged"
+            }
+        }
+    }
+    // Used by `mise run fix` and the Claude Code post-edit hook. Fixes files in
+    // place without stashing, so unstaged edits and other in-progress changes
+    // are left untouched.
+    ["fix"] {
+        fix = true
+        stash = "none"
+        steps = (linters) {
+            ["gitleaks"] = Builtins.gitleaks
+        }
+    }
+    // Check-only, the same checks as CI (`hk check --all`) plus the Go tests.
+    ["check"] {
+        steps = (linters) {
+            ["gitleaks"] = Builtins.gitleaks
+        }
+    }
+    ["pre-push"] {
+        steps = (linters) {
+            ["gitleaks"] = Builtins.gitleaks
+            ["go-test"] {
+                glob = List("**/*.go", "go.mod", "go.sum")
+                check = new CommandSpec {
+                    command = "scripts/quiet-on-success.sh go test ./..."
+                    effect = "read"
+                }
+            }
+        }
+    }
 }

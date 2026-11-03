@@ -1,0 +1,17 @@
+---
+extends: null
+
+# MD013/line-length - Line length
+# Intentionally above the 120-character `max_line_length` in .editorconfig.
+# Nothing else formats Markdown, so this rule is the only check on long paragraphs.
+MD013:
+  line_length: 160
+  heading_line_length: 120
+  code_blocks: false
+  tables: false
+
+# MD034/no-bare-urls - Bare URL used
+MD034: false
+
+# MD041/first-line-heading - README starts with the build badge
+MD041: false

@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
-#MISE description="Run comprehensive linters"
-#USAGE arg "[files]" var help="Specific files to lint (default: all files)"
+#MISE description="Run hk checks on files"
+#USAGE arg "[files]" var=#true help="Specific files to lint (default: all files)"
 
 set -euo pipefail
 
-echo "Running linters..."
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154 # usage_files is set by mise from the #USAGE spec
 eval "files=(${usage_files:-})"
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154 # files is set by the eval above
 if [ ${#files[@]} -gt 0 ]; then
-	golangci-lint run "${files[@]}"
+  hk check -- "${files[@]}"
 else
-	golangci-lint run
+  hk check --all
 fi

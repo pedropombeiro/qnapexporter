@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
-#MISE description="Run formatters and auto-fixable linters"
-#USAGE arg "[files]" var help="Specific files to fix (default: all files)"
+#MISE description="Run hk fixers on files"
+#USAGE arg "[files]" var=#true help="Specific files to fix (default: all files)"
 
 set -euo pipefail
 
-echo "Running hk hooks..."
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154 # usage_files is set by mise from the #USAGE spec
 eval "files=(${usage_files:-})"
-# shellcheck disable=SC2154
+# shellcheck disable=SC2154 # files is set by the eval above
 if [ ${#files[@]} -gt 0 ]; then
-	hk fix "${files[@]}"
+  hk fix -- "${files[@]}"
 else
-	hk fix --all
+  hk fix --all
 fi

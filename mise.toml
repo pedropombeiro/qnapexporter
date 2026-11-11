@@ -10,7 +10,7 @@ hadolint = "2.15.1"
 shellcheck = "0.11.0"
 shfmt = "3.14.1"
 editorconfig-checker = "4.0.2"
-node = "26.13.0"
+node = "26.13.1"
 "npm:markdownlint-cli2" = "0.24.0"
 # Automated dependency update bot (used only to validate .renovaterc.json)
 # Trust-policy exception: @yarnpkg/libzip@3.2.2 (transitive via @yarnpkg/core)

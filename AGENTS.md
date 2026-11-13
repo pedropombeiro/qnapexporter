@@ -41,6 +41,23 @@ triggered automatically (on the `published` event) and regenerates
 "GitHub Actions" in the repo Settings → Pages before the first deploy will
 succeed. This is a manual step done once in the GitHub UI.
 
+## Mise task metadata
+
+When creating or updating a mise task, maintain its argument and completion metadata
+alongside its implementation. Use `#USAGE` directives for file tasks or `usage` for
+TOML tasks, with help text, repeatability, fixed `choices`, and dynamic `complete`
+rules where applicable. Derive completions from authoritative local metadata.
+Completion must not read credentials, change state, or contact live services.
+
+For wrappers whose CLI parses forwarded arguments, set `raw_args = true` (or
+`#MISE raw_args=true`) and keep forwarding intact. `raw` controls terminal access,
+not argument parsing. Tasks without arguments need only task-name completion.
+
+Validate flags with `mise __complete_word__ --shell zsh --line 'mise run TASK --'`
+and test representative value prefixes. Test forwarding with harmless fixtures,
+not operational tasks. Complete immediately after `--` or a value prefix; a
+standalone `--` followed by a space disables task-aware completion.
+
 ## Git hooks
 
 This repo uses [hk](https://hk.jdx.dev) (`hk.pkl`) as its git hook manager. List the

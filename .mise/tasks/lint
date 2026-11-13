@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #MISE description="Run hk checks on files"
 #USAGE arg "[files]" var=#true help="Specific files to lint (default: all files)"
+#USAGE complete "files" type="file"
 
 set -euo pipefail
 

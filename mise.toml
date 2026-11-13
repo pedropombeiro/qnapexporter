@@ -50,13 +50,27 @@ run = ["go mod tidy", "go mod vendor"]
 [tasks.test]
 description = "Run tests with optional parameters"
 alias = "t"
-usage = 'arg "[args]" var=#true help="Additional arguments to pass to go test"'
+raw_args = true
+usage = '''
+arg "[args]" var=#true help="Additional arguments to pass to go test"
+flag "--run <pattern>" help="Run tests matching a regular expression (also -run)"
+flag "--bench <pattern>" help="Run benchmarks matching a regular expression (also -bench)"
+flag "--count <count>" help="Run each test this many times (also -count)"
+flag "--timeout <duration>" help="Test timeout, such as 10m (also -timeout)"
+flag "-v" help="Verbose test output"
+flag "--race" help="Enable the race detector (also -race)"
+flag "--short" help="Skip long-running tests (also -short)"
+flag "--cover" help="Enable coverage analysis (also -cover)"
+flag "--coverprofile <file>" help="Write coverage to a file (also -coverprofile)"
+flag "--json" help="Write JSON test output (also -json)"
+complete "args" type="file"
+complete "file" type="file"
+'''
 run = """
 #!/usr/bin/env bash
 set -euo pipefail
 
-eval "args=(${usage_args:-})"
-go test "${args[@]:+${args[@]}}" ./...
+go test "$@" ./...
 """
 
 [tasks.mocks]

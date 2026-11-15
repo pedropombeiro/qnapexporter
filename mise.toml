@@ -11,7 +11,7 @@ shellcheck = "0.11.0"
 shfmt = "3.14.1"
 editorconfig-checker = "4.0.2"
 node = "26.13.1"
-"npm:markdownlint-cli2" = "0.24.0"
+"npm:markdownlint-cli2" = "0.24.1"
 # Automated dependency update bot (used only to validate .renovaterc.json)
 # Trust-policy exception: @yarnpkg/libzip@3.2.2 (transitive via @yarnpkg/core)
 # lost the npm provenance that 3.2.0/3.2.1 carried. Upstream cause: the release
